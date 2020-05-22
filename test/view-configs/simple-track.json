@@ -1,0 +1,98 @@
+{
+  "editable": true,
+  "zoomFixed": false,
+  "trackSourceServers": [
+    "http://higlass.io/api/v1"
+  ],
+  "exportViewUrl": "/api/v1/viewconfs/",
+  "views": [
+    {
+      "tracks": {
+        "top": [
+          {
+            "server": "http://higlass.io/api/v1",
+            "tilesetUid": "NyITQvZsS_mOFNlz5C2LJg",
+            "uid": "Lb1oLu6rSiaIFcdrouucQg",
+            "type": "horizontal-chromosome-labels",
+            "options": {
+              "color": "#808080",
+              "stroke": "#ffffff",
+              "fontSize": 12,
+              "fontIsLeftAligned": false,
+              "showMousePosition": false,
+              "mousePositionColor": "#000000"
+            },
+            "width": 20,
+            "height": 30
+          },
+          {
+            "server": "http://localhost:8001/api/v1",
+            "tilesetUid": "ScrlBGMbR_WJ0fzKXxKFzA",
+            "uid": "t1",
+            "type": "horizontal-sequence",
+            "options": {
+              "colorAggregationMode": "none",
+              "labelPosition": "topLeft",
+              "labelColor": "black",
+              "labelTextOpacity": 0.4,
+              "valueScaling": "linear",
+              "trackBorderWidth": 0,
+              "trackBorderColor": "white",
+              "name": "hg38",
+              "backgroundColor": "white",
+              "barBorder": true,
+              "barBorderColor": "white",
+              "sortLargestOnTop": true,
+              "extendedPreloading": true,
+              "colorScale": [ 
+                "#007FFF",
+                "#e8e500",
+                "#008000",
+                "#FF0038",
+                "#800080",
+                "#DCDCDC"
+              ]
+            },
+            "width": 568,
+            "height": 25
+          }
+        ],
+        "left": [],
+        "center": [],
+        "right": [],
+        "bottom": [],
+        "whole": [],
+        "gallery": []
+      },
+      "initialXDomain": [
+        9995,
+        10013
+      ],
+      "initialYDomain": [
+        -2681066463.2605443,
+        -2681066462.780524
+      ],
+      "layout": {
+        "w": 12,
+        "h": 6,
+        "x": 0,
+        "y": 0,
+        "moved": false,
+        "static": false
+      },
+      "uid": "aa"
+    }
+  ],
+  "zoomLocks": {
+    "locksByViewUid": {},
+    "locksDict": {}
+  },
+  "locationLocks": {
+    "locksByViewUid": {},
+    "locksDict": {}
+  },
+  "valueScaleLocks": {
+    "locksByViewUid": {},
+    "locksDict": {}
+  }
+}

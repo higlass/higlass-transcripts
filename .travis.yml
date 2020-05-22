@@ -1,0 +1,45 @@
+dist: trusty
+language: node_js
+node_js:
+- '11'
+branches:
+  only:
+  - master
+  - "/^v.*$/"
+addons:
+  apt:
+    packages:
+      - xvfb
+install:
+    - npm install -g xvfb-maybe
+before_script:
+    - export CHROME_BIN=chromium-browser
+    - export DISPLAY=:99.0
+    - sh -e /etc/init.d/xvfb start
+    - npm install --quiet -g gulp
+    - npm install
+script:
+    - npm run build
+    - xvfb-maybe ./node_modules/karma/bin/karma start karma.conf.js --single-run
+before_deploy:
+    - npm run prerelease
+deploy:
+  - provider: releases
+    skip_cleanup: true
+    email: alexander_veit@hms.harvard.edu
+    api_key:
+      secure: XS3oHjH/LaFDXvPk6Evz5CYfVa8rWt9p04FUkUiQsWRckre9IVLnTe/hzcUf3GARa6zDenYEwBNdYPmWpsbHhgJSq9KXPK3SdLWAEx/Sd+FogD0jMRGPZhZk0ALcWVpAgYZK/0ruorMkHzZClGbueXBo2Aab0qn5brwmBQBQpb5gB55hqaFhnPE3GDW/tuZmailJYQbmvC9IXihH/61mF5D5galhUDwiScmAP38ES8y1yZN7FQFs00/Q6dlzcpiDQvPNMW8mhSv7NZBMUMPpq5utAtEEVJ1rsUHkYLxGv8EU6dTEOWbXEG6QeVXr1aKkqdEX4H31XMD6aKFtb905qxYbt3bbMEFNEQgdE7cYGuKolSM0WkV73jDPd+CUk2xaJ6z2Ojx9WLY+6y4nR3CrkyY1P3ZuOEqnP8UGRcg/h25o2CgNgsLXOa83kDs3siWKbjasX6KComLw9MHzsvQg40aDrGyZU8SjOYf2tXMlZvcEqP1LZ1hqoafaSJVRuL/ySKTqmrXmxgD6eoyw9ampNpyowCPD4ESKBIcx4yO7ArGUEq1mt1O6Ab3KeLkuy78JajVvVLJ8LF4wyTdBTZeBt+nxT/pPbFG1nQjIdB8dRkL3E1okrfreYvpcjdQInH+WRAXLdosnbZ5R+xCEJ/VkKbUCn3YZuTMqGILjdDMwPEQ=
+    file: dist.zip
+    on:
+      tags: true
+      branch: master
+      repo: higlass/higlass-transcripts
+  - provider: npm
+    skip_cleanup: true
+    email: alexander_veit@hms.harvard.edu
+    api_key:
+      secure: C9mWlb+3m20P+n+ZbZucbWqT3d3XxmiPQea2FrF5MZznXDXSd8fwsdNn6pFMGotmbkubWSAA1ni7dG6Dw5r1NsmK7a6rkQu/p17uhvvyRPIhEKU5/44HrxmYqyMkLZ3MLfuLvc0ijRr3WsNT/jUeEyBgwXnZsHwQ8uzKziQBccQAVbli1FGBZvG5Ya8a/K/eCcHeuf6fKQAVM6yDMBB48AeFo+ljrCUeK/atmm6nDf+WkMEzDe+yZeEXz7CEpdceaK6FqLNnN1z7CHBQDN9GaO2CaJErJpfvghzGOWHWsh1fVaqJzqxb3JKrWXik5y5HZC2XQjFOHVzeQuCtxUEv0W8epBJMbirMr7SJpZjeYEC79KyxreEtWyXWD80mUiXnzfFJzPdHcTJjNHVDQelqEMmuNTLyYuozR+y+F81TKw66bYae7RuFMWCOw/QXb/VSJHKS5zqSE7TIprH4OFdDM9/9OB0UEyW/b8LC6cVjX39ElhP9zf4CragzYODo3l6M4aXmw/8wB5wBXmlB043afFsvsLbOX3xYt2spUUTu4YLPfVX8fK7ZvIyk00M2K8gJLpNB84/62NWEWMz4QnkGz/EASjlBcyK0MRQTcqnHgp8aVpMxka08/WTz2Yy3sC3n0FljouulFWfoLP9GipYMiSDjvSJIXfg+Px6sv6PO7eY=
+    on:
+      tags: true
+      branch: master
+      repo: higlass/higlass-transcripts
