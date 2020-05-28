@@ -2,6 +2,7 @@
 //import { color } from "d3-color";
 import boxIntersect from "box-intersect";
 import classifyPoint from "robust-point-in-polygon";
+import { AMINO_ACIDS, CODONS } from './configs';
 import { TextStyle } from "pixi.js";
 
 const TranscritpsTrack = (HGC, ...args) => {
