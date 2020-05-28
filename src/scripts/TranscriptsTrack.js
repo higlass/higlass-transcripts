@@ -20,7 +20,7 @@ const TranscritpsTrack = (HGC, ...args) => {
 
   // these are default values that are overwritten by the track's options
   const GENE_RECT_HEIGHT = 16;
-  const MAX_TEXTS = 20;
+  const MAX_TEXTS = 100;
   const WHITE_HEX = colorToHex("#ffffff");
   const EXON_LINE_HEIGHT = 2;
   const EXON_HEIGHT = (2 * GENE_RECT_HEIGHT) / 3;
@@ -593,7 +593,7 @@ const TranscritpsTrack = (HGC, ...args) => {
     adjustTrackHeight() {
 
       this.computeTrackHeight()
-      console.log(this.trackHeightOld, this.trackHeight);
+      //console.log(this.trackHeightOld, this.trackHeight);
       if(this.trackHeightOld === this.trackHeight){
         return false
       };
@@ -636,6 +636,7 @@ const TranscritpsTrack = (HGC, ...args) => {
       //   }
       // }
       this.transcriptInfo = {};
+      this.transcriptPositionInfo = {};
 
       // const numTranscripts = Object.keys(visibleTranscripts).length;
       // const availableDisplayOrders = [...Array(numTranscripts).keys()]
@@ -648,25 +649,89 @@ const TranscritpsTrack = (HGC, ...args) => {
           return +a[1] - b[1];
         })
         .forEach((ts) => {
+
+          const dpo = this.calculateTranscriptRowNumber(this.transcriptPositionInfo,+ts[1],+ts[2]);
+
+          if(this.transcriptPositionInfo[dpo] === undefined){
+            this.transcriptPositionInfo[dpo] = [];
+          }
+          this.transcriptPositionInfo[dpo].push([+ts[1], +ts[2], ts[3]]);
+
+
           const tInfo = {
             transcriptId: this.transcriptId(ts),
             transcriptName: ts[3],
             txStart: +ts[1],
             txEnd: +ts[2],
             strand: ts[5],
-            displayOrder: displayOrder,
+            displayOrder: dpo,
+            //displayOrder: displayOrder,
           };
           this.transcriptInfo[tInfo.transcriptId] = tInfo;
           displayOrder += 1;
-          this.numTranscriptRows = Math.max(
-            this.numTranscriptRows,
-            displayOrder
-          );
+          // this.numTranscriptRows = Math.max(
+          //   this.numTranscriptRows,
+          //   displayOrder
+          // );
         });
 
+      this.numTranscriptRows = Object.keys(this.transcriptPositionInfo).length;
+
       //console.log(visibleTranscripts);
+      console.log(this.transcriptPositionInfo);
 
       console.log(this.transcriptInfo);
+    }
+
+    calculateTranscriptRowNumber(transcriptPositionInfo,txStart,txEnd){
+
+      const numRows = Object.keys(transcriptPositionInfo).length;
+
+      // if(numRows === 0){
+      //   return 0;
+      // }
+      //console.log(transcriptPositionInfo);
+      //console.log(numRows);
+
+      for(let row = 0; row < numRows; row++){
+        
+        let spaceAvailableOnCurrentRow = true
+        transcriptPositionInfo[row]
+        .forEach((ts) => {
+          const currentTsStart = ts[0];
+          const currentTsEnd = ts[1];
+
+          //console.log(row, currentTsStart, currentTsEnd);
+          if(
+            (currentTsStart <= txStart && txStart <= currentTsEnd) ||
+            (currentTsStart <= txEnd && txEnd <= currentTsEnd)
+            ){
+              spaceAvailableOnCurrentRow = false;
+            }
+
+        });
+
+        if(spaceAvailableOnCurrentRow){
+          return row;
+        }
+      }
+
+      // If we are here, there are now available space on the existing rows.
+      // Add a new one.
+      return numRows;
+
+      // transcriptPositionInfo
+      //   .sort(function (a, b) {
+      //     return +a[0] - b[0];
+      //   })
+      //   .forEach((ts) => {
+      //     const currentRow = ts[0];
+      //     const currentTsStart = ts[1];
+      //     const currentTsEnd = ts[2];
+
+      //     //if(txStart > )
+
+      //   });
     }
 
     /*
@@ -924,7 +989,27 @@ const TranscritpsTrack = (HGC, ...args) => {
  
             text.position.y = textYMiddle;
 
-            if (!parentInFetched) {
+            // Determine if the current text should be hidden
+            let showText = true;
+            //console.log(this.transcriptInfo[geneId]);
+            const dpo = this.transcriptInfo[geneId].displayOrder
+            //console.log(this.transcriptPositionInfo[dpo]);
+
+            this.transcriptPositionInfo[dpo]
+              .filter(ts => {
+                // Check the ones that are left of the current transcript
+                return ts[1] < this.transcriptInfo[geneId].txStart;
+              }).forEach(ts => {
+                const endOfTranscript = this._xScale(ts[1]);
+                //console.log(text.position.x,endOfTranscript, tile.textWidths[geneId]);
+                if(endOfTranscript > text.position.x - 4 * TEXT_MARGIN){
+                  showText = false;
+                }
+              });
+
+
+            //if (!parentInFetched) {
+            if(showText){
               text.visible = true;
 
               this.allBoxes.push([
@@ -1084,7 +1169,7 @@ TranscritpsTrack.config = {
     geneLabelPosition: "outside",
     geneStrandSpacing: 4,
     geneAnnotationHeight: 12,
-    maxTexts: 20,
+    maxTexts: 100,
     plusStrandColor: "blue",
     minusStrandColor: "red",
     labelBackgroundColor: "#ffffff",
