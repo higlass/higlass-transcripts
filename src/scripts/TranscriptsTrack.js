@@ -29,21 +29,6 @@ const TranscritpsTrack = (HGC, ...args) => {
   const MAX_FILLER_ENTRIES = 5000;
 
   /**
-   * Event handler for when gene annotations are clicked on.
-   */
-  const geneClickFunc = (event, track, payload) => {
-    // fill rectangles are just indicators and are not meant to be
-    // clicked on
-    if (payload.type === "filler") return;
-
-    track.pubSub.publish("app.click", {
-      type: "gene-annotation",
-      event,
-      payload,
-    });
-  };
-
-  /**
    * Initialize a tile. Pulled out from the track so that it
    * can be modified without having to modify the track
    * object (e.g. in an Observable notebooke)
@@ -116,6 +101,7 @@ const TranscritpsTrack = (HGC, ...args) => {
 
       text.anchor.x = 0;
       text.anchor.y = 0.5;
+      text.visible = false;
 
       tile.texts[geneId] = text; // index by geneName
       tile.texts[geneId].strand = strand;
@@ -286,7 +272,7 @@ const TranscritpsTrack = (HGC, ...args) => {
       graphics.beginFill(color, alpha);
       graphics.interactive = true;
       graphics.buttonMode = true;
-      graphics.mouseup = (evt) => geneClickFunc(evt, track, gene);
+      //graphics.mouseup = (evt) => geneClickFunc(evt, track, gene);
 
       const pointerWidth = track.geneRectHeight / 2;
 
@@ -356,7 +342,7 @@ const TranscritpsTrack = (HGC, ...args) => {
       graphics.beginFill(color, alpha);
       graphics.interactive = true;
       graphics.buttonMode = true;
-      graphics.mouseup = (evt) => geneClickFunc(evt, track, gene);
+      //graphics.mouseup = (evt) => geneClickFunc(evt, track, gene);
 
       tile.allRects = tile.allRects.concat(
         drawExons(
@@ -436,9 +422,7 @@ const TranscritpsTrack = (HGC, ...args) => {
     tile.rectMaskGraphics.drawRect(x, y, width, height);
   }
 
-  /**
-   * Event handler for when gene annotations are clicked on.
-   */
+  
 
   const toggleBtnHover = (event, track, overOrOut) => {
     if (overOrOut === "over") {
@@ -463,20 +447,12 @@ const TranscritpsTrack = (HGC, ...args) => {
       track.areTranscriptsHidden = false;
     }
 
-    const trackMargin = 10;
-    const newHeight = track.areTranscriptsHidden
-      ? track.toggleButtonHeight + trackMargin
-      : track.computeTrackHeight();
-
     track.pubSub.publish("trackDimensionsModified", {
-      height: newHeight,
+      height: track.computeTrackHeight(),
       resizeParentDiv: true,
       trackId: track.trackId,
     });
 
-    //track.pToggleButton.children[0].updateText();
-    //console.log(track.pToggleButton.children[0]);
-    requestAnimationFrame(track.animate);
   };
 
   /** Create a preventing this track from drawing outside of its
@@ -548,12 +524,15 @@ const TranscritpsTrack = (HGC, ...args) => {
 
       this.toggleButtonHeight = 26;
       this.numTranscriptRows = 0;
+      
+      this.trackHeight = 0;
+      this.trackHeightOld = 0;
 
       this.areTranscriptsHidden = false;
 
       this.transcriptInfo = {};
-      console.log(context);
-      console.log(this);
+      //console.log(context);
+      //console.log(this);
     }
 
     initTile(tile) {
@@ -588,19 +567,47 @@ const TranscritpsTrack = (HGC, ...args) => {
     }
 
     computeTrackHeight() {
+      let height = 0;
       const trackMargin = 10;
-      const tbh = this.options.showToggleTranscriptsButton
+
+      if(this.areTranscriptsHidden){
+        height = this.toggleButtonHeight + trackMargin
+      }
+      else{
+        const tbh = this.options.showToggleTranscriptsButton
         ? this.toggleButtonHeight
         : 0;
 
-      const height =
-        this.numTranscriptRows *
-          (this.geneRectHeight + this.geneStrandSpacing) +
+        height =
+        this.numTranscriptRows * (this.geneRectHeight + this.geneStrandSpacing) +
         tbh +
         trackMargin;
+      }
+
+      this.trackHeightOld = this.trackHeight;
+      this.trackHeight = height;
 
       return height;
     }
+
+    adjustTrackHeight() {
+
+      this.computeTrackHeight()
+      console.log(this.trackHeightOld, this.trackHeight);
+      if(this.trackHeightOld === this.trackHeight){
+        return false
+      };
+
+      this.pubSub.publish("trackDimensionsModified", {
+        height: this.trackHeight,
+        resizeParentDiv: true,
+        trackId: this.trackId,
+      });
+
+      return true
+  
+      //requestAnimationFrame(track.animate);
+    };
 
     updateTranscriptInfo() {
       // get all visible transcripts
@@ -684,6 +691,10 @@ const TranscritpsTrack = (HGC, ...args) => {
 
       this.updateTranscriptInfo();
 
+      // Adjusting the track height leads to a full rerender.
+      // No need to rerender again
+      if(this.adjustTrackHeight()) return;
+
       this.visibleAndFetchedTiles().forEach((tile) => {
         this.renderTile(tile);
       });
@@ -707,6 +718,8 @@ const TranscritpsTrack = (HGC, ...args) => {
       tile.rectGraphics.removeChildren();
       tile.rectGraphics.clear();
       tile.textBgGraphics.clear();
+
+      if(this.areTranscriptsHidden) return;
 
       const fill = {};
       const FILLER_RECT_ALPHA = 0.3;
@@ -853,6 +866,11 @@ const TranscritpsTrack = (HGC, ...args) => {
 
             if (!text) return;
 
+            if(this.areTranscriptsHidden){
+              text.visible = false;
+              return;
+            }
+
             if (!tile.textWidths[geneId]) {
               // if we haven't measured the text's width in renderTile, do it now
               // this can occur if the same gene is in more than one tile, so its
@@ -943,6 +961,12 @@ const TranscritpsTrack = (HGC, ...args) => {
       });
     }
 
+    hideTexts(allTexts) {
+      allTexts.forEach((text, i) => {
+        text.visible = false;
+      });
+    }
+
     hideOverlaps(allBoxes, allTexts) {
       boxIntersect(allBoxes, (i, j) => {
         if (allTexts[i].importance > allTexts[j].importance) {
@@ -960,12 +984,12 @@ const TranscritpsTrack = (HGC, ...args) => {
     }
 
     setDimensions(newDimensions) {
-      console.log("setD");
+
       this.updateTranscriptInfo();
 
       // This will rerender all tiles.
       super.setDimensions(newDimensions);
-      console.log("setDimensions", this.dimensions);
+      //console.log("setDimensions", this.dimensions);
     }
 
     zoomed(newXScale, newYScale) {
