@@ -653,6 +653,7 @@ const TranscritpsTrack = (HGC, ...args) => {
             transcriptName: ts[3],
             txStart: +ts[1],
             txEnd: +ts[2],
+            strand: ts[5],
             displayOrder: displayOrder,
           };
           this.transcriptInfo[tInfo.transcriptId] = tInfo;
@@ -665,7 +666,7 @@ const TranscritpsTrack = (HGC, ...args) => {
 
       //console.log(visibleTranscripts);
 
-      //console.log(this.transcriptInfo);
+      console.log(this.transcriptInfo);
     }
 
     /*
@@ -753,10 +754,7 @@ const TranscritpsTrack = (HGC, ...args) => {
       const yMiddle = this.geneRectHeight + this.geneStrandSpacing; //this.dimensions[1] / 2;
 
       // const fillerGeneSpacing = (this.options.fillerHeight - this.geneRectHeight) / 2;
-      const plusStrandCenterY =
-        yMiddle - this.geneRectHeight / 2 - this.geneStrandSpacing / 2;
-      const minusStrandCenterY =
-        yMiddle + this.geneRectHeight / 2 + this.geneStrandSpacing / 2;
+      const strandCenterY =this.geneRectHeight / 2 + this.geneStrandSpacing / 2;
 
       const plusRenderContext = [
         this,
@@ -765,7 +763,7 @@ const TranscritpsTrack = (HGC, ...args) => {
         this._xScale,
         fill["+"],
         GENE_ALPHA,
-        plusStrandCenterY,
+        strandCenterY,
         this.geneRectHeight,
         this.geneStrandSpacing,
       ];
@@ -776,7 +774,7 @@ const TranscritpsTrack = (HGC, ...args) => {
         this._xScale,
         fill["-"],
         GENE_ALPHA,
-        minusStrandCenterY,
+        strandCenterY,
         this.geneRectHeight,
         this.geneStrandSpacing,
       ];
@@ -859,6 +857,7 @@ const TranscritpsTrack = (HGC, ...args) => {
             if (!tile.texts) return;
 
             const geneInfo = td.fields;
+            //console.log(geneInfo);
             const geneName = geneInfo[3];
             const geneId = this.transcriptId(geneInfo);
 
@@ -907,19 +906,22 @@ const TranscritpsTrack = (HGC, ...args) => {
 
             //const fontRectPadding = (this.geneAreaHeight - this.fontSize) / 2;
 
+
             // take care of label positioning at start or end of transcripts
             text.position.x = Math.max(
               this._xScale(this.xScale().domain()[0]) + TEXT_MARGIN,
               this._xScale(txStart) - tile.textWidths[geneId] - 2 * TEXT_MARGIN
             );
+
+            const marginRight = this.transcriptInfo[geneId].strand === "+"
+            ? tile.textWidths[geneId] + this.geneAreaHeight / 2 + 2 * TEXT_MARGIN
+            : tile.textWidths[geneId] + TEXT_MARGIN
+
             text.position.x = Math.min(
               text.position.x,
-              this._xScale(txEnd) -
-                tile.textWidths[geneId] -
-                this.geneAreaHeight / 2 -
-                2 * TEXT_MARGIN
+              this._xScale(txEnd) - marginRight
             );
-            //text.position.x = this._xScale(txMiddle) + TEXT_MARGIN;
+ 
             text.position.y = textYMiddle;
 
             if (!parentInFetched) {
