@@ -4,6 +4,7 @@ import boxIntersect from "box-intersect";
 import classifyPoint from "robust-point-in-polygon";
 import { AMINO_ACIDS, CODONS } from './configs';
 import { TextStyle } from "pixi.js";
+import SequenceLoader from "./SequenceLoader";
 
 const TranscritpsTrack = (HGC, ...args) => {
   if (!new.target) {
@@ -19,12 +20,10 @@ const TranscritpsTrack = (HGC, ...args) => {
   const { colorToHex, trackUtils } = HGC.utils;
 
   // these are default values that are overwritten by the track's options
-  const GENE_RECT_HEIGHT = 16;
+
   const MAX_TEXTS = 100;
   const WHITE_HEX = colorToHex("#ffffff");
-  const EXON_LINE_HEIGHT = 2;
-  const EXON_HEIGHT = (2 * GENE_RECT_HEIGHT) / 3;
-  const GENE_MINI_TRIANGLE_HEIGHT = (2 * EXON_HEIGHT) / 3;
+
   const MAX_GENE_ENTRIES = 50;
   const MAX_FILLER_ENTRIES = 5000;
 
@@ -140,13 +139,13 @@ const TranscritpsTrack = (HGC, ...args) => {
     // draw the middle line
     let poly = [
       xStartPos,
-      yMiddle - EXON_LINE_HEIGHT / 2,
+      yMiddle - 1,
       xStartPos + width,
-      yMiddle - EXON_LINE_HEIGHT / 2,
+      yMiddle - 1,
       xStartPos + width,
-      yMiddle + EXON_LINE_HEIGHT / 2,
+      yMiddle + 1,
       xStartPos,
-      yMiddle + EXON_LINE_HEIGHT / 2,
+      yMiddle + 1,
     ];
     graphics.drawPolygon(poly);
     polys.push(poly);
@@ -163,20 +162,20 @@ const TranscritpsTrack = (HGC, ...args) => {
       if (strand === "+") {
         poly = [
           j,
-          yMiddle - GENE_MINI_TRIANGLE_HEIGHT / 2,
-          j + GENE_MINI_TRIANGLE_HEIGHT / 2,
+          yMiddle - track.miniTriangleHeight,
+          j + track.miniTriangleHeight,
           yMiddle,
           j,
-          yMiddle + GENE_MINI_TRIANGLE_HEIGHT / 2,
+          yMiddle + track.miniTriangleHeight,
         ];
       } else {
         poly = [
           j,
-          yMiddle - GENE_MINI_TRIANGLE_HEIGHT / 2,
-          j - GENE_MINI_TRIANGLE_HEIGHT / 2,
+          yMiddle - track.miniTriangleHeight,
+          j - track.miniTriangleHeight,
           yMiddle,
           j,
-          yMiddle + GENE_MINI_TRIANGLE_HEIGHT / 2,
+          yMiddle + track.miniTriangleHeight,
         ];
       }
 
@@ -199,7 +198,7 @@ const TranscritpsTrack = (HGC, ...args) => {
       // at the start of the gene
       let minX = xStartPos;
       let maxX = xEndPos;
-      const pointerWidth = track.geneRectHeight / 2;
+      const pointerWidth = track.transcriptHeight / 2;
       let localPoly = null;
 
       if (strand === "+") {
@@ -274,7 +273,7 @@ const TranscritpsTrack = (HGC, ...args) => {
       graphics.buttonMode = true;
       //graphics.mouseup = (evt) => geneClickFunc(evt, track, gene);
 
-      const pointerWidth = track.geneRectHeight / 2;
+      const pointerWidth = track.transcriptHeight / 2;
 
       let poly = [];
       if (gene.strand === "+" || gene.fields[5] === "+") {
@@ -285,9 +284,9 @@ const TranscritpsTrack = (HGC, ...args) => {
           pointerStart,
           topY,
           pointerEnd,
-          topY + track.geneRectHeight / 2,
+          topY + track.transcriptHeight / 2,
           pointerStart,
-          topY + track.geneRectHeight,
+          topY + track.transcriptHeight,
         ];
       } else {
         const pointerStart = Math.min(xEnd, xStart + pointerWidth);
@@ -297,9 +296,9 @@ const TranscritpsTrack = (HGC, ...args) => {
           pointerStart,
           topY,
           pointerEnd,
-          topY + track.geneRectHeight / 2,
+          topY + track.transcriptHeight / 2,
           pointerStart,
-          topY + track.geneRectHeight,
+          topY + track.transcriptHeight,
         ];
       }
 
@@ -507,22 +506,14 @@ const TranscritpsTrack = (HGC, ...args) => {
     constructor(context, options) {
       super(context, options);
       const { animate } = context;
+      
 
       this.trackId = this.id;
 
       this.animate = animate;
       this.options = options;
+      this.initOptions();
 
-      this.fontSize = +this.options.fontSize;
-      this.geneLabelPos = this.options.geneLabelPosition;
-      this.geneRectHeight =
-        +this.options.geneAnnotationHeight || GENE_RECT_HEIGHT;
-
-      this.geneStrandSpacing = +this.options.geneStrandSpacing;
-      this.geneStrandHSpacing = this.geneStrandSpacing / 2;
-      this.geneRectHHeight = this.geneRectHeight / 2;
-
-      this.toggleButtonHeight = 26;
       this.numTranscriptRows = 0;
       
       this.trackHeight = 0;
@@ -530,9 +521,36 @@ const TranscritpsTrack = (HGC, ...args) => {
 
       this.areTranscriptsHidden = false;
 
+      if(this.options.sequenceData !== undefined){
+        this.sequenceLoader = new SequenceLoader(
+          this.options.sequenceData.fastaUrl,
+          this.options.sequenceData.faiUrl)
+      }
+
       this.transcriptInfo = {};
+      this.exonInformation = {};
+
+      console.log(this.sequenceLoader);
+      console.log("construct");
+      
       //console.log(context);
       //console.log(this);
+    }
+
+    initOptions(){
+
+      this.fontSize = +this.options.fontSize;
+      this.transcriptHeight = +this.options.transcriptHeight ;
+
+      this.transcriptSpacing = +this.options.transcriptSpacing;
+      this.geneStrandHSpacing = this.transcriptSpacing / 2;
+      this.geneRectHHeight = this.transcriptHeight / 2;
+
+      this.miniTriangleHeight = (this.transcriptHeight) / 3;
+
+      this.toggleButtonHeight = 26;
+
+
     }
 
     initTile(tile) {
@@ -548,13 +566,89 @@ const TranscritpsTrack = (HGC, ...args) => {
       });
 
       console.log("init");
-      //console.log(getTiledPlot);
-      //this.updateTranscriptInfo();
+      console.log(tile);
+      //console.log(this.tilesetInfo);
+      //console.log(this.zoomLevel);
+      //console.log(tile.tileId.split(".")[1]);
+      
 
       // We have to rerender everything since the vertical position
       // of the tracks might have changed accross tiles
       this.rerender(this.options, true);
       //this.renderTile(tile);
+    }
+
+    updateExonInformation(){
+
+      if(this.zoomLevel !== this.tilesetInfo.max_zoom || this.sequenceLoader === undefined){
+        return
+      }
+
+      this.exonInformation = {};
+
+      this.visibleAndFetchedTiles()
+        // tile hasn't been drawn properly because we likely got some
+        // bogus data from the server
+        .filter(tile => tile.drawnAtScale)
+        .forEach((tile) => {
+          tile.tileData.forEach((ts) => {
+            const tsId = this.transcriptId(ts.fields);
+            visibleTranscriptsObj[tsId] = ts.fields;
+          });
+        });
+
+
+      if(this.zoomLevel === this.tilesetInfo.max_zoom && this.sequenceLoader !== undefined){
+        const tileId = +tile.tileId.split(".")[1];
+        this.sequenceLoader
+          .getTile(this.zoomLevel, tileId, this.tilesetInfo)
+          .then((values) => {
+
+            
+            
+            const sequence =  values[0];
+
+
+            //console.log(sequence);
+
+            const tileWidth = +this.tilesetInfo.max_width / 2 ** +this.zoomLevel ;
+
+            // get the bounds of the tile
+            const tileStart = this.tilesetInfo.min_pos[0] + tileId * tileWidth;// computed too many times - improve
+            const tileEnd = this.tilesetInfo.min_pos[0] + (tileId+1) * tileWidth;// computed too many times - improve
+            console.log(tileStart);
+
+            const visibleExons = []
+            tile.tileData.forEach(td => {
+              const exonStarts = td.fields[12].split(",").map((x) => +x);
+              const exonEnds = td.fields[13].split(",").map((x) => +x);
+              
+              const entry = {
+                transcriptName: td.fields[3],
+                transcriptId: td.fields[7],
+                exonStart: [],
+                exonEnd: [],
+              };
+              for(let i = 0; i < exonStarts.length; i++){
+                if(
+                  (exonStarts[i] <= tileStart && exonEnds[i] >= tileStart) ||
+                  (exonStarts[i] >= tileStart && exonEnds[i] <= tileEnd) ||
+                  (exonStarts[i] <= tileEnd && exonEnds[i] >= tileEnd)
+                  ){
+                    entry.exonStart.push(exonStarts[i]);
+                    entry.exonEnd.push(exonEnds[i]);
+                }
+              }
+              visibleExons.push(entry);
+              
+            });
+            
+            console.log("Visible exonds", visibleExons);
+
+          });
+        
+      }
+        
     }
 
     /** cleanup */
@@ -579,7 +673,7 @@ const TranscritpsTrack = (HGC, ...args) => {
         : 0;
 
         height =
-        this.numTranscriptRows * (this.geneRectHeight + this.geneStrandSpacing) +
+        this.numTranscriptRows * (this.transcriptHeight + this.transcriptSpacing) +
         tbh +
         trackMargin;
       }
@@ -678,9 +772,9 @@ const TranscritpsTrack = (HGC, ...args) => {
       this.numTranscriptRows = Object.keys(this.transcriptPositionInfo).length;
 
       //console.log(visibleTranscripts);
-      console.log(this.transcriptPositionInfo);
+      //console.log(this.transcriptPositionInfo);
 
-      console.log(this.transcriptInfo);
+      //console.log(this.transcriptInfo);
     }
 
     calculateTranscriptRowNumber(transcriptPositionInfo,txStart,txEnd){
@@ -744,12 +838,7 @@ const TranscritpsTrack = (HGC, ...args) => {
       console.log("rerender");
       //super.rerender(options, force);
 
-      this.fontSize = +this.options.fontSize;
-      this.geneLabelPos = this.options.geneLabelPosition;
-      this.geneRectHeight =
-        +this.options.geneAnnotationHeight || GENE_RECT_HEIGHT;
-      this.geneStrandHSpacing = this.geneStrandSpacing / 2;
-      this.geneRectHHeight = this.geneRectHeight / 2;
+      this.initOptions();
 
       this.prevOptions = strOptions;
 
@@ -816,10 +905,10 @@ const TranscritpsTrack = (HGC, ...args) => {
       // remove the fillers that are contained within a gene
       // plusFillerRects = plusFillerRects.filter(x => !x.hide);
       // minusFillerRects = minusFillerRects.filter(x => !x.hide);
-      const yMiddle = this.geneRectHeight + this.geneStrandSpacing; //this.dimensions[1] / 2;
+      const yMiddle = this.transcriptHeight + this.transcriptSpacing; //this.dimensions[1] / 2;
 
-      // const fillerGeneSpacing = (this.options.fillerHeight - this.geneRectHeight) / 2;
-      const strandCenterY =this.geneRectHeight / 2 + this.geneStrandSpacing / 2;
+      // const fillerGeneSpacing = (this.options.fillerHeight - this.transcriptHeight) / 2;
+      const strandCenterY =this.transcriptHeight / 2 + this.transcriptSpacing / 2;
 
       const plusRenderContext = [
         this,
@@ -829,8 +918,8 @@ const TranscritpsTrack = (HGC, ...args) => {
         fill["+"],
         GENE_ALPHA,
         strandCenterY,
-        this.geneRectHeight,
-        this.geneStrandSpacing,
+        this.transcriptHeight,
+        this.transcriptSpacing,
       ];
       const minusRenderContext = [
         this,
@@ -840,8 +929,8 @@ const TranscritpsTrack = (HGC, ...args) => {
         fill["-"],
         GENE_ALPHA,
         strandCenterY,
-        this.geneRectHeight,
-        this.geneStrandSpacing,
+        this.transcriptHeight,
+        this.transcriptSpacing,
       ];
 
       //renderRects(plusFillerRects, ...plusRenderContext);
@@ -892,7 +981,7 @@ const TranscritpsTrack = (HGC, ...args) => {
       this.allBoxes = [];
       const allTiles = [];
 
-      this.geneAreaHeight = this.geneRectHeight;
+      this.geneAreaHeight = this.transcriptHeight;
       const fontSizeHalf = this.fontSize / 2;
 
       trackUtils.stretchRects(this, [
@@ -913,7 +1002,7 @@ const TranscritpsTrack = (HGC, ...args) => {
           );
 
           // move the texts
-          const parentInFetched = this.parentInFetched(tile);
+          //const parentInFetched = this.parentInFetched(tile);
 
           if (!tile.initialized) return;
           //console.log('---');
@@ -925,6 +1014,8 @@ const TranscritpsTrack = (HGC, ...args) => {
             //console.log(geneInfo);
             const geneName = geneInfo[3];
             const geneId = this.transcriptId(geneInfo);
+
+            if(this.transcriptInfo[geneId] === undefined) return;
 
             const text = tile.texts[geneId];
 
@@ -957,7 +1048,7 @@ const TranscritpsTrack = (HGC, ...args) => {
             //console.log(txStart, txMiddle);
             let textYMiddleOffset =
               this.transcriptInfo[geneId].displayOrder *
-              (this.geneAreaHeight + this.geneStrandSpacing);
+              (this.geneAreaHeight + this.transcriptSpacing);
 
             if (this.options.showToggleTranscriptsButton) {
               textYMiddleOffset += this.toggleButtonHeight;
@@ -966,7 +1057,7 @@ const TranscritpsTrack = (HGC, ...args) => {
             //console.log(txStart,txEnd,txMiddle, chrOffset, tile.textHeights[geneId]);
             let textYMiddle =
               this.geneAreaHeight / 2 +
-              this.geneStrandSpacing / 2 +
+              this.transcriptSpacing / 2 +
               textYMiddleOffset;
 
             //const fontRectPadding = (this.geneAreaHeight - this.fontSize) / 2;
@@ -1016,7 +1107,7 @@ const TranscritpsTrack = (HGC, ...args) => {
                 text.position.x - TEXT_MARGIN,
                 textYMiddle,
                 tile.textWidths[geneId] + 2 * TEXT_MARGIN,
-                this.geneRectHeight,
+                this.transcriptHeight,
                 geneName,
               ]);
 
@@ -1034,7 +1125,7 @@ const TranscritpsTrack = (HGC, ...args) => {
           });
         });
 
-      this.hideOverlaps(this.allBoxes, this.allTexts);
+      //this.hideOverlaps(this.allBoxes, this.allTexts);
       this.renderTextBg(this.allBoxes, this.allTexts, allTiles);
     }
 
@@ -1054,15 +1145,15 @@ const TranscritpsTrack = (HGC, ...args) => {
       });
     }
 
-    hideOverlaps(allBoxes, allTexts) {
-      boxIntersect(allBoxes, (i, j) => {
-        if (allTexts[i].importance > allTexts[j].importance) {
-          allTexts[j].text.visible = false;
-        } else {
-          allTexts[i].text.visible = false;
-        }
-      });
-    }
+    // hideOverlaps(allBoxes, allTexts) {
+    //   boxIntersect(allBoxes, (i, j) => {
+    //     if (allTexts[i].importance > allTexts[j].importance) {
+    //       allTexts[j].text.visible = false;
+    //     } else {
+    //       allTexts[i].text.visible = false;
+    //     }
+    //   });
+    // }
 
     setPosition(newPosition) {
       super.setPosition(newPosition);
@@ -1153,28 +1244,27 @@ TranscritpsTrack.config = {
   availableOptions: [
     "fontSize",
     "fontFamily",
-    "geneLabelPosition",
-    "geneStrandSpacing",
-    "geneAnnotationHeight",
+    "transcriptSpacing",
+    "transcriptHeight",
     "maxTexts",
     "plusStrandColor",
     "minusStrandColor",
     "labelBackgroundColor",
     "labelFontColor",
     "showToggleTranscriptsButton",
+    "sequenceData"
   ],
   defaultOptions: {
-    fontSize: 10,
-    fontFamily: "Arial",
-    geneLabelPosition: "outside",
-    geneStrandSpacing: 4,
-    geneAnnotationHeight: 12,
+    fontSize: 9,
+    fontFamily: "Helvetica",
+    transcriptSpacing: 2,
+    transcriptHeight: 11,
     maxTexts: 100,
     plusStrandColor: "blue",
     minusStrandColor: "red",
     labelBackgroundColor: "#ffffff",
     labelFontColor: "#333333",
-    showToggleTranscriptsButton: true,
+    showToggleTranscriptsButton: true
   },
 };
 

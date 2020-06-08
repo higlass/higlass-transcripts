@@ -28,6 +28,7 @@ And some other text
 <div style="height: 1500px"></div>
 </body>
 <script src="hglib.js"></script>
+<script crossorigin src="https://unpkg.com/higlass-sequence/dist/higlass-sequence.js"></script>
 <script>
   var viewConfig =
   {
@@ -88,13 +89,86 @@ And some other text
             "height": 90
           },
           {
-            "server": "http://54.88.112.8:8170/api/v1",
-            "tilesetUid": "Zxm6Y5h0Rgi0kqUTVqNu6A",
-            "uid": "BlekgyHTTImLDJmooDS8Pw",
+            "uid": "fastaex",
+            "type": "horizontal-sequence",
+            "data": {
+              "type": "fasta",
+              "fastaUrl": "https://aveit.s3.amazonaws.com/higlass/data/sequence/hg38.fa",
+              "faiUrl": "https://aveit.s3.amazonaws.com/higlass/data/sequence/hg38.fa.fai",
+              "chromSizesUrl": "https://aveit.s3.amazonaws.com/higlass/data/sequence/hg38.mod.chrom.sizes"
+            },
+            "options": {
+              "colorAggregationMode": "none",
+              "labelPosition": "topLeft",
+              "labelColor": "black",
+              "labelTextOpacity": 0.4,
+              "valueScaling": "linear",
+              "trackBorderWidth": 0,
+              "trackBorderColor": "white",
+              "name": "hg38",
+              "backgroundColor": "white",
+              "barBorder": true,
+              "barBorderColor": "white",
+              "sortLargestOnTop": true,
+              "extendedPreloading": false,
+              "colorScale": [ // A T G C N other
+                "#007FFF",
+                "#e8e500",
+                "#008000",
+                "#FF0038",
+                "#800080",
+                "#DCDCDC"
+              ]
+            },
+            "width": 768,
+            "height": 25
+          },
+          // {
+          //   "server": "http://54.88.112.8:8170/api/v1",
+          //   "tilesetUid": "Zxm6Y5h0Rgi0kqUTVqNu6A",
+          //   "uid": "BlekgyHTTImLDJmooDS8Pw",
+          //   "type": "horizontal-transcripts",
+          //   "options": {
+          //     "fontSize": 10,
+          //     "labelFontColor": "#333333",
+          //     "labelBackgroundColor": "#e9e9e9",
+          //     "labelPosition": "hidden",
+          //     "labelLeftMargin": 0,
+          //     "labelRightMargin": 0,
+          //     "labelTopMargin": 0,
+          //     "labelBottomMargin": 0,
+          //     "minHeight": 24,
+          //     "plusStrandColor": "blue",
+          //     "minusStrandColor": "red",
+          //     "trackBorderWidth": 0,
+          //     "trackBorderColor": "black",
+          //     "showMousePosition": false,
+          //     "mousePositionColor": "#000000",
+          //     "geneAnnotationHeight": 18,
+          //     "geneLabelPosition": "outside",
+          //     "geneStrandSpacing": 5,
+          //     "name": "transcripts-annotations",
+          //     "fontFamily": "Arial",
+          //     "maxTexts": 20,
+          //     "showToggleTranscriptsButton": true,
+          //     "sequenceData": {
+          //       "type": "fasta",
+          //       "fastaUrl": "https://aveit.s3.amazonaws.com/higlass/data/sequence/hg38.fa",
+          //       "faiUrl": "https://aveit.s3.amazonaws.com/higlass/data/sequence/hg38.fa.fai",
+          //       "chromSizesUrl": "https://aveit.s3.amazonaws.com/higlass/data/sequence/hg38.mod.chrom.sizes"
+          //     },
+          //   },
+          //   "width": 768,
+          //   "height": 358
+          // },
+          {
+            "server": "http://localhost:8001/api/v1",
+            "tilesetUid": "transcript_annotation_v1",
+            "uid": "transcript_annotation",
             "type": "horizontal-transcripts",
             "options": {
-              "fontSize": 10,
-              "labelFontColor": "#333333",
+              "fontSize": 9,
+              "labelFontColor": "#222222",
               "labelBackgroundColor": "#e9e9e9",
               "labelPosition": "hidden",
               "labelLeftMargin": 0,
@@ -108,13 +182,18 @@ And some other text
               "trackBorderColor": "black",
               "showMousePosition": false,
               "mousePositionColor": "#000000",
-              "geneAnnotationHeight": 18,
-              "geneLabelPosition": "outside",
-              "geneStrandSpacing": 5,
+              "transcriptHeight": 11,
+              "transcriptSpacing": 2,
               "name": "transcripts-annotations",
-              "fontFamily": "Arial",
+              "fontFamily": "Helvetica",
               "maxTexts": 20,
-              "showToggleTranscriptsButton": true
+              "showToggleTranscriptsButton": true,
+              "sequenceData": {
+                "type": "fasta",
+                "fastaUrl": "https://aveit.s3.amazonaws.com/higlass/data/sequence/hg38.fa",
+                "faiUrl": "https://aveit.s3.amazonaws.com/higlass/data/sequence/hg38.fa.fai",
+                "chromSizesUrl": "https://aveit.s3.amazonaws.com/higlass/data/sequence/hg38.mod.chrom.sizes"
+              },
             },
             "width": 768,
             "height": 358
@@ -144,20 +223,18 @@ And some other text
         "gallery": []
       },
       "initialXDomain": [
-        1915362.9340505325,
-        1927731.549879537
+        3021225.479926466,
+        3022555.514469052
       ],
       "initialYDomain": [
-        -2681153573.064038,
-        -2681153573.064038
+        -2681156982.8645544,
+        -2681155573.4848976
       ],
       "layout": {
         "w": 12,
         "h": 12,
         "x": 0,
-        "y": 0,
-        "moved": false,
-        "static": false
+        "y": 0
       },
       "uid": "AD_rIRKzRQKx3N8rbT9G4w"
     }
@@ -175,12 +252,301 @@ And some other text
     "locksDict": {}
   }
 }
+
+// var viewConfig2 =
+//   {
+//   "editable": true,
+//   "zoomFixed": false,
+//   "trackSourceServers": [
+//     "http://higlass.io/api/v1"
+//   ],
+//   "exportViewUrl": "/api/v1/viewconfs/",
+//   "views": [
+//     {
+//       "tracks": {
+//         "top": [
+          
+//           {
+//             "server": "http://higlass.io/api/v1",
+//             "tilesetUid": "NyITQvZsS_mOFNlz5C2LJg",
+//             "uid": "Lb1oLu6rSiaIFcdrouucQg",
+//             "type": "horizontal-chromosome-labels",
+//             "options": {
+//               "color": "#808080",
+//               "stroke": "#ffffff",
+//               "fontSize": 12,
+//               "fontIsLeftAligned": false,
+//               "showMousePosition": false,
+//               "mousePositionColor": "#000000"
+//             },
+//             "width": 768,
+//             "height": 30
+//           },
+//           {
+//             "server": "http://higlass.io/api/v1",
+//             "uid": "emptytrack",
+//             "type": "empty",
+//             "options": {
+//               "color": "#808080",
+//               "stroke": "#ffffff",
+//               "fontSize": 14,
+//               "fontIsLeftAligned": false,
+//               "showMousePosition": false,
+//               "mousePositionColor": "#000000"
+//             },
+//             "width": 768,
+//             "height": 100
+//           }
+//         ],
+//         "left": [],
+//         "center": [],
+//         "right": [],
+//         "bottom": [],
+//         "whole": [],
+//         "gallery": []
+//       },
+//       "initialXDomain": [
+//         3021225.479926466,
+//         3022555.514469052
+//       ],
+//       "initialYDomain": [
+//         -2681156982.8645544,
+//         -2681155573.4848976
+//       ],
+//       "layout": {
+//         "w": 12,
+//         "h": 12,
+//         "x": 0,
+//         "y": 0
+//       },
+//       "uid": "rtrrttrrt"
+//     }
+//   ],
+//   "zoomLocks": {
+//     "locksByViewUid": {},
+//     "locksDict": {}
+//   },
+//   "locationLocks": {
+//     "locksByViewUid": {},
+//     "locksDict": {}
+//   },
+//   "valueScaleLocks": {
+//     "locksByViewUid": {},
+//     "locksDict": {}
+//   }
+// }
+
+// var viewConfig3 =
+//   {
+//   "editable": true,
+//   "zoomFixed": false,
+//   "trackSourceServers": [
+//     "http://higlass.io/api/v1"
+//   ],
+//   "exportViewUrl": "/api/v1/viewconfs/",
+//   "views": [
+//     {
+//       "tracks": {
+//         "top": [
+          
+//           {
+//             "server": "http://higlass.io/api/v1",
+//             "tilesetUid": "NyITQvZsS_mOFNlz5C2LJg",
+//             "uid": "Lb1oLu6rSiaIFcdrouucQg",
+//             "type": "horizontal-chromosome-labels",
+//             "options": {
+//               "color": "#808080",
+//               "stroke": "#ffffff",
+//               "fontSize": 12,
+//               "fontIsLeftAligned": false,
+//               "showMousePosition": false,
+//               "mousePositionColor": "#000000"
+//             },
+//             "width": 768,
+//             "height": 30
+//           },
+//           {
+//             "server": "http://higlass.io/api/v1",
+//             "tilesetUid": "P0PLbQMwTYGy-5uPIQid7A",
+//             "uid": "TQAcqjtiSTyrm-p1Gfcvzg",
+//             "type": "horizontal-gene-annotations",
+//             "options": {
+//               "fontSize": 10,
+//               "labelColor": "black",
+//               "labelBackgroundColor": "#ffffff",
+//               "labelPosition": "hidden",
+//               "labelLeftMargin": 0,
+//               "labelRightMargin": 0,
+//               "labelTopMargin": 0,
+//               "labelBottomMargin": 0,
+//               "minHeight": 24,
+//               "plusStrandColor": "blue",
+//               "minusStrandColor": "red",
+//               "trackBorderWidth": 0,
+//               "trackBorderColor": "black",
+//               "showMousePosition": false,
+//               "mousePositionColor": "#000000",
+//               "geneAnnotationHeight": 16,
+//               "geneLabelPosition": "outside",
+//               "geneStrandSpacing": 4,
+//               "name": "Gene Annotations (hg38)"
+//             },
+//             "width": 768,
+//             "height": 90
+//           },
+//           {
+//             "uid": "fastaex",
+//             "type": "horizontal-sequence",
+//             "data": {
+//               "type": "fasta",
+//               "fastaUrl": "https://aveit.s3.amazonaws.com/higlass/data/sequence/hg38.fa",
+//               "faiUrl": "https://aveit.s3.amazonaws.com/higlass/data/sequence/hg38.fa.fai",
+//               "chromSizesUrl": "https://aveit.s3.amazonaws.com/higlass/data/sequence/hg38.mod.chrom.sizes"
+//             },
+//             "options": {
+//               "colorAggregationMode": "none",
+//               "labelPosition": "topLeft",
+//               "labelColor": "black",
+//               "labelTextOpacity": 0.4,
+//               "valueScaling": "linear",
+//               "trackBorderWidth": 0,
+//               "trackBorderColor": "white",
+//               "name": "hg38",
+//               "backgroundColor": "white",
+//               "barBorder": true,
+//               "barBorderColor": "white",
+//               "sortLargestOnTop": true,
+//               "extendedPreloading": false,
+//               "colorScale": [ // A T G C N other
+//                 "#007FFF",
+//                 "#e8e500",
+//                 "#008000",
+//                 "#FF0038",
+//                 "#800080",
+//                 "#DCDCDC"
+//               ]
+//             },
+//             "width": 768,
+//             "height": 25
+//           },
+//           {
+//             "server": "http://localhost:8001/api/v1",
+//             "tilesetUid": "transcript_annotation_v1",
+//             "uid": "transcript_annotation",
+//             "type": "horizontal-transcripts",
+//             "options": {
+//               "fontSize": 8,
+//               "labelFontColor": "#333333",
+//               "labelBackgroundColor": "#e9e9e9",
+//               "labelPosition": "hidden",
+//               "labelLeftMargin": 0,
+//               "labelRightMargin": 0,
+//               "labelTopMargin": 0,
+//               "labelBottomMargin": 0,
+//               "minHeight": 24,
+//               "plusStrandColor": "blue",
+//               "minusStrandColor": "red",
+//               "trackBorderWidth": 0,
+//               "trackBorderColor": "black",
+//               "showMousePosition": false,
+//               "mousePositionColor": "#000000",
+//               "transcriptHeight": 10,
+//               "transcriptSpacing": 4,
+//               "name": "transcripts-annotations",
+//               "fontFamily": "Arial",
+//               "maxTexts": 20,
+//               "showToggleTranscriptsButton": true,
+//               "sequenceData": {
+//                 "type": "fasta",
+//                 "fastaUrl": "https://aveit.s3.amazonaws.com/higlass/data/sequence/hg38.fa",
+//                 "faiUrl": "https://aveit.s3.amazonaws.com/higlass/data/sequence/hg38.fa.fai",
+//                 "chromSizesUrl": "https://aveit.s3.amazonaws.com/higlass/data/sequence/hg38.mod.chrom.sizes"
+//               },
+//             },
+//             "width": 768,
+//             "height": 358
+//           },
+          
+//           {
+//             "server": "http://higlass.io/api/v1",
+//             "uid": "emptytrack",
+//             "type": "empty",
+//             "options": {
+//               "color": "#808080",
+//               "stroke": "#ffffff",
+//               "fontSize": 14,
+//               "fontIsLeftAligned": false,
+//               "showMousePosition": false,
+//               "mousePositionColor": "#000000"
+//             },
+//             "width": 768,
+//             "height": 100
+//           }
+//         ],
+//         "left": [],
+//         "center": [],
+//         "right": [],
+//         "bottom": [],
+//         "whole": [],
+//         "gallery": []
+//       },
+//       "initialXDomain": [
+//         4021225.479926466,
+//         4022555.514469052
+//       ],
+//       "initialYDomain": [
+//         -2681156982.8645544,
+//         -2681155573.4848976
+//       ],
+//       "layout": {
+//         "w": 12,
+//         "h": 12,
+//         "x": 0,
+//         "y": 0
+//       },
+//       "uid": "AD_rIRKzRQKx3N8rbT9G4w"
+//     }
+//   ],
+//   "zoomLocks": {
+//     "locksByViewUid": {},
+//     "locksDict": {}
+//   },
+//   "locationLocks": {
+//     "locksByViewUid": {},
+//     "locksDict": {}
+//   },
+//   "valueScaleLocks": {
+//     "locksByViewUid": {},
+//     "locksDict": {}
+//   }
+// }
   // window.higlassApi;
-  window.hglib.viewer(
+  const hgApi = window.hglib.viewer(
     document.getElementById('development-demo'),
     viewConfig,
     {bounded: false}
   );
+
+  // hgApi.on('viewConfig', () => {
+  //   console.log('View Config changed');
+  // });
+  //console.log(hgApi);
+  // setTimeout()
+
+  
+//console.log(hgApi.setViewConfig(viewConfig2))
+  //function sayHi(viewConfig) {
+    // hgApi.setViewConfig(viewConfig).then((s)=>{
+    //   console.log("GOT IT")
+    // });
+  //}
+  
+  // setTimeout(()=>{
+  //   //console.log(hgApi.setViewConfig(viewConfig3));
+  //   hgApi.setViewConfig(viewConfig3).then(()=>{
+  //     console.log("GOT IT")
+  //   });
+  // }, 0);
 </script>
 <script>
   (function (i, s, o, g, r, a, m) {
