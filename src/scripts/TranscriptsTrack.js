@@ -41,8 +41,6 @@ const TranscritpsTrack = (HGC, ...args) => {
       flipText,
       fontSize,
       fontFamily,
-      plusStrandColor,
-      minusStrandColor,
       maxGeneEntries,
       maxFillerEntries,
       maxTexts,
@@ -78,11 +76,6 @@ const TranscritpsTrack = (HGC, ...args) => {
       const geneId = track.transcriptId(geneInfo);
       const strand = td.strand || geneInfo[5];
 
-      let fill = plusStrandColor;
-
-      if (strand === "-") {
-        fill = minusStrandColor;
-      }
       tile.textWidths = {};
       tile.textHeights = {};
 
@@ -92,7 +85,7 @@ const TranscritpsTrack = (HGC, ...args) => {
       const text = new HGC.libraries.PIXI.Text(geneName, {
         fontSize: `${fontSize}px`,
         fontFamily,
-        fill: colorToHex(track.options.labelFontColor),
+        fill: track.colors["labelFont"],
       });
       text.interactive = true;
 
@@ -116,17 +109,35 @@ const TranscritpsTrack = (HGC, ...args) => {
     graphics,
     txStart,
     txEnd,
-    exonStarts,
-    exonEnds,
+    geneInfo,
     chrOffset,
     centerY,
     height,
-    strand
+    strand,
+    alpha
   ) {
     const topY = centerY - height / 2;
 
-    const exonOffsetStarts = exonStarts.split(",").map((x) => +x + chrOffset);
-    const exonOffsetEnds = exonEnds.split(",").map((x) => +x + chrOffset);
+    const exonStarts = geneInfo[12];
+    const exonEnds = geneInfo[13];
+    const isProteinCoding = geneInfo[8] === "protein_coding";
+    const startCodonPos = isProteinCoding ? +geneInfo[14] : -1;
+    const stopCodonPos = isProteinCoding ? +geneInfo[15] : -1;
+
+    let exonOffsetStarts = exonStarts.split(",").map((x) => +x + chrOffset);
+    let exonOffsetEnds = exonEnds.split(",").map((x) => +x + chrOffset);
+
+    // Add start and stop codon to the exon list and distingush between UTR and coding reagion later
+    if(isProteinCoding){
+      exonOffsetStarts.push(startCodonPos, stopCodonPos);
+      exonOffsetEnds.push(startCodonPos, stopCodonPos);
+      //exonOffsetStarts = [... new Set(exonOffsetStarts.sort())];
+      exonOffsetStarts.sort()
+      //exonOffsetEnds = [... new Set(exonOffsetEnds.sort())];
+      exonOffsetEnds.sort()
+    }
+    //console.log(exonOffsetStarts);
+    //console.log(exonOffsetEnds);
 
     const xStartPos = track._xScale(txStart);
     const xEndPos = track._xScale(txEnd);
@@ -136,6 +147,7 @@ const TranscritpsTrack = (HGC, ...args) => {
 
     const polys = [];
 
+    graphics.beginFill(track.colors.intron, alpha);
     // draw the middle line
     let poly = [
       xStartPos,
@@ -151,7 +163,7 @@ const TranscritpsTrack = (HGC, ...args) => {
     polys.push(poly);
 
     // the distance between the mini-triangles
-    const triangleInterval = 2 * height;
+    const triangleInterval = 3 * height;
 
     // the first triangle (arrowhead) will be drawn in renderGeneSymbols
     for (
@@ -188,6 +200,27 @@ const TranscritpsTrack = (HGC, ...args) => {
       const exonStart = exonOffsetStarts[j];
       const exonEnd = exonOffsetEnds[j];
 
+      const isNonCodingOrUtr = 
+        !isProteinCoding ||
+        (strand === "+" && (
+        exonEnd <= startCodonPos ||
+        exonStart >= stopCodonPos
+        )) ||
+        (strand === "-" && (
+          exonStart >= startCodonPos ||
+          exonEnd <= stopCodonPos
+          ))
+      //console.log(isNonCodingOrUtr);
+
+      if(isNonCodingOrUtr){
+        graphics.beginFill(track.colors.utr, alpha);
+      }
+      else{
+        graphics.beginFill(track.colors[strand], alpha);
+      }
+      
+
+
       const xStart = track._xScale(exonStart);
       const localWidth = Math.max(
         1,
@@ -198,11 +231,10 @@ const TranscritpsTrack = (HGC, ...args) => {
       // at the start of the gene
       let minX = xStartPos;
       let maxX = xEndPos;
-      const pointerWidth = track.transcriptHeight / 2;
       let localPoly = null;
 
       if (strand === "+") {
-        maxX = xEndPos - pointerWidth;
+        maxX = xEndPos - track.transcriptHHeight;
         localPoly = [
           Math.min(xStart, maxX),
           topY,
@@ -216,7 +248,7 @@ const TranscritpsTrack = (HGC, ...args) => {
           topY,
         ];
       } else {
-        minX = xStartPos + pointerWidth;
+        minX = xStartPos + track.transcriptHHeight;
         localPoly = [
           Math.max(xStart, minX),
           topY,
@@ -233,10 +265,13 @@ const TranscritpsTrack = (HGC, ...args) => {
 
       polys.push(localPoly);
       graphics.drawPolygon(localPoly);
+     
     }
 
     return polys;
   }
+
+  
 
   /** Draw the arrowheads at the ends of genes */
   function renderGeneSymbols(
@@ -269,34 +304,33 @@ const TranscritpsTrack = (HGC, ...args) => {
       tile.rectGraphics.addChild(graphics);
 
       graphics.beginFill(color, alpha);
+      //graphics.beginFill(color, 1.0);
       graphics.interactive = true;
       graphics.buttonMode = true;
       //graphics.mouseup = (evt) => geneClickFunc(evt, track, gene);
 
-      const pointerWidth = track.transcriptHeight / 2;
-
       let poly = [];
       if (gene.strand === "+" || gene.fields[5] === "+") {
-        const pointerStart = Math.max(xStart, xEnd - pointerWidth);
-        const pointerEnd = pointerStart + pointerWidth;
+        const pointerStart = Math.max(xStart, xEnd - track.transcriptHHeight);
+        const pointerEnd = pointerStart + track.transcriptHHeight;
 
         poly = [
           pointerStart,
           topY,
           pointerEnd,
-          topY + track.transcriptHeight / 2,
+          topY + track.transcriptHHeight,
           pointerStart,
           topY + track.transcriptHeight,
         ];
       } else {
-        const pointerStart = Math.min(xEnd, xStart + pointerWidth);
-        const pointerEnd = pointerStart - pointerWidth;
+        const pointerStart = Math.min(xEnd, xStart + track.transcriptHHeight);
+        const pointerEnd = pointerStart - track.transcriptHHeight;
 
         poly = [
           pointerStart,
           topY,
           pointerEnd,
-          topY + track.transcriptHeight / 2,
+          topY + track.transcriptHHeight,
           pointerStart,
           topY + track.transcriptHeight,
         ];
@@ -333,8 +367,7 @@ const TranscritpsTrack = (HGC, ...args) => {
         centerYOffset += track.toggleButtonHeight;
       }
 
-      const exonStarts = geneInfo[12];
-      const exonEnds = geneInfo[13];
+      
       const graphics = new HGC.libraries.PIXI.Graphics();
       tile.rectGraphics.addChild(graphics);
 
@@ -349,12 +382,12 @@ const TranscritpsTrack = (HGC, ...args) => {
           graphics,
           gene.xStart,
           gene.xEnd,
-          exonStarts,
-          exonEnds,
+          geneInfo,
           chrOffset, // not used for now because we have just one chromosome
           centerY + centerYOffset,
           height,
-          gene.strand || gene.fields[5]
+          gene.strand || gene.fields[5],
+          alpha
         ).map((x) => [x, gene.strand, gene])
       );
 
@@ -480,7 +513,7 @@ const TranscritpsTrack = (HGC, ...args) => {
       fontSize: `10px`,
       fontFamily: track.options.fontFamily,
       fontWeight: "500",
-      fill: colorToHex("#000000"),
+      fill: track.colors["black"],
     });
     text.interactive = true;
     text.buttonMode = true;
@@ -544,11 +577,20 @@ const TranscritpsTrack = (HGC, ...args) => {
 
       this.transcriptSpacing = +this.options.transcriptSpacing;
       this.geneStrandHSpacing = this.transcriptSpacing / 2;
-      this.geneRectHHeight = this.transcriptHeight / 2;
+      this.transcriptHHeight = this.transcriptHeight / 2;
 
-      this.miniTriangleHeight = (this.transcriptHeight) / 3;
+      this.miniTriangleHeight = 4 * (this.transcriptHeight) / 9;
 
       this.toggleButtonHeight = 26;
+
+      this.colors = {};
+      this.colors["+"] = colorToHex(this.options.plusStrandColor);
+      this.colors["-"] = colorToHex(this.options.minusStrandColor);
+      this.colors["utr"] = colorToHex(this.options.utrColor);
+      this.colors["labelFont"] = colorToHex(this.options.labelFontColor);
+      this.colors["black"] = colorToHex("#000000");
+      this.colors["intron"] = colorToHex("#CFCFCF");
+      this.colors["labelBackground"] = colorToHex(this.options.labelBackgroundColor);
 
 
     }
@@ -558,8 +600,6 @@ const TranscritpsTrack = (HGC, ...args) => {
         flipText: this.flipText,
         fontSize: this.fontSize,
         fontFamily: this.options.fontFamily,
-        plusStrandColor: this.options.plusStrandColor,
-        minusStrandColor: this.options.minusStrandColor,
         maxGeneEntries: MAX_GENE_ENTRIES,
         maxFillerEntries: MAX_FILLER_ENTRIES,
         maxTexts: MAX_TEXTS,
@@ -876,12 +916,8 @@ const TranscritpsTrack = (HGC, ...args) => {
 
       if(this.areTranscriptsHidden) return;
 
-      const fill = {};
-      const FILLER_RECT_ALPHA = 0.3;
-      const GENE_ALPHA = 0.3;
 
-      fill["+"] = colorToHex(this.options.plusStrandColor);
-      fill["-"] = colorToHex(this.options.minusStrandColor);
+      const GENE_ALPHA = 1;
 
       // let plusFillerRects = tile.tileData.filter(
       //   td => td.type === 'filler' && td.strand === '+'
@@ -915,7 +951,7 @@ const TranscritpsTrack = (HGC, ...args) => {
         tile,
         tile.rectGraphics,
         this._xScale,
-        fill["+"],
+        this.colors["+"],
         GENE_ALPHA,
         strandCenterY,
         this.transcriptHeight,
@@ -926,7 +962,7 @@ const TranscritpsTrack = (HGC, ...args) => {
         tile,
         tile.rectGraphics,
         this._xScale,
-        fill["-"],
+        this.colors["-"],
         GENE_ALPHA,
         strandCenterY,
         this.transcriptHeight,
@@ -953,7 +989,7 @@ const TranscritpsTrack = (HGC, ...args) => {
         text.style = {
           fontSize: `${this.fontSize}px`,
           fontFamily: this.options.fontFamily,
-          fill: colorToHex(this.options.labelFontColor),
+          fill: this.colors["labelFont"],
         };
       }
       //this.draw();
@@ -997,7 +1033,7 @@ const TranscritpsTrack = (HGC, ...args) => {
           tile.textBgGraphics.clear();
           tile.textBgGraphics.beginFill(
             typeof this.options.labelBackgroundColor !== "undefined"
-              ? colorToHex(this.options.labelBackgroundColor)
+              ? this.colors["labelBackground"]
               : WHITE_HEX
           );
 
@@ -1249,6 +1285,7 @@ TranscritpsTrack.config = {
     "maxTexts",
     "plusStrandColor",
     "minusStrandColor",
+    "utrColor",
     "labelBackgroundColor",
     "labelFontColor",
     "showToggleTranscriptsButton",
@@ -1260,8 +1297,9 @@ TranscritpsTrack.config = {
     transcriptSpacing: 2,
     transcriptHeight: 11,
     maxTexts: 100,
-    plusStrandColor: "blue",
+    plusStrandColor: "#bdbfff",
     minusStrandColor: "red",
+    utrColor: "#C0EAAF",
     labelBackgroundColor: "#ffffff",
     labelFontColor: "#333333",
     showToggleTranscriptsButton: true
