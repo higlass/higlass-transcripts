@@ -163,8 +163,9 @@ const TranscritpsTrack = (HGC, ...args) => {
     polys.push(poly);
 
     // the distance between the mini-triangles
-    const triangleInterval = 3 * height;
-
+    const triangleInterval = 5 * height;
+    graphics.beginFill(track.colors.black, 0.3);
+    //graphics.beginFill(track.colors[strand], 1);
     // the first triangle (arrowhead) will be drawn in renderGeneSymbols
     for (
       let j = Math.max(track.position[0], xStartPos) + triangleInterval;
@@ -172,22 +173,42 @@ const TranscritpsTrack = (HGC, ...args) => {
       j += triangleInterval
     ) {
       if (strand === "+") {
+        // poly = [
+        //   j,
+        //   yMiddle - track.miniTriangleHeight,
+        //   j + track.miniTriangleHeight,
+        //   yMiddle,
+        //   j,
+        //   yMiddle + track.miniTriangleHeight,
+        // ];
         poly = [
           j,
           yMiddle - track.miniTriangleHeight,
-          j + track.miniTriangleHeight,
+          j + 3,
           yMiddle,
           j,
           yMiddle + track.miniTriangleHeight,
+          j - 2,
+          yMiddle + track.miniTriangleHeight,
+          j + 1,
+          yMiddle,
+          j - 2,
+          yMiddle - track.miniTriangleHeight,
         ];
       } else {
         poly = [
           j,
           yMiddle - track.miniTriangleHeight,
-          j - track.miniTriangleHeight,
+          j - 3,
           yMiddle,
           j,
           yMiddle + track.miniTriangleHeight,
+          j + 2,
+          yMiddle + track.miniTriangleHeight,
+          j - 1,
+          yMiddle,
+          j +2,
+          yMiddle - track.miniTriangleHeight,
         ];
       }
 
@@ -234,32 +255,50 @@ const TranscritpsTrack = (HGC, ...args) => {
       let localPoly = null;
 
       if (strand === "+") {
-        maxX = xEndPos - track.transcriptHHeight;
+        //maxX = xEndPos - 0*track.transcriptHHeight;
+        const rectStartX = Math.min(xStart, maxX);
+        const rectStartX2 = Math.max(rectStartX - 5, xStartPos);
+        const rectEndX = Math.min(xStart + localWidth, maxX);
+        const rectEndX2 = Math.max(rectEndX - 5, xStartPos);
+
         localPoly = [
-          Math.min(xStart, maxX),
+          rectStartX,
           topY,
-          Math.min(xStart + localWidth, maxX),
+          rectEndX2,
           topY,
-          Math.min(xStart + localWidth, maxX),
+          rectEndX,
+          topY + height / 2,
+          rectEndX2,
           topY + height,
-          Math.min(xStart, maxX),
+          rectStartX2,
           topY + height,
-          Math.min(xStart, maxX),
+          rectStartX,
+          topY + height / 2,
+          rectStartX2,
           topY,
         ];
       } else {
-        minX = xStartPos + track.transcriptHHeight;
+        //minX = xStartPos + track.transcriptHHeight;
+        const rectStartX = Math.max(xStart, minX);
+        const rectStartX2 = Math.min(rectStartX + 5, xEndPos);
+        const rectEndX = Math.max(xStart + localWidth, minX);
+        const rectEndX2 = Math.min(rectEndX + 5, xEndPos);
+
         localPoly = [
-          Math.max(xStart, minX),
+          rectStartX,
+          topY + height / 2,
+          rectStartX2,
           topY,
-          Math.max(xStart + localWidth, minX),
+          rectEndX2,
           topY,
-          Math.max(xStart + localWidth, minX),
+          rectEndX,
+          topY + height / 2,
+          rectEndX2,
           topY + height,
-          Math.max(xStart, minX),
+          rectStartX2,
           topY + height,
-          Math.max(xStart, minX),
-          topY,
+          rectStartX,
+          topY + height / 2,
         ];
       }
 
@@ -407,18 +446,18 @@ const TranscritpsTrack = (HGC, ...args) => {
     height,
     strandSpacing
   ) {
-    renderGeneSymbols(
-      genes,
-      track,
-      tile,
-      graphics,
-      xScale,
-      color,
-      alpha,
-      centerY,
-      height,
-      strandSpacing
-    );
+    // renderGeneSymbols(
+    //   genes,
+    //   track,
+    //   tile,
+    //   graphics,
+    //   xScale,
+    //   color,
+    //   alpha,
+    //   centerY,
+    //   height,
+    //   strandSpacing
+    // );
     renderGeneExons(
       genes,
       track,
