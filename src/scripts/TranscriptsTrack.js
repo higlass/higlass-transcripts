@@ -121,8 +121,8 @@ const TranscritpsTrack = (HGC, ...args) => {
     const exonStarts = geneInfo[12];
     const exonEnds = geneInfo[13];
     const isProteinCoding = geneInfo[8] === "protein_coding";
-    const startCodonPos = isProteinCoding ? +geneInfo[14] : -1;
-    const stopCodonPos = isProteinCoding ? +geneInfo[15] : -1;
+    const startCodonPos = isProteinCoding ? +geneInfo[14] + chrOffset : -1;
+    const stopCodonPos = isProteinCoding ? +geneInfo[15] + chrOffset : -1;
 
     let exonOffsetStarts = exonStarts.split(",").map((x) => +x + chrOffset);
     let exonOffsetEnds = exonEnds.split(",").map((x) => +x + chrOffset);
@@ -141,6 +141,7 @@ const TranscritpsTrack = (HGC, ...args) => {
 
     const xStartPos = track._xScale(txStart);
     const xEndPos = track._xScale(txEnd);
+    //console.log(txStart, xEndPos);
 
     const width = xEndPos - xStartPos;
     const yMiddle = centerY;
@@ -162,59 +163,69 @@ const TranscritpsTrack = (HGC, ...args) => {
     graphics.drawPolygon(poly);
     polys.push(poly);
 
-    // the distance between the mini-triangles
-    const triangleInterval = 5 * height;
-    graphics.beginFill(track.colors.black, 0.3);
-    //graphics.beginFill(track.colors[strand], 1);
-    // the first triangle (arrowhead) will be drawn in renderGeneSymbols
-    for (
-      let j = Math.max(track.position[0], xStartPos) + triangleInterval;
-      j < Math.min(track.position[0] + track.dimensions[0], xStartPos + width);
-      j += triangleInterval
-    ) {
-      if (strand === "+") {
-        // poly = [
-        //   j,
-        //   yMiddle - track.miniTriangleHeight,
-        //   j + track.miniTriangleHeight,
-        //   yMiddle,
-        //   j,
-        //   yMiddle + track.miniTriangleHeight,
-        // ];
-        poly = [
-          j,
-          yMiddle - track.miniTriangleHeight,
-          j + 3,
-          yMiddle,
-          j,
-          yMiddle + track.miniTriangleHeight,
-          j - 2,
-          yMiddle + track.miniTriangleHeight,
-          j + 1,
-          yMiddle,
-          j - 2,
-          yMiddle - track.miniTriangleHeight,
-        ];
-      } else {
-        poly = [
-          j,
-          yMiddle - track.miniTriangleHeight,
-          j - 3,
-          yMiddle,
-          j,
-          yMiddle + track.miniTriangleHeight,
-          j + 2,
-          yMiddle + track.miniTriangleHeight,
-          j - 1,
-          yMiddle,
-          j +2,
-          yMiddle - track.miniTriangleHeight,
-        ];
+    let isInnerExonCompletelyVisible = false;
+    for (let j = 2; j < exonOffsetStarts.length-2; j++) {
+      const exonStart = exonOffsetStarts[j];
+      const exonEnd = exonOffsetEnds[j];
+      const xScaleStart = track.xScale().domain()[0];
+      const xScaleEnd = track.xScale().domain()[1];
+      if(exonStart > xScaleStart && exonEnd < xScaleEnd){
+        isInnerExonCompletelyVisible = true;
+        break;
       }
-
-      polys.push(poly);
-      graphics.drawPolygon(poly);
     }
+
+    // Only show the directional cartes if no other inner exons are visible
+    if(!isInnerExonCompletelyVisible){
+      // the distance between the mini-triangles
+      const triangleInterval = 5 * height;
+      graphics.beginFill(track.colors.black, 0.3);
+      //graphics.beginFill(track.colors[strand], 1);
+      // the first triangle (arrowhead) will be drawn in renderGeneSymbols
+      for (
+        let j = Math.max(track.position[0] - track.dimensions[0], xStartPos) + triangleInterval;
+        j < Math.min(track.position[0] + 2*track.dimensions[0], xStartPos + width) - triangleInterval;
+        j += triangleInterval
+      ) {
+        if (strand === "+") {
+          poly = [
+            j,
+            yMiddle - track.miniTriangleHeight,
+            j + 3,
+            yMiddle,
+            j,
+            yMiddle + track.miniTriangleHeight,
+            j - 1,
+            yMiddle + track.miniTriangleHeight,
+            j + 2,
+            yMiddle,
+            j - 1,
+            yMiddle - track.miniTriangleHeight,
+          ];
+        } else {
+          poly = [
+            j,
+            yMiddle - track.miniTriangleHeight,
+            j - 3,
+            yMiddle,
+            j,
+            yMiddle + track.miniTriangleHeight,
+            j + 2,
+            yMiddle + track.miniTriangleHeight,
+            j - 1,
+            yMiddle,
+            j +2,
+            yMiddle - track.miniTriangleHeight,
+          ];
+        }
+
+        polys.push(poly);
+        graphics.drawPolygon(poly);
+      }
+    }
+
+    //console.log(exonOffsetStarts);
+    
 
     // draw the actual exons
     for (let j = 0; j < exonOffsetStarts.length; j++) {
@@ -307,79 +318,81 @@ const TranscritpsTrack = (HGC, ...args) => {
      
     }
 
+    
+
     return polys;
   }
 
   
 
-  /** Draw the arrowheads at the ends of genes */
-  function renderGeneSymbols(
-    genes,
-    track,
-    tile,
-    oldGraphics,
-    xScale,
-    color,
-    alpha,
-    centerY,
-    height,
-    strandSpacing
-  ) {
-    genes.forEach((gene) => {
-      const transcriptId = track.transcriptId(gene.fields);
-      let centerYOffset =
-        track.transcriptInfo[transcriptId].displayOrder *
-        (height + strandSpacing);
+  // /** Draw the arrowheads at the ends of genes */
+  // function renderGeneSymbols(
+  //   genes,
+  //   track,
+  //   tile,
+  //   oldGraphics,
+  //   xScale,
+  //   color,
+  //   alpha,
+  //   centerY,
+  //   height,
+  //   strandSpacing
+  // ) {
+  //   genes.forEach((gene) => {
+  //     const transcriptId = track.transcriptId(gene.fields);
+  //     let centerYOffset =
+  //       track.transcriptInfo[transcriptId].displayOrder *
+  //       (height + strandSpacing);
 
-      if (track.options.showToggleTranscriptsButton) {
-        centerYOffset += track.toggleButtonHeight;
-      }
+  //     if (track.options.showToggleTranscriptsButton) {
+  //       centerYOffset += track.toggleButtonHeight;
+  //     }
 
-      const topY = centerY + centerYOffset - height / 2;
-      const xStart = track._xScale(gene.xStart);
-      const xEnd = track._xScale(gene.xEnd);
+  //     const topY = centerY + centerYOffset - height / 2;
+  //     const xStart = track._xScale(gene.xStart);
+  //     const xEnd = track._xScale(gene.xEnd);
 
-      const graphics = new HGC.libraries.PIXI.Graphics();
-      tile.rectGraphics.addChild(graphics);
+  //     const graphics = new HGC.libraries.PIXI.Graphics();
+  //     tile.rectGraphics.addChild(graphics);
 
-      graphics.beginFill(color, alpha);
-      //graphics.beginFill(color, 1.0);
-      graphics.interactive = true;
-      graphics.buttonMode = true;
-      //graphics.mouseup = (evt) => geneClickFunc(evt, track, gene);
+  //     graphics.beginFill(color, alpha);
+  //     //graphics.beginFill(color, 1.0);
+  //     graphics.interactive = true;
+  //     graphics.buttonMode = true;
+  //     //graphics.mouseup = (evt) => geneClickFunc(evt, track, gene);
 
-      let poly = [];
-      if (gene.strand === "+" || gene.fields[5] === "+") {
-        const pointerStart = Math.max(xStart, xEnd - track.transcriptHHeight);
-        const pointerEnd = pointerStart + track.transcriptHHeight;
+  //     let poly = [];
+  //     if (gene.strand === "+" || gene.fields[5] === "+") {
+  //       const pointerStart = Math.max(xStart, xEnd - track.transcriptHHeight);
+  //       const pointerEnd = pointerStart + track.transcriptHHeight;
 
-        poly = [
-          pointerStart,
-          topY,
-          pointerEnd,
-          topY + track.transcriptHHeight,
-          pointerStart,
-          topY + track.transcriptHeight,
-        ];
-      } else {
-        const pointerStart = Math.min(xEnd, xStart + track.transcriptHHeight);
-        const pointerEnd = pointerStart - track.transcriptHHeight;
+  //       poly = [
+  //         pointerStart,
+  //         topY,
+  //         pointerEnd,
+  //         topY + track.transcriptHHeight,
+  //         pointerStart,
+  //         topY + track.transcriptHeight,
+  //       ];
+  //     } else {
+  //       const pointerStart = Math.min(xEnd, xStart + track.transcriptHHeight);
+  //       const pointerEnd = pointerStart - track.transcriptHHeight;
 
-        poly = [
-          pointerStart,
-          topY,
-          pointerEnd,
-          topY + track.transcriptHHeight,
-          pointerStart,
-          topY + track.transcriptHeight,
-        ];
-      }
+  //       poly = [
+  //         pointerStart,
+  //         topY,
+  //         pointerEnd,
+  //         topY + track.transcriptHHeight,
+  //         pointerStart,
+  //         topY + track.transcriptHeight,
+  //       ];
+  //     }
 
-      graphics.drawPolygon(poly);
-      tile.allRects.push([poly, gene.strand, gene]);
-      //centerYOffset = centerYOffset + height + strandSpacing;
-    });
-  }
+  //     graphics.drawPolygon(poly);
+  //     tile.allRects.push([poly, gene.strand, gene]);
+  //     //centerYOffset = centerYOffset + height + strandSpacing;
+  //   });
+  // }
 
   function renderGeneExons(
     genes,
@@ -1166,8 +1179,8 @@ const TranscritpsTrack = (HGC, ...args) => {
                 // Check the ones that are left of the current transcript
                 return ts[1] < this.transcriptInfo[geneId].txStart;
               }).forEach(ts => {
-                const endOfTranscript = this._xScale(ts[1]);
-                //console.log(text.position.x,endOfTranscript, tile.textWidths[geneId]);
+                const endOfTranscript = this._xScale(ts[1] + chrOffset);
+                //console.log(geneName, text.position.x,endOfTranscript, tile.textWidths[geneId]);
                 if(endOfTranscript > text.position.x - 4 * TEXT_MARGIN){
                   showText = false;
                 }
@@ -1248,7 +1261,7 @@ const TranscritpsTrack = (HGC, ...args) => {
     zoomed(newXScale, newYScale) {
       this.xScale(newXScale);
       this.yScale(newYScale);
-
+      
       this.refreshTiles();
 
       this.draw();
@@ -1337,7 +1350,7 @@ TranscritpsTrack.config = {
     transcriptHeight: 11,
     maxTexts: 100,
     plusStrandColor: "#bdbfff",
-    minusStrandColor: "red",
+    minusStrandColor: "#fabec2",
     utrColor: "#C0EAAF",
     labelBackgroundColor: "#ffffff",
     labelFontColor: "#333333",
