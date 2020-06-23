@@ -6,6 +6,7 @@ import { AMINO_ACIDS, CODONS } from './configs';
 import { TextStyle } from "pixi.js";
 import SequenceLoader from "./SequenceLoader";
 
+
 const TranscritpsTrack = (HGC, ...args) => {
   if (!new.target) {
     throw new Error(
@@ -17,7 +18,7 @@ const TranscritpsTrack = (HGC, ...args) => {
   const { tileProxy } = HGC.services;
 
   // Utils
-  const { colorToHex, trackUtils } = HGC.utils;
+  const { colorToHex, trackUtils, absToChr } = HGC.utils;
 
   // these are default values that are overwritten by the track's options
 
@@ -47,6 +48,10 @@ const TranscritpsTrack = (HGC, ...args) => {
     } = options;
     // create texts
     tile.texts = {};
+    tile.textWidths = {};
+    tile.textHeights = {};
+    
+    
 
     tile.rectGraphics = new HGC.libraries.PIXI.Graphics();
     tile.rectMaskGraphics = new HGC.libraries.PIXI.Graphics();
@@ -76,9 +81,6 @@ const TranscritpsTrack = (HGC, ...args) => {
       const geneId = track.transcriptId(geneInfo);
       const strand = td.strand || geneInfo[5];
 
-      tile.textWidths = {};
-      tile.textHeights = {};
-
       // don't draw texts for the latter entries in the tile
       if (i >= maxTexts) return;
 
@@ -98,18 +100,413 @@ const TranscritpsTrack = (HGC, ...args) => {
       tile.texts[geneId] = text; // index by geneName
       tile.texts[geneId].strand = strand;
       tile.textGraphics.addChild(text);
+
     });
 
+    loadAminoAcidData(track, tile);
+
+   
+
     tile.initialized = true;
+  }
+
+  // function getChromNameOfTile(track, tile){
+
+  //   const tileWidth = +track.tilesetInfo.max_width / 2 ** +track.zoomLevel;
+
+  //   // get the start of the tile
+  //   const tileId = +tile.tileId.split(".")[1];
+  //   let minX = track.tilesetInfo.min_pos[0] + tileId * tileWidth;
+
+  //   const chromSizes = track.tilesetInfo.chrom_sizes.split('\t').map(x=>+x);
+  //   const chromNames = track.tilesetInfo.chrom_names.split('\t');
+
+  //   const { chromLengths, cumPositions } = track.sequenceLoader.parseChromsizes(chromNames, chromSizes);
+
+  //   for (let i = 0; i < cumPositions.length; i++) {
+  //     const chromName = cumPositions[i].chr;
+  //     const chromStart = cumPositions[i].pos;
+  //     const chromEnd = cumPositions[i].pos + chromLengths[chromName];
+
+  //     if (chromStart <= minX && minX < chromEnd) {
+  //       return chromName;
+  //     }
+  //   }
+
+  // }
+
+  function exonIntersect(starts, ends, startCodonPos, stopCodonPos, evalStart, evalArr){
+    const intersection = [...evalArr];
+    //console.log("exonIntersect", starts, ends, evalStart, evalArr, intersection.length, evalStart+intersection.length);
+
+    //return [];
+
+    for(let i = 0; i < intersection.length; i++){
+
+      let found = false;
+      for(let numExon = 0; numExon < starts.length; numExon++){
+        const absPos = i+evalStart;
+        if(absPos >= startCodonPos && absPos >= starts[numExon] && absPos < ends[numExon] && absPos < stopCodonPos){
+          found = true;
+        }
+        //console.log(i,starts[numExon],ends[numExon],found);
+      }
+
+      if(!found){
+        intersection[i] = ".";
+      }
+
+    }
+    return intersection;
+  }
+
+  // Get the exon number, where pos falls in (in chr coordinates)
+  function getContainingExon(starts, ends, pos){
+
+    for(let numExon = 0; numExon < starts.length; numExon++){
+      if(pos >= starts[numExon] && pos < ends[numExon]){
+        return numExon;
+      }
+
+    }
+    return null;
+  }
+
+  function getNextExon(starts, ends, pos){
+
+    for(let numExon = 0; numExon < starts.length; numExon++){
+      if(pos < starts[numExon]){
+        return numExon;
+      }
+
+    }
+    return null;
+  }
+
+  function getTileSequenceOffset(exonStart, exonOffset, tilePos){
+    console.log(exonStart, exonOffset, tilePos);
+    const codonStart = exonStart + exonOffset;
+    const offset = (3 - ((tilePos - codonStart) % 3)) % 3;
+    return offset;
+  }
+
+  function getProteinSequenceForTile(seq, tileOffset, minX){
+    const codons = {};
+    const seqFiltered = seq.filter(nuc => nuc !== ".");
+    console.log(seq);
+    console.log(seqFiltered);
+    console.log("tileOffset", tileOffset);
+
+    for(let i = tileOffset; i < seq.length; i++){
+      const codon = {};
+
+    }
+
+    return codons;
+
+  }
+
+  function loadAminoAcidData(track, tile){
+
+    if(track.zoomLevel !== track.tilesetInfo.max_zoom || track.sequenceLoader === undefined){
+      return;
+    }
+
+    tile.aaInfo = {};
+    tile.aaInfo['exonOffsets'] = {};
+    tile.aaInfo['nucSequences'] = {};
+    tile.aaInfo['protSequences'] = {};
+    tile.aaInfo['tileOffset'] = 0;
+
+    const chromSizes = track.tilesetInfo.chrom_sizes.split('\t').map(x=>+x);
+    const chromNames = track.tilesetInfo.chrom_names.split('\t');
+
+    const chromInfo = track.sequenceLoader.parseChromsizes(chromNames, chromSizes)
+
+    //const chromName = getChromNameOfTile(track, tile);
+
+    const tileId = +tile.tileId.split(".")[1];
+    // Load an additional 3 nucleotides left of the tile
+
+    const tileSequence = track.sequenceLoader
+      .getTile(track.zoomLevel, tileId, track.tilesetInfo);
+
+    // get the bounds of the tile
+    const tileWidth = +track.tilesetInfo.max_width / 2 ** +track.zoomLevel;
+    const minX = track.tilesetInfo.min_pos[0] + tileId * tileWidth; // abs coordinates
+    const maxX = track.tilesetInfo.min_pos[0] + (tileId + 1) * tileWidth;
+
+    const minXloc = +absToChr(minX, chromInfo)[1];
+    const maxXloc = +absToChr(maxX, chromInfo)[1];
+
+    console.log("Tile bounds abs", minX, maxX);
+    console.log("Tile bounds chr", minXloc, maxXloc);
+
+    // Compute the offsets of each exon, so that we can get codons accross exons
+    tile.tileData.forEach(td => {
+      console.log(td);
+      const ts = td.fields;
+      const tsFormatted = track.formatTranscriptData(ts);
+      const transcriptId = tsFormatted.transcriptId;
+      const transcriptInfo = tsFormatted;
+
+      if(transcriptInfo["codingType"] !== "protein_coding") return;
+
+
+      const strand = transcriptInfo["strand"];
+      tile.aaInfo['exonOffsets'][transcriptId] = [];
+      tile.aaInfo['nucSequences'][transcriptId] = [];
+      tile.aaInfo['protSequences'][transcriptId] = [];
+
+      // we don't care about the chrOffset here, we can compute the offsets in chr coordinates
+      const exonStarts = transcriptInfo["exonStarts"];
+      const exonEnds = transcriptInfo["exonEnds"];
+      const startCodonPos = transcriptInfo["startCodonPos"];
+      const stopCodonPos = transcriptInfo["stopCodonPos"];
+
+      let accumulatedOffset = 0;
+      for(let i = 0; i < exonStarts.length; i++){
+        //const exonId = track.exonId(transcriptInfo, exonStarts[i], exonEnds[i]);
+        if(strand === "+"){
+          if(exonStarts[i] <= startCodonPos){
+            tile.aaInfo['exonOffsets'][transcriptId].push(0);
+          }else{
+            const numNucleotidesInPrevExon = exonEnds[i] - Math.max(exonStarts[i], startCodonPos);
+            const localOffset = 3 - (numNucleotidesInPrevExon % 3);
+            accumulatedOffset += localOffset;
+            const offset = (localOffset + accumulatedOffset) % 3;
+            
+            tile.aaInfo['exonOffsets'][transcriptId].push(offset);
+          }
+        }
+        else
+        {
+          
+        }
+
+        // //load data for each exon. Offsets are included, i.e., number of nucleotides is a multiple of 3
+        // const loadStart = exonStarts[i];
+        // const loadEnd = exonEnds[i]
+        
+        // We need the intersection of the tile with the coding part of the transcript.
+        // if(strand === "+"){
+        //   if(exonStarts[i] <= minXloc){
+            
+        //   }else{
+            
+        //   }
+        // }
+        
+      }
+
+      //track.sequenceLoader
+      //  .getSubSequence(chromName, loadStart, loadEnd)
+      tileSequence.then((values) => {
+        const seq = values[0];
+
+        const intersection = exonIntersect(exonStarts, exonEnds, startCodonPos, stopCodonPos,  minXloc, seq);
+        tile.aaInfo['nucSequences'][transcriptId].push(intersection);
+        
+        // if the tile starts within an exon, get the sequence offset for the tile
+        if(intersection[0] !== "."){
+
+          const containingExon = getContainingExon(exonStarts, exonEnds, minXloc);
+          const exonStart = Math.max(startCodonPos, exonStarts[containingExon]);
+          const exonOffset = tile.aaInfo['exonOffsets'][transcriptId][containingExon];
+          //console.log("containingExon", containingExon);
+          tile.aaInfo['tileOffset'] = getTileSequenceOffset(exonStart, exonOffset, minXloc);
+          
+        }
+        else{
+          const nextExon = getNextExon(exonStarts, exonEnds, minXloc);
+          tile.aaInfo['tileOffset'] = tile.aaInfo['exonOffsets'][transcriptId][nextExon];
+        }
+
+        tile.aaInfo['protSequences'][transcriptId] = getProteinSequenceForTile(intersection, tile.aaInfo['tileOffset'], minXloc);
+
+      });
+      
+    });
+    //console.log(chromName);
+    console.log(tile);
+    //console.log(track.tilesetInfo);
+
+    return;
+
+    // const tileId = +tile.tileId.split(".")[1];
+    // track.sequenceLoader
+    //   .getTile(track.zoomLevel, tileId, track.tilesetInfo)
+    //   .then((values) => {
+
+        
+        
+    //     const sequence =  values[0];
+    //     tile.aaInfo["sequence"] = sequence;
+
+    //     console.log(sequence);
+
+    //     const tileWidth = +track.tilesetInfo.max_width / 2 ** +track.zoomLevel ;
+
+    //     // get the bounds of the tile
+    //     const tileStart = track.tilesetInfo.min_pos[0] + tileId * tileWidth;// computed too many times - improve
+    //     const tileEnd = track.tilesetInfo.min_pos[0] + (tileId+1) * tileWidth;// computed too many times - improve
+    //     console.log(tileStart);
+
+
+    //     const visibleExons = []
+    //     tile.tileData.forEach(td => {
+    //       const geneInfo = td.fields;
+    //       //const geneName = geneInfo[3];
+    //       const geneId = track.transcriptId(geneInfo);
+    //       const strand = td.strand || geneInfo[5];
+
+    //       const exonStarts = td.fields[12].split(",").map((x) => +x);
+    //       const exonEnds = td.fields[13].split(",").map((x) => +x);
+          
+    //       const entry = {
+    //         transcriptName: td.fields[3],
+    //         transcriptId: td.fields[7],
+    //         exonStart: [],
+    //         exonEnd: [],
+    //       };
+    //       for(let i = 0; i < exonStarts.length; i++){
+    //         if(
+    //           (exonStarts[i] <= tileStart && exonEnds[i] >= tileStart) ||
+    //           (exonStarts[i] >= tileStart && exonEnds[i] <= tileEnd) ||
+    //           (exonStarts[i] <= tileEnd && exonEnds[i] >= tileEnd)
+    //           ){
+    //             entry.exonStart.push(exonStarts[i]);
+    //             entry.exonEnd.push(exonEnds[i]);
+    //         }
+    //       }
+    //       visibleExons.push(entry);
+          
+    //     });
+        
+    //     console.log("Visible exonds", visibleExons);
+
+    //   });
+    // return;
+
+    // tile.tileData.forEach((td, i) => {
+      
+    //   console.log(td);
+    // });
+    // return
+
+    // this.exonInformation = {};
+
+    // this.visibleAndFetchedTiles()
+    //   // tile hasn't been drawn properly because we likely got some
+    //   // bogus data from the server
+    //   .filter(tile => tile.drawnAtScale)
+    //   .forEach((tile) => {
+    //     tile.tileData.forEach((ts) => {
+    //       const tsId = this.transcriptId(ts.fields);
+    //       visibleTranscriptsObj[tsId] = ts.fields;
+    //     });
+    //   });
+
+
+    // if(this.zoomLevel === this.tilesetInfo.max_zoom && this.sequenceLoader !== undefined){
+    //   const tileId = +tile.tileId.split(".")[1];
+    //   this.sequenceLoader
+    //     .getTile(this.zoomLevel, tileId, this.tilesetInfo)
+    //     .then((values) => {
+
+          
+          
+    //       const sequence =  values[0];
+
+
+    //       //console.log(sequence);
+
+    //       const tileWidth = +this.tilesetInfo.max_width / 2 ** +this.zoomLevel ;
+
+    //       // get the bounds of the tile
+    //       const tileStart = this.tilesetInfo.min_pos[0] + tileId * tileWidth;// computed too many times - improve
+    //       const tileEnd = this.tilesetInfo.min_pos[0] + (tileId+1) * tileWidth;// computed too many times - improve
+    //       console.log(tileStart);
+
+    //       const visibleExons = []
+    //       tile.tileData.forEach(td => {
+    //         const exonStarts = td.fields[12].split(",").map((x) => +x);
+    //         const exonEnds = td.fields[13].split(",").map((x) => +x);
+            
+    //         const entry = {
+    //           transcriptName: td.fields[3],
+    //           transcriptId: td.fields[7],
+    //           exonStart: [],
+    //           exonEnd: [],
+    //         };
+    //         for(let i = 0; i < exonStarts.length; i++){
+    //           if(
+    //             (exonStarts[i] <= tileStart && exonEnds[i] >= tileStart) ||
+    //             (exonStarts[i] >= tileStart && exonEnds[i] <= tileEnd) ||
+    //             (exonStarts[i] <= tileEnd && exonEnds[i] >= tileEnd)
+    //             ){
+    //               entry.exonStart.push(exonStarts[i]);
+    //               entry.exonEnd.push(exonEnds[i]);
+    //           }
+    //         }
+    //         visibleExons.push(entry);
+            
+    //       });
+          
+    //       console.log("Visible exonds", visibleExons);
+
+    //     });
+      
+    // }
+      
+  }
+
+  function getCaret(
+    x,
+    yMiddle,
+    height,
+    strand
+  ){
+    if (strand === "+") {
+      const poly = [
+        x,
+        yMiddle - height,
+        x + 3,
+        yMiddle,
+        x,
+        yMiddle + height,
+        x - 1,
+        yMiddle + height,
+        x + 2,
+        yMiddle,
+        x - 1,
+        yMiddle - height,
+      ];
+      return poly;
+    } else {
+      const poly = [
+        x,
+        yMiddle - height,
+        x - 3,
+        yMiddle,
+        x,
+        yMiddle + height,
+        x + 2,
+        yMiddle + height,
+        x - 1,
+        yMiddle,
+        x +2,
+        yMiddle - height,
+      ];
+      return poly;
+    }
   }
 
   /** Draw the exons within a gene */
   function drawExons(
     track,
+    transcriptId,
     graphics,
-    txStart,
-    txEnd,
-    geneInfo,
     chrOffset,
     centerY,
     height,
@@ -118,22 +515,43 @@ const TranscritpsTrack = (HGC, ...args) => {
   ) {
     const topY = centerY - height / 2;
 
-    const exonStarts = geneInfo[12];
-    const exonEnds = geneInfo[13];
-    const isProteinCoding = geneInfo[8] === "protein_coding";
-    const startCodonPos = isProteinCoding ? +geneInfo[14] + chrOffset : -1;
-    const stopCodonPos = isProteinCoding ? +geneInfo[15] + chrOffset : -1;
+    //const exonStarts = geneInfo[12];
+    const exonStarts = track.transcriptInfo[transcriptId]["exonStarts"];
+    const exonEnds = track.transcriptInfo[transcriptId]["exonEnds"];
+    const isProteinCoding = track.transcriptInfo[transcriptId]["codingType"] === "protein_coding";
+    const startCodonPos = isProteinCoding ? track.transcriptInfo[transcriptId]["startCodonPos"] + chrOffset : -1;
+    const stopCodonPos = isProteinCoding ? track.transcriptInfo[transcriptId]["stopCodonPos"] + chrOffset : -1;
 
-    let exonOffsetStarts = exonStarts.split(",").map((x) => +x + chrOffset);
-    let exonOffsetEnds = exonEnds.split(",").map((x) => +x + chrOffset);
+    const txStart = track.transcriptInfo[transcriptId]["txStart"];
+    const txEnd = track.transcriptInfo[transcriptId]["txEnd"];
+
+    let exonOffsetStarts = exonStarts.map((x) => +x + chrOffset);
+    let exonOffsetEnds = exonEnds.map((x) => +x + chrOffset);
+
+    // if(strand === "+"){
+    //   exonOffsetStarts = exonStarts.map((x) => +x + chrOffset);
+    //   exonOffsetEnds = exonEnds.map((x) => +x + chrOffset);
+    // }
+    // else{
+    //   exonOffsetStarts = exonStarts.map((x) => +x + chrOffset - 1);
+    //   exonOffsetEnds = exonEnds.map((x) => +x + chrOffset);
+    // }
 
     // Add start and stop codon to the exon list and distingush between UTR and coding reagion later
     if(isProteinCoding){
+      // if(strand === "+"){
+      //   // stopCodonPos is the beginning of the stop codon, therefore we have to add 2
+      //   exonOffsetStarts.push(startCodonPos-1, stopCodonPos+2);
+      //   exonOffsetEnds.push(startCodonPos-1, stopCodonPos+2);
+      // }
+      // else{
+      //   exonOffsetStarts.push(startCodonPos+2, stopCodonPos-1);
+      //   exonOffsetEnds.push(startCodonPos+2, stopCodonPos-1);
+      // }
       exonOffsetStarts.push(startCodonPos, stopCodonPos);
       exonOffsetEnds.push(startCodonPos, stopCodonPos);
-      //exonOffsetStarts = [... new Set(exonOffsetStarts.sort())];
+      
       exonOffsetStarts.sort()
-      //exonOffsetEnds = [... new Set(exonOffsetEnds.sort())];
       exonOffsetEnds.sort()
     }
     //console.log(exonOffsetStarts);
@@ -175,50 +593,18 @@ const TranscritpsTrack = (HGC, ...args) => {
       }
     }
 
-    // Only show the directional cartes if no other inner exons are visible
+    // Only show the directional carets if no other inner exons are visible
     if(!isInnerExonCompletelyVisible){
       // the distance between the mini-triangles
       const triangleInterval = 5 * height;
       graphics.beginFill(track.colors.black, 0.3);
-      //graphics.beginFill(track.colors[strand], 1);
-      // the first triangle (arrowhead) will be drawn in renderGeneSymbols
+
       for (
         let j = Math.max(track.position[0] - track.dimensions[0], xStartPos) + triangleInterval;
         j < Math.min(track.position[0] + 2*track.dimensions[0], xStartPos + width) - triangleInterval;
         j += triangleInterval
       ) {
-        if (strand === "+") {
-          poly = [
-            j,
-            yMiddle - track.miniTriangleHeight,
-            j + 3,
-            yMiddle,
-            j,
-            yMiddle + track.miniTriangleHeight,
-            j - 1,
-            yMiddle + track.miniTriangleHeight,
-            j + 2,
-            yMiddle,
-            j - 1,
-            yMiddle - track.miniTriangleHeight,
-          ];
-        } else {
-          poly = [
-            j,
-            yMiddle - track.miniTriangleHeight,
-            j - 3,
-            yMiddle,
-            j,
-            yMiddle + track.miniTriangleHeight,
-            j + 2,
-            yMiddle + track.miniTriangleHeight,
-            j - 1,
-            yMiddle,
-            j +2,
-            yMiddle - track.miniTriangleHeight,
-          ];
-        }
-
+        poly = getCaret(j, yMiddle, track.miniTriangleHeight, strand);
         polys.push(poly);
         graphics.drawPolygon(poly);
       }
@@ -431,10 +817,8 @@ const TranscritpsTrack = (HGC, ...args) => {
       tile.allRects = tile.allRects.concat(
         drawExons(
           track,
+          transcriptId,
           graphics,
-          gene.xStart,
-          gene.xEnd,
-          geneInfo,
           chrOffset, // not used for now because we have just one chromosome
           centerY + centerYOffset,
           height,
@@ -613,10 +997,10 @@ const TranscritpsTrack = (HGC, ...args) => {
       }
 
       this.transcriptInfo = {};
-      this.exonInformation = {};
+      this.transcriptSequences = {};
+      //this.exonInformation = {};
 
-      console.log(this.sequenceLoader);
-      console.log("construct");
+      //console.log("construct");
       
       //console.log(context);
       //console.log(this);
@@ -658,7 +1042,7 @@ const TranscritpsTrack = (HGC, ...args) => {
       });
 
       console.log("init");
-      console.log(tile);
+      //console.log(tile);
       //console.log(this.tilesetInfo);
       //console.log(this.zoomLevel);
       //console.log(tile.tileId.split(".")[1]);
@@ -670,78 +1054,6 @@ const TranscritpsTrack = (HGC, ...args) => {
       //this.renderTile(tile);
     }
 
-    updateExonInformation(){
-
-      if(this.zoomLevel !== this.tilesetInfo.max_zoom || this.sequenceLoader === undefined){
-        return
-      }
-
-      this.exonInformation = {};
-
-      this.visibleAndFetchedTiles()
-        // tile hasn't been drawn properly because we likely got some
-        // bogus data from the server
-        .filter(tile => tile.drawnAtScale)
-        .forEach((tile) => {
-          tile.tileData.forEach((ts) => {
-            const tsId = this.transcriptId(ts.fields);
-            visibleTranscriptsObj[tsId] = ts.fields;
-          });
-        });
-
-
-      if(this.zoomLevel === this.tilesetInfo.max_zoom && this.sequenceLoader !== undefined){
-        const tileId = +tile.tileId.split(".")[1];
-        this.sequenceLoader
-          .getTile(this.zoomLevel, tileId, this.tilesetInfo)
-          .then((values) => {
-
-            
-            
-            const sequence =  values[0];
-
-
-            //console.log(sequence);
-
-            const tileWidth = +this.tilesetInfo.max_width / 2 ** +this.zoomLevel ;
-
-            // get the bounds of the tile
-            const tileStart = this.tilesetInfo.min_pos[0] + tileId * tileWidth;// computed too many times - improve
-            const tileEnd = this.tilesetInfo.min_pos[0] + (tileId+1) * tileWidth;// computed too many times - improve
-            console.log(tileStart);
-
-            const visibleExons = []
-            tile.tileData.forEach(td => {
-              const exonStarts = td.fields[12].split(",").map((x) => +x);
-              const exonEnds = td.fields[13].split(",").map((x) => +x);
-              
-              const entry = {
-                transcriptName: td.fields[3],
-                transcriptId: td.fields[7],
-                exonStart: [],
-                exonEnd: [],
-              };
-              for(let i = 0; i < exonStarts.length; i++){
-                if(
-                  (exonStarts[i] <= tileStart && exonEnds[i] >= tileStart) ||
-                  (exonStarts[i] >= tileStart && exonEnds[i] <= tileEnd) ||
-                  (exonStarts[i] <= tileEnd && exonEnds[i] >= tileEnd)
-                  ){
-                    entry.exonStart.push(exonStarts[i]);
-                    entry.exonEnd.push(exonEnds[i]);
-                }
-              }
-              visibleExons.push(entry);
-              
-            });
-            
-            console.log("Visible exonds", visibleExons);
-
-          });
-        
-      }
-        
-    }
 
     /** cleanup */
     destroyTile(tile) {
@@ -795,6 +1107,72 @@ const TranscritpsTrack = (HGC, ...args) => {
       //requestAnimationFrame(track.animate);
     };
 
+    // updateTranscriptSequence(){
+
+    //   if (!this.tilesetInfo) {
+    //     return;
+    //   }
+
+    //   if(this.zoomLevel !== this.tilesetInfo.max_zoom || this.sequenceLoader === undefined){
+    //     this.transcriptSequences = {};
+    //     return;
+    //   }
+      
+    //   for(const tsId in this.transcriptInfo) {
+    //     if(this.transcriptSequences[tsId] !== undefined){
+    //       continue;
+    //     }
+
+    //     const tsSeqObj = {};
+    //     const exonStarts = this.transcriptInfo[tsId]["exonStarts"];
+    //     const exonEnds = this.transcriptInfo[tsId]["exonEnds"];
+    //     const startCodonPos = this.transcriptInfo[tsId]["startCodonPos"];
+    //     const stopCodonPos = this.transcriptInfo[tsId]["stopCodonPos"];
+    //     const chromName = this.transcriptInfo[tsId]["chromName"];
+    //     console.log(exonStarts, exonEnds, startCodonPos, stopCodonPos);
+
+
+    //     this.sequenceLoader
+    //       .getSubSequence(chromName, exonStarts, exonEnds, startCodonPos, stopCodonPos)
+    //       .then((values) => {
+    //         tsSeqObj["nucleotideSeq"] = values;
+    //         console.log("Obtained SEQ", values);
+
+    //     });
+
+    //     // We load all the sequence data for the transcript
+
+    //     this.transcriptSequences[tsId] = tsSeqObj;
+    //   }
+
+    //   console.log("transcriptSequences", this.transcriptSequences);
+    // }
+
+    formatTranscriptData(ts){
+      const strand = ts[5];
+      const stopCodonPos = strand === "+" ? +ts[15]+2 : +ts[15];
+      const startCodonPos = strand === "+" ? +ts[14]-1 : +ts[14];
+      const exonStarts = ts[12].split(",").map((x) => +x - 1);
+      const exonEnds = ts[13].split(",").map((x) => +x);
+      const txStart = +ts[1] - 1;
+      const txEnd = +ts[2];
+
+      const result = {
+        transcriptId: this.transcriptId(ts),
+        transcriptName: ts[3],
+        txStart: txStart,
+        txEnd: txEnd,
+        strand: strand,
+        chromName: ts[0],
+        codingType: ts[8],
+        exonStarts: exonStarts,
+        exonEnds: exonEnds,
+        startCodonPos: startCodonPos,
+        stopCodonPos: stopCodonPos,
+      }
+      return result;
+    }
+
     updateTranscriptInfo() {
       // get all visible transcripts
       const visibleTranscriptsObj = {};
@@ -843,30 +1221,33 @@ const TranscritpsTrack = (HGC, ...args) => {
           }
           this.transcriptPositionInfo[dpo].push([+ts[1], +ts[2], ts[3]]);
 
+          const tsFormatted = this.formatTranscriptData(ts);
 
           const tInfo = {
-            transcriptId: this.transcriptId(ts),
-            transcriptName: ts[3],
-            txStart: +ts[1],
-            txEnd: +ts[2],
-            strand: ts[5],
+            transcriptId: tsFormatted.transcriptId,
+            transcriptName: tsFormatted.transcriptName,
+            txStart: tsFormatted.txStart,
+            txEnd: tsFormatted.txEnd,
+            strand: tsFormatted.strand,
+            chromName: tsFormatted.chromName,
+            codingType: tsFormatted.codingType,
+            exonStarts: tsFormatted.exonStarts,
+            exonEnds: tsFormatted.exonEnds,
+            startCodonPos: tsFormatted.startCodonPos,
+            stopCodonPos: tsFormatted.stopCodonPos,
             displayOrder: dpo,
-            //displayOrder: displayOrder,
           };
           this.transcriptInfo[tInfo.transcriptId] = tInfo;
           displayOrder += 1;
-          // this.numTranscriptRows = Math.max(
-          //   this.numTranscriptRows,
-          //   displayOrder
-          // );
+          
         });
 
       this.numTranscriptRows = Object.keys(this.transcriptPositionInfo).length;
 
       //console.log(visibleTranscripts);
-      //console.log(this.transcriptPositionInfo);
+      console.log("transcriptPositionInfo", this.transcriptPositionInfo);
 
-      //console.log(this.transcriptInfo);
+      console.log("transcriptInfo", this.transcriptInfo);
     }
 
     calculateTranscriptRowNumber(transcriptPositionInfo,txStart,txEnd){
@@ -937,6 +1318,7 @@ const TranscritpsTrack = (HGC, ...args) => {
       renderToggleBtn(this);
 
       this.updateTranscriptInfo();
+      //this.updateTranscriptSequence();
 
       // Adjusting the track height leads to a full rerender.
       // No need to rerender again
@@ -951,6 +1333,10 @@ const TranscritpsTrack = (HGC, ...args) => {
 
     transcriptId(geneInfo) {
       return `${geneInfo[7]}_${geneInfo[0]}_${geneInfo[1]}_${geneInfo[2]}`;
+    }
+
+    exonId(transcriptInfo, exonStart, exonEnd) {
+      return `${transcriptInfo[7]}_${transcriptInfo[0]}_${transcriptInfo[1]}_${transcriptInfo[2]}_${exonStart}_${exonEnd}`;
     }
 
     renderTile(tile) {
@@ -1127,8 +1513,8 @@ const TranscritpsTrack = (HGC, ...args) => {
 
             const TEXT_MARGIN = 3;
             const chrOffset = +td.chrOffset;
-            const txStart = +geneInfo[1] + chrOffset;
-            const txEnd = +geneInfo[2] + chrOffset;
+            const txStart = this.transcriptInfo[geneId]["txStart"] + chrOffset;
+            const txEnd = this.transcriptInfo[geneId]["txEnd"] + chrOffset;
             // //const txMiddle = (txStart + txEnd) / 2;
             // const txMiddle = Math.max(
             //   this.xScale().domain()[0],

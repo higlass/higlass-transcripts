@@ -107,6 +107,39 @@ class SequenceLoader {
   //   return tiles;
   // }
 
+  // We assume that we are looking for subsequences within a chromosome
+  getSubSequence(chromName, exonStarts, exonEnds, startCodonPos, stopCodonPos){
+
+    const recordPromises = [];
+
+    for(let i=0; i < exonStarts.length; i++){
+      const curStart = Math.min(Math.max(exonStarts[i], startCodonPos), exonEnds[i]);
+      const curEnd = Math.max(Math.min(exonEnds[i], stopCodonPos), exonStarts[i]);
+      if(curStart >= curEnd){
+        continue;
+      }
+
+      recordPromises.push(
+        this.sequenceFile
+          .getSequence(
+            chromName,
+            curStart,
+            curEnd
+          )
+          .then((value) => {
+            return value;
+          })
+      );
+    }
+    
+
+    return Promise.all(recordPromises).then((values) => {
+      return values.join('');
+    });
+
+  }
+
+  // get the sequence for a given tile with optionally an additional number of nuleodides in the beginning
   getTile(z, x, tsInfo) {
 
     const tileWidth = +tsInfo.max_width / 2 ** +z;
