@@ -140,12 +140,12 @@ class SequenceLoader {
   }
 
   // get the sequence for a given tile with optionally an additional number of nuleodides in the beginning
-  getTile(z, x, tsInfo) {
+  getTile(z, x, tsInfo, frontExcess = 0) {
 
     const tileWidth = +tsInfo.max_width / 2 ** +z;
 
     // get the bounds of the tile
-    let minX = tsInfo.min_pos[0] + x * tileWidth;
+    let minX = tsInfo.min_pos[0] + x * tileWidth - frontExcess;
     const maxX = tsInfo.min_pos[0] + (x + 1) * tileWidth;
 
     const chromSizes = tsInfo.chrom_sizes.split('\t').map(x=>+x);
