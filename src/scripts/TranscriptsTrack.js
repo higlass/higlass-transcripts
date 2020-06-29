@@ -57,15 +57,19 @@ const TranscritpsTrack = (HGC, ...args) => {
 
     tile.rectGraphics = new HGC.libraries.PIXI.Graphics();
     tile.rectMaskGraphics = new HGC.libraries.PIXI.Graphics();
-    tile.textBgGraphics = new HGC.libraries.PIXI.Graphics();
-    tile.textGraphics = new HGC.libraries.PIXI.Graphics();
-    tile.exonSeparatorGraphics = new HGC.libraries.PIXI.Graphics();
+    tile.codonSeparatorGraphics = new HGC.libraries.PIXI.Graphics();
+    tile.codonTextGraphics = new HGC.libraries.PIXI.Graphics();
+    tile.labelBgGraphics = new HGC.libraries.PIXI.Graphics();
+    tile.labelGraphics = new HGC.libraries.PIXI.Graphics();
+    
 
     tile.graphics.addChild(tile.rectGraphics);
     tile.graphics.addChild(tile.rectMaskGraphics);
-    tile.graphics.addChild(tile.textBgGraphics);
-    tile.graphics.addChild(tile.textGraphics);
-    tile.graphics.addChild(tile.exonSeparatorGraphics);
+    tile.graphics.addChild(tile.codonSeparatorGraphics);
+    tile.graphics.addChild(tile.codonTextGraphics);
+    tile.graphics.addChild(tile.labelBgGraphics);
+    tile.graphics.addChild(tile.labelGraphics);
+   
 
     tile.rectGraphics.mask = tile.rectMaskGraphics;
 
@@ -105,15 +109,17 @@ const TranscritpsTrack = (HGC, ...args) => {
 
       tile.texts[transcriptId] = text; // index by transcriptName
       tile.texts[transcriptId].strand = strand;
-      tile.textGraphics.addChild(text);
+      tile.labelGraphics.addChild(text);
 
     });
 
+    
     loadAminoAcidData(track, tile);
 
-   
+    setTimeout(function(){ track.draw(); }, 1000);
 
     tile.initialized = true;
+    
   }
 
   // function getChromNameOfTile(track, tile){
@@ -173,11 +179,13 @@ const TranscritpsTrack = (HGC, ...args) => {
     const minX = track.tilesetInfo.min_pos[0] + tileId * tileWidth; // abs coordinates
     const maxX = track.tilesetInfo.min_pos[0] + (tileId + 1) * tileWidth;
 
+
     const minXloc = +absToChr(minX, chromInfo)[1];
     const maxXloc = +absToChr(maxX, chromInfo)[1];
 
     console.log("Tile bounds abs", minX, maxX);
     console.log("Tile bounds chr", minXloc, maxXloc);
+    //console.log(absToChr(maxX, chromInfo))
 
     // Compute the offsets of each exon, so that we can get codons accross exons
     tile.tileData.forEach(td => {
@@ -186,6 +194,7 @@ const TranscritpsTrack = (HGC, ...args) => {
       const tsFormatted = track.formatTranscriptData(ts);
       const transcriptId = tsFormatted.transcriptId;
       const transcriptInfo = tsFormatted;
+
 
       if(transcriptInfo["codingType"] !== "protein_coding") return;
 
@@ -266,8 +275,9 @@ const TranscritpsTrack = (HGC, ...args) => {
 
           tile.aaInfo['tileOffset'] = nextExon !== null ? tile.aaInfo['exonOffsets'][transcriptId][nextExon.exon] : 0;
         }
+        //tile.aaInfo['aminoAcids'][transcriptId] = getAminoAcidsForTile(HGC, intersection, tile.aaInfo['tileOffset'], exonStarts, exonEnds, minXloc, frontExcessBases, {});
 
-        tile.aaInfo['aminoAcids'][transcriptId] = getAminoAcidsForTile(intersection, tile.aaInfo['tileOffset'], exonStarts, exonEnds, minXloc, frontExcessBases);
+        tile.aaInfo['aminoAcids'][transcriptId] = getAminoAcidsForTile(HGC, intersection, tile.aaInfo['tileOffset'], transcriptInfo.chromName, exonStarts, exonEnds, minXloc, frontExcessBases, track.pixiTexts, track.sequenceLoader);
 
       });
       
@@ -940,7 +950,7 @@ const TranscritpsTrack = (HGC, ...args) => {
           this.options.sequenceData.fastaUrl,
           this.options.sequenceData.faiUrl);
 
-        this.pixiTexts = initializePixiTexts(this.options.codonText, HGC);
+        this.pixiTexts = initializePixiTexts(this.options.codonText, HGC); // Promise
         console.log("this.pixiTexts", this.pixiTexts)
       }
 
@@ -966,6 +976,8 @@ const TranscritpsTrack = (HGC, ...args) => {
       this.miniTriangleHeight = 4 * (this.transcriptHeight) / 9;
 
       this.toggleButtonHeight = 26;
+      // controls when the abbreviated codon text are displayed
+      this.minCodonDistance = 15;
 
       this.options.codonText = {
         fontSize: `${this.fontSize * 2}px`,
@@ -1014,9 +1026,10 @@ const TranscritpsTrack = (HGC, ...args) => {
     destroyTile(tile) {
       tile.rectGraphics.destroy();
       tile.rectMaskGraphics.destroy();
-      tile.textGraphics.destroy();
-      tile.textBgGraphics.destroy();
-      tile.exonSeparatorGraphics.destroy();
+      tile.labelGraphics.destroy();
+      tile.labelBgGraphics.destroy();
+      tile.codonSeparatorGraphics.destroy();
+      tile.codonTextGraphics.destroy();
       tile.graphics.destroy();
     }
 
@@ -1286,6 +1299,7 @@ const TranscritpsTrack = (HGC, ...args) => {
       this.visibleAndFetchedTiles().forEach((tile) => {
         this.renderTile(tile);
       });
+
     }
 
     drawTile() {}
@@ -1309,7 +1323,7 @@ const TranscritpsTrack = (HGC, ...args) => {
       tile.drawnAtScale = this._xScale.copy();
       tile.rectGraphics.removeChildren();
       tile.rectGraphics.clear();
-      tile.textBgGraphics.clear();
+      tile.labelBgGraphics.clear();
 
       if(this.areTranscriptsHidden) return;
 
@@ -1409,22 +1423,108 @@ const TranscritpsTrack = (HGC, ...args) => {
 
     draw() {
 
-      
-
       trackUtils.stretchRects(this, [
         (x) => x.rectGraphics,
         (x) => x.rectMaskGraphics,
       ]);
 
-      this.drawTexts();
-      this.drawInExonSeparators();
+      this.drawLabels();
+      this.drawCodonSeparators();
+      this.drawCodonTexts();
+
+      // otherwise codons are not displayed on startup
+      requestAnimationFrame(this.animate);
+    }
+
+    drawCodonTexts(){
+
       
+      Object.values(this.fetchedTiles)
+        .filter((tile) => tile.drawnAtScale)
+        .forEach((tile) => {
+          
+          if (
+            !tile.initialized || 
+            !tile.aaInfo || 
+            !tile.aaInfo.aminoAcids){
+              console.log("not initialized")
+              return;
+            } 
+
+            
+          tile.codonTextGraphics.clear();
+          tile.codonTextGraphics.removeChildren();
+          // if individual codons are too close together, don't draw anything
+          let alpha = 1.0;
+          const codonWidth = this._xScale(3)-this._xScale(0);
+          if(codonWidth < this.minCodonDistance){
+            return;
+          }
+          else if (codonWidth < this.minCodonDistance + 3 && codonWidth >= this.minCodonDistance) {
+            // gracefully fade out
+            const alphaScale = scaleLinear()
+              .domain([this.minCodonDistance, this.minCodonDistance+3])
+              .range([0, 1])
+              .clamp(true);
+            alpha = alphaScale(codonWidth);
+
+          }
+
+          const graphics = tile.codonTextGraphics;
+          graphics.beginFill(WHITE_HEX);
+          graphics.alpha = alpha;
+
+
+          tile.tileData.forEach((td) => {
+            
+            const transcriptId = td.transcriptId;
+            if(!this.transcriptInfo[transcriptId] || !tile.aaInfo.aminoAcids[transcriptId]) return;
+
+            
+
+            const transcript = this.transcriptInfo[transcriptId];
+
+            const chrOffset = +td.chrOffset;
+            const codons = tile.aaInfo.aminoAcids[transcriptId];
+
+            let yMiddle =
+              transcript.displayOrder *
+              (this.transcriptHeight + this.transcriptSpacing) +
+              this.transcriptHeight / 2 +
+              this.transcriptSpacing / 2 - 1;
+
+            if (this.options.showToggleTranscriptsButton) {
+              yMiddle += this.toggleButtonHeight;
+            }
+            
+
+            for (var i=0, n=codons.length; i < n; ++i){
+              const codon = codons[i];
+              //const availableSpace = this._xScale((codon.posStart)) - this._xScale((codon.posEnd + 1));
+              //console.log(availableSpace);
+              if(codonWidth < this.minCodonDistance + 10){
+                const xMiddle = this._xScale((codon.posStart + codon.posEnd + 1) / 2 + chrOffset )  - codon.widthAbbrev / 2; //(codon.posStart + codon.posEnd + 1) / 2 + chrOffset
+                codon.spriteAbbrev.position.x = xMiddle;
+                codon.spriteAbbrev.position.y = yMiddle-5;
+                graphics.addChild(codon.spriteAbbrev);
+              }
+              else{
+                const xMiddle = this._xScale((codon.posStart + codon.posEnd + 1) / 2 + chrOffset )  - codon.width / 2 ; //(codon.posStart + codon.posEnd + 1) / 2 + chrOffset
+                codon.sprite.position.x = xMiddle;
+                codon.sprite.position.y = yMiddle-5;
+                graphics.addChild(codon.sprite);
+              }
+
+            }
+
+          });
+
+        });
+
     }
 
 
-    drawInExonSeparators(){
-
-      
+    drawCodonSeparators(){
 
       Object.values(this.fetchedTiles)
         .filter((tile) => tile.drawnAtScale)
@@ -1434,19 +1534,19 @@ const TranscritpsTrack = (HGC, ...args) => {
             !tile.aaInfo || 
             !tile.aaInfo.aminoAcids) return;
 
-          tile.exonSeparatorGraphics.clear();
+          tile.codonSeparatorGraphics.clear();
+          
           // if individual codons are too close together, don't draw anything
           let alpha = 1.0;
-          const minSeparationDistance = 15.0;
           const codonWidth = this._xScale(3)-this._xScale(0);
-          console.log(codonWidth);
-          if(codonWidth < minSeparationDistance){
+          //console.log(codonWidth);
+          if(codonWidth < this.minCodonDistance){
             return;
           }
-          else if (codonWidth < minSeparationDistance + 3 && codonWidth >= minSeparationDistance) {
+          else if (codonWidth < this.minCodonDistance + 3 && codonWidth >= this.minCodonDistance) {
             // gracefully fade out
             const alphaScale = scaleLinear()
-              .domain([minSeparationDistance, minSeparationDistance+3])
+              .domain([this.minCodonDistance, this.minCodonDistance+3])
               .range([0, 1])
               .clamp(true);
             alpha = alphaScale(codonWidth);
@@ -1454,7 +1554,7 @@ const TranscritpsTrack = (HGC, ...args) => {
           }
 
           
-          const graphics = tile.exonSeparatorGraphics;
+          const graphics = tile.codonSeparatorGraphics;
           graphics.beginFill(WHITE_HEX);
           graphics.alpha = alpha;
 
@@ -1485,6 +1585,7 @@ const TranscritpsTrack = (HGC, ...args) => {
             if (this.options.showToggleTranscriptsButton) {
               yMiddle += this.toggleButtonHeight;
             }
+
 
             let yMiddleAbove = yMiddle - this.transcriptHeight / 2;
             let yMiddleBelow = yMiddle + this.transcriptHeight / 2 ;
@@ -1533,9 +1634,6 @@ const TranscritpsTrack = (HGC, ...args) => {
 
             }
 
-            
-
-
           });
 
         });
@@ -1543,7 +1641,7 @@ const TranscritpsTrack = (HGC, ...args) => {
     }
 
 
-    drawTexts(){
+    drawLabels(){
 
       this.allTexts = [];
       this.allBoxes = [];
@@ -1554,8 +1652,8 @@ const TranscritpsTrack = (HGC, ...args) => {
         // bogus data from the server
         .filter((tile) => tile.drawnAtScale)
         .forEach((tile) => {
-          tile.textBgGraphics.clear();
-          tile.textBgGraphics.beginFill(
+          tile.labelBgGraphics.clear();
+          tile.labelBgGraphics.beginFill(
             typeof this.options.labelBackgroundColor !== "undefined"
               ? this.colors["labelBackground"]
               : WHITE_HEX
@@ -1676,7 +1774,7 @@ const TranscritpsTrack = (HGC, ...args) => {
                 strand: transcript.strand,
               });
 
-              allTiles.push(tile.textBgGraphics);
+              allTiles.push(tile.labelBgGraphics);
             } else {
               text.visible = false;
             }

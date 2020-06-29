@@ -139,6 +139,75 @@ class SequenceLoader {
 
   }
 
+  // We assume that we are looking for subsequences within a chromosome
+  getExcessNucleotides(chromName, start1, end1, start2, end2){
+
+    const recordPromises = [];
+
+    if(start1 !== null && end1 !== null){
+      recordPromises.push(
+        this.sequenceFile
+          .getSequence(
+            chromName,
+            start1,
+            end1
+          )
+          .then((value) => {
+            return {
+              leftOrRight: "left",
+              value: value
+            };
+          })
+      );
+    }
+
+    if(start2 !== null && end2 !== null){
+      recordPromises.push(
+        this.sequenceFile
+          .getSequence(
+            chromName,
+            start2,
+            end2
+          )
+          .then((value) => {
+            return {
+              leftOrRight: "right",
+              value: value
+            };
+          })
+      );
+    }
+
+    
+    return Promise.all(recordPromises).then((values) => {
+      return values;
+    });
+
+  }
+
+  // We assume that we are looking for subsequences within a chromosome
+  getSequence(chromName, start, end){
+
+    const recordPromises = [];
+
+    recordPromises.push(
+      this.sequenceFile
+        .getSequence(
+          chromName,
+          start,
+          end
+        )
+        .then((value) => {
+          return value;
+        })
+    );
+    
+    return Promise.all(recordPromises).then((values) => {
+      return values;
+    });
+
+  }
+
   // get the sequence for a given tile with optionally an additional number of nuleodides in the beginning
   getTile(z, x, tsInfo, frontExcess = 0) {
 
