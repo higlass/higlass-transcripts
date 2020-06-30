@@ -217,10 +217,12 @@ const TranscritpsTrack = (HGC, ...args) => {
           if(exonStarts[i] <= startCodonPos){
             tile.aaInfo['exonOffsets'][transcriptId].push(0);
           }else{
-            const numNucleotidesInPrevExon = exonEnds[i] - Math.max(exonStarts[i], startCodonPos);
-            const localOffset = 3 - (numNucleotidesInPrevExon % 3);
+            const numNucleotidesInPrevExon = exonEnds[i-1] - Math.max(exonStarts[i-1], startCodonPos);
+            //console.log("numNucleotidesInPrevExon",numNucleotidesInPrevExon)
+            const localOffset = (3-(numNucleotidesInPrevExon % 3)) % 3;
+            //console.log("localOffset",localOffset)
             accumulatedOffset += localOffset;
-            const offset = (localOffset + accumulatedOffset) % 3;
+            const offset = (accumulatedOffset) % 3;
             
             tile.aaInfo['exonOffsets'][transcriptId].push(offset);
           }
@@ -272,12 +274,18 @@ const TranscritpsTrack = (HGC, ...args) => {
         }
         else{
           const nextExon = getNextExon(exonStarts, exonEnds, minXloc);
+          console.log("nextExon",transcriptInfo["transcriptName"], minXloc, nextExon, exonStarts[nextExon.exon], exonEnds[nextExon.exon]);
+          console.log("nextExon", exonStarts, exonEnds);
+          console.log("nextExon", tile.aaInfo['exonOffsets'][transcriptId]);
 
           tile.aaInfo['tileOffset'] = nextExon !== null ? tile.aaInfo['exonOffsets'][transcriptId][nextExon.exon] : 0;
         }
         //tile.aaInfo['aminoAcids'][transcriptId] = getAminoAcidsForTile(HGC, intersection, tile.aaInfo['tileOffset'], exonStarts, exonEnds, minXloc, frontExcessBases, {});
 
-        tile.aaInfo['aminoAcids'][transcriptId] = getAminoAcidsForTile(HGC, intersection, tile.aaInfo['tileOffset'], transcriptInfo.chromName, exonStarts, exonEnds, minXloc, frontExcessBases, track.pixiTexts, track.sequenceLoader);
+        getAminoAcidsForTile(HGC, intersection, tile.aaInfo['tileOffset'], transcriptInfo.chromName, exonStarts, exonEnds, minXloc, frontExcessBases, track.pixiTexts, track.sequenceLoader)
+          .then((aa) => {
+            tile.aaInfo['aminoAcids'][transcriptId] = aa;
+          });
 
       });
       
@@ -536,34 +544,36 @@ const TranscritpsTrack = (HGC, ...args) => {
     graphics.drawPolygon(poly);
     polys.push(poly);
 
-    let isInnerExonCompletelyVisible = false;
-    for (let j = 2; j < exonOffsetStarts.length-2; j++) {
-      const exonStart = exonOffsetStarts[j];
-      const exonEnd = exonOffsetEnds[j];
-      const xScaleStart = track.xScale().domain()[0];
-      const xScaleEnd = track.xScale().domain()[1];
-      if(exonStart > xScaleStart && exonEnd < xScaleEnd){
-        isInnerExonCompletelyVisible = true;
-        break;
-      }
-    }
 
-    // Only show the directional carets if no other inner exons are visible
-    if(!isInnerExonCompletelyVisible){
-      // the distance between the mini-triangles
-      const triangleInterval = 5 * height;
-      graphics.beginFill(track.colors.black, 0.3);
+    // DIRECTIONAL CARETS ON MIDDLE LINE
+    // let isInnerExonCompletelyVisible = false;
+    // for (let j = 2; j < exonOffsetStarts.length-2; j++) {
+    //   const exonStart = exonOffsetStarts[j];
+    //   const exonEnd = exonOffsetEnds[j];
+    //   const xScaleStart = track.xScale().domain()[0];
+    //   const xScaleEnd = track.xScale().domain()[1];
+    //   if(exonStart > xScaleStart && exonEnd < xScaleEnd){
+    //     isInnerExonCompletelyVisible = true;
+    //     break;
+    //   }
+    // }
 
-      for (
-        let j = Math.max(track.position[0] - track.dimensions[0], xStartPos) + triangleInterval;
-        j < Math.min(track.position[0] + 2*track.dimensions[0], xStartPos + width) - triangleInterval;
-        j += triangleInterval
-      ) {
-        poly = getCaret(j, yMiddle, track.miniTriangleHeight, strand);
-        polys.push(poly);
-        graphics.drawPolygon(poly);
-      }
-    }
+    // // Only show the directional carets if no other inner exons are visible
+    // if(!isInnerExonCompletelyVisible){
+    //   // the distance between the mini-triangles
+    //   const triangleInterval = 5 * height;
+    //   graphics.beginFill(track.colors.black, 0.3);
+
+    //   for (
+    //     let j = Math.max(track.position[0] - track.dimensions[0], xStartPos) + triangleInterval;
+    //     j < Math.min(track.position[0] + 2*track.dimensions[0], xStartPos + width) - triangleInterval;
+    //     j += triangleInterval
+    //   ) {
+    //     poly = getCaret(j, yMiddle, track.miniTriangleHeight, strand);
+    //     polys.push(poly);
+    //     graphics.drawPolygon(poly);
+    //   }
+    // }
 
     //console.log(exonOffsetStarts);
     
@@ -1447,7 +1457,6 @@ const TranscritpsTrack = (HGC, ...args) => {
             !tile.initialized || 
             !tile.aaInfo || 
             !tile.aaInfo.aminoAcids){
-              console.log("not initialized")
               return;
             } 
 
@@ -1791,6 +1800,7 @@ const TranscritpsTrack = (HGC, ...args) => {
         if (text.text.visible && allBoxes[i] && allTiles[i]) {
           const [minX, minY, width, height] = allBoxes[i];
 
+          // Directional label
           allTiles[i].drawRect(minX, minY - height / 2, width, height);
         }
       });
