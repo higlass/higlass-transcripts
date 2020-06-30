@@ -26,6 +26,7 @@ const TranscritpsTrack = (HGC, ...args) => {
 
   const MAX_TEXTS = 100;
   const WHITE_HEX = colorToHex("#ffffff");
+  const DARKGREY_HEX = colorToHex("#999999");
 
   const MAX_GENE_ENTRIES = 50;
   const MAX_FILLER_ENTRIES = 5000;
@@ -1703,6 +1704,8 @@ const TranscritpsTrack = (HGC, ...args) => {
             }
 
             const TEXT_MARGIN = 3;
+            const CARET_MARGIN = 3;
+            const CARET_WIDTH = 5;
             const chrOffset = +td.chrOffset;
             const txStart = transcript["txStart"] + chrOffset;
             const txEnd = transcript["txEnd"] + chrOffset;
@@ -1729,13 +1732,21 @@ const TranscritpsTrack = (HGC, ...args) => {
 
 
             // take care of label positioning at start or end of transcripts
-            text.position.x = Math.max(
-              this._xScale(this.xScale().domain()[0]) + TEXT_MARGIN,
-              this._xScale(txStart) - tile.textWidths[transcriptId] - 2 * TEXT_MARGIN
-            );
+            if(transcript.strand === "+"){
+              text.position.x = Math.max(
+                this._xScale(this.xScale().domain()[0]) + TEXT_MARGIN,
+                this._xScale(txStart) - tile.textWidths[transcriptId] - 2 * TEXT_MARGIN - CARET_MARGIN
+              );
+            }else{
+              text.position.x = Math.max(
+                this._xScale(this.xScale().domain()[0]) + TEXT_MARGIN + CARET_WIDTH,
+                this._xScale(txStart) - tile.textWidths[transcriptId] - 2 * TEXT_MARGIN
+              );
+            }
+            
 
             const marginRight = transcript.strand === "+"
-            ? tile.textWidths[transcriptId] + this.transcriptHeight / 2 + 2 * TEXT_MARGIN
+            ? tile.textWidths[transcriptId] + this.transcriptHeight / 2 + 2 * TEXT_MARGIN - CARET_MARGIN
             : tile.textWidths[transcriptId] + TEXT_MARGIN
 
             text.position.x = Math.min(
@@ -1799,9 +1810,100 @@ const TranscritpsTrack = (HGC, ...args) => {
       allTexts.forEach((text, i) => {
         if (text.text.visible && allBoxes[i] && allTiles[i]) {
           const [minX, minY, width, height] = allBoxes[i];
+          const margin = 1;
+          
+          if(text.strand === "+"){
+            
+            allTiles[i].beginFill(DARKGREY_HEX);
 
-          // Directional label
-          allTiles[i].drawRect(minX, minY - height / 2, width, height);
+            // Directional label
+            let polyBorder = [
+              minX,
+              minY - height / 2,
+              minX + width,
+              minY - height / 2,
+              minX + width + 5,
+              minY,
+              minX + width,
+              minY + height / 2,
+              minX,
+              minY + height / 2,
+            ];
+
+            allTiles[i].drawPolygon(polyBorder);
+
+            allTiles[i].beginFill(this.colors["labelBackground"]);
+            
+            
+            // Directional label
+            let poly = [
+              minX + margin,
+              minY - height / 2 + margin,
+              minX + width,
+              minY - height / 2 + margin,
+              minX + width + 5 - margin,
+              minY,
+              minX + width,
+              minY + height / 2 - margin,
+              minX + margin,
+              minY + height / 2 - margin,
+            ];
+            allTiles[i].drawPolygon(poly);
+
+            
+          }else{
+            allTiles[i].beginFill(WHITE_HEX);
+
+            let polyBg = [
+              minX - 5,
+              minY - height / 2,
+              minX + width,
+              minY - height / 2,
+              minX + width,
+              minY + height / 2,
+              minX - 5,
+              minY + height / 2,
+            ];
+
+            allTiles[i].drawPolygon(polyBg);
+
+            allTiles[i].beginFill(DARKGREY_HEX);
+            // Directional label
+            let polyBorder = [
+              minX - 5,
+              minY,
+              minX,
+              minY - height / 2,
+              minX + width,
+              minY - height / 2,
+              minX + width,
+              minY + height / 2,
+              minX,
+              minY + height / 2,
+            ];
+
+            allTiles[i].drawPolygon(polyBorder);
+
+            allTiles[i].beginFill(this.colors["labelBackground"]);
+            
+            // Directional label
+            let poly = [
+              minX - 5 + margin,
+              minY,
+              minX,
+              minY - height / 2 + margin,
+              minX + width - margin,
+              minY - height / 2 + margin,
+              minX + width - margin,
+              minY + height / 2 - margin,
+              minX,
+              minY + height / 2 - margin,
+            ];
+            allTiles[i].drawPolygon(poly);
+          }
+          
+          
+          //allTiles[i].drawRect(minX, minY - height / 2, width, height);
         }
       });
     }
