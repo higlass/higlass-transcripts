@@ -1,22 +1,20 @@
-import { AMINO_ACIDS, CODONS } from '../configs';
+import { AMINO_ACIDS, CODONS } from "../configs";
 
-
-export function initializePixiTexts(textOptions, HGC){
-
+export function initializePixiTexts(textOptions, HGC) {
   const codonTexts = {};
   const sequences = Object.keys(AMINO_ACIDS).concat(Object.keys(CODONS));
 
   Object.keys(CODONS).forEach((sequence) => {
     const codonText = {};
     codonText["sequence"] = sequence;
-   
-    console.log(sequence, CODONS[sequence].nameAbbrev);
+
+    //console.log(sequence, CODONS[sequence].nameAbbrev);
     const pixiText = new HGC.libraries.PIXI.Text(
       CODONS[sequence].nameAbbrev,
       textOptions
     );
     pixiText.updateText();
-    
+
     // We get sharper edges if we scale down a large text
     // This holds the 3 letter AA
     codonText["width"] = pixiText.getBounds().width / 2;
@@ -34,15 +32,13 @@ export function initializePixiTexts(textOptions, HGC){
     codonText["widthAbbrev"] = pixiTextAbbrev.getBounds().width / 2;
     codonText["heightAbbrev"] = pixiTextAbbrev.getBounds().height / 2;
     codonText["textureAbbrev"] = pixiTextAbbrev.texture;
-    
 
     codonTexts[sequence] = codonText;
   });
   return codonTexts;
 }
 
-export function initializePixiTextsOLD(textOptions, HGC){
-
+export function initializePixiTextsOLD(textOptions, HGC) {
   const codonTexts = {};
   const sequences = Object.keys(AMINO_ACIDS).concat(Object.keys(CODONS));
 
@@ -50,24 +46,20 @@ export function initializePixiTextsOLD(textOptions, HGC){
     const codonText = {};
     codonText["sequence"] = sequence;
     let aaText = "";
-    if(CODONS[sequence]){
+    if (CODONS[sequence]) {
       aaText = CODONS[sequence].nameAbbrev;
-    }else if(AMINO_ACIDS[sequence]){
+    } else if (AMINO_ACIDS[sequence]) {
       aaText = sequence;
     }
     console.log(sequence, aaText);
-    const pixiText = new HGC.libraries.PIXI.Text(
-      aaText,
-      textOptions
-    );
+    const pixiText = new HGC.libraries.PIXI.Text(aaText, textOptions);
     pixiText.updateText();
-    
+
     // We get sharper edges if we scale down a large text
     // This holds the 3 letter AA
     codonText["width"] = pixiText.getBounds().width / 2;
     codonText["height"] = pixiText.getBounds().height / 2;
     codonText["texture"] = pixiText.texture;
-    
 
     codonTexts[sequence] = codonText;
   });
@@ -75,74 +67,134 @@ export function initializePixiTextsOLD(textOptions, HGC){
 }
 
 // Get the exon number, where pos falls in (in chr coordinates)
-export function getContainingExon(starts, ends, pos){
-
-  for(let numExon = 0; numExon < starts.length; numExon++){
-    if(pos >= starts[numExon] && pos < ends[numExon]){
+export function getContainingExon(starts, ends, pos) {
+  for (let numExon = 0; numExon < starts.length; numExon++) {
+    if (pos >= starts[numExon] && pos < ends[numExon]) {
       const result = {
         exon: numExon,
         start: starts[numExon],
-        end: ends[numExon]
-      }
+        end: ends[numExon],
+      };
       return result;
     }
-
   }
   return null;
 }
 
-export function getTileSequenceOffset(exonStart, exonOffset, tilePos){
+export function getTileSequenceOffset(exonStart, exonOffset, tilePos) {
   //console.log(exonStart, exonOffset, tilePos);
   const codonStart = exonStart + exonOffset;
   const offset = (3 - ((tilePos - codonStart) % 3)) % 3;
   return offset;
 }
 
-export function exonIntersect(starts, ends, startCodonPos, stopCodonPos, evalStart, evalArr){
+export function exonIntersect(
+  starts,
+  ends,
+  startCodonPos,
+  stopCodonPos,
+  evalStart,
+  evalArr
+) {
   const intersection = [...evalArr];
-  //console.log("exonIntersect", starts, ends, evalStart, evalArr, intersection.length, evalStart+intersection.length);
+  // console.log(
+  //   "exonIntersect",
+  //   starts,
+  //   ends,
+  //   evalStart,
+  //   evalArr,
+  //   intersection.length,
+  //   evalStart + intersection.length
+  // );
 
   //return [];
 
-  for(let i = 0; i < intersection.length; i++){
-
+  for (let i = 0; i < intersection.length; i++) {
     let found = false;
-    for(let numExon = 0; numExon < starts.length; numExon++){
-      const absPos = i+evalStart;
-      if(absPos >= startCodonPos && absPos >= starts[numExon] && absPos < ends[numExon] && absPos < stopCodonPos){
+    for (let numExon = 0; numExon < starts.length; numExon++) {
+      const absPos = i + evalStart;
+      if (
+        absPos >= startCodonPos &&
+        absPos >= starts[numExon] &&
+        absPos < ends[numExon] &&
+        absPos < stopCodonPos
+      ) {
         found = true;
       }
       //console.log(i,starts[numExon],ends[numExon],found);
     }
 
-    if(!found){
+    if (!found) {
       intersection[i] = ".";
     }
-
   }
   return intersection;
 }
 
-export function getNextExon(starts, ends, pos){
-
-  for(let numExon = 0; numExon < starts.length; numExon++){
-    if(pos < starts[numExon]){
+export function getNextExon(starts, ends, pos) {
+  for (let numExon = 0; numExon < starts.length; numExon++) {
+    if (pos < starts[numExon]) {
       const result = {
         exon: numExon,
         start: starts[numExon],
-        end: ends[numExon]
-      }
+        end: ends[numExon],
+      };
       return result;
     }
-
   }
   return null;
 }
 
-export function getAminoAcidsForTile(HGC, seq, tileOffset, chromName, exonStarts, exonEnds, minX, frontExcessBases, pixiTexts, sequenceLoader){
+export function reverseChrCoord(pos, chromeSize) {
+  if (Array.isArray(pos)) {
+    const newPos = [];
+    for (let i = 0; i < pos.length; i++) {
+      newPos.push(chromeSize - pos[i]);
+    }
+    return newPos.sort();
+  } else {
+    return chromeSize - pos;
+  }
+}
+
+export function getMinusStrandSeq(seq) {
+  const seqSplit = seq.split("");
+  const newSeq = [];
+  for (let i = seqSplit.length - 1; i >= 0; i--) {
+    if (seqSplit[i].toUpperCase() === "A") {
+      newSeq.push("T");
+    } else if (seqSplit[i].toUpperCase() === "T") {
+      newSeq.push("A");
+    } else if (seqSplit[i].toUpperCase() === "C") {
+      newSeq.push("G");
+    } else if (seqSplit[i].toUpperCase() === "G") {
+      newSeq.push("C");
+    } else {
+      console.warn(
+        "Couldn't convert " + seqSplit[i] + " in minus strand conversion"
+      );
+    }
+  }
+
+  return newSeq.join("");
+}
+
+export function getAminoAcidsForTile(
+  HGC,
+  seq,
+  tileOffset,
+  chromName,
+  chromLength,
+  strand,
+  exonStarts,
+  exonEnds,
+  minX,
+  pixiTexts,
+  sequenceLoader
+) {
   //console.log("PIXITEXTS", pixiTexts);
   const codons = [];
-  let seqFiltered = seq.filter(nuc => nuc !== ".");
+  let seqFiltered = seq.filter((nuc) => nuc !== ".");
   // We cut off the tile offset and last bases, so that we get a length that is a multiple of 3
   //seqFiltered = seqFiltered.slice(tileOffset);
   //seqFiltered = seqFiltered.slice(0, seqFiltered.length - (seqFiltered.length % 3));
@@ -153,8 +205,8 @@ export function getAminoAcidsForTile(HGC, seq, tileOffset, chromName, exonStarts
 
   // Get the first non .
   let firstNonPoint = 0;
-  for(let i = 0; i < seq.length; i++){
-    if(seq[i] !== "."){
+  for (let i = 0; i < seq.length; i++) {
+    if (seq[i] !== ".") {
       firstNonPoint = i;
       break;
     }
@@ -162,96 +214,114 @@ export function getAminoAcidsForTile(HGC, seq, tileOffset, chromName, exonStarts
 
   // Get the last non .
   let lastNonPoint = 0;
-  for(let i = seq.length-1; i > 0; i--){
-    if(seq[i] !== "."){
+  for (let i = seq.length - 1; i > 0; i--) {
+    if (seq[i] !== ".") {
       lastNonPoint = i;
       break;
     }
   }
 
-  //console.log("firstNonPoint", firstNonPoint, "lastNonPoint", lastNonPoint)
+  console.log("firstNonPoint", firstNonPoint, "lastNonPoint", lastNonPoint, minX)
 
   let reqNucLeftStart = null;
   let reqNucLeftEnd = null;
   // load the first codon
-  if(tileOffset > 0){
+  if (tileOffset > 0) {
     // The required nucleotides are in a previous exon
-    if(firstNonPoint > 0){
-      const currentExonNum =  getContainingExon(exonStarts, exonEnds, minX + firstNonPoint).exon;
+    if (firstNonPoint > 0) {
+      const currentExonNum = getContainingExon(
+        exonStarts,
+        exonEnds,
+        minX + firstNonPoint
+      ).exon;
+      //console.log("currentExonNum", currentExonNum)
       const previousExon = currentExonNum - 1;
       const previousExonEnd = exonEnds[previousExon];
-      reqNucLeftStart = previousExonEnd-(3-tileOffset);
+      reqNucLeftStart = previousExonEnd - (3 - tileOffset);
       reqNucLeftEnd = previousExonEnd;
       //requiredNucleotidesStartPromise = sequenceLoader.getSequence(chromName, previousExonEnd-(3-tileOffset), previousExonEnd);
     }
     // The required nucleotides are in the same exon
-    else{
-      reqNucLeftStart = minX-(3-tileOffset);
+    else {
+      reqNucLeftStart = minX - (3 - tileOffset);
       reqNucLeftEnd = minX;
       //requiredNucleotidesStartPromise = sequenceLoader.getSequence(chromName, minX-(3-tileOffset), minX);
       //console.log("ADDITIONSEQ ", requiredNucleotides, minX, firstNonPoint, minX-(3-tileOffset), minX);
     }
-    
   }
 
   let reqNucRightStart = null;
   let reqNucRightEnd = null;
   // load the last codon
-  if( (seqFiltered.length + 3 - tileOffset) % 3 !== 0){
-
+  if ((seqFiltered.length + 3 - tileOffset) % 3 !== 0) {
     // how many we still need to get
     const numToGet = 3 - ((seqFiltered.length - tileOffset) % 3);
 
     // We have to get the required nucleotides from the same exon
-    if(lastNonPoint === seq.length-1){
-      reqNucRightStart = minX+seq.length;
-      reqNucRightEnd = minX+seq.length+numToGet;
+    if (lastNonPoint === seq.length - 1) {
+      reqNucRightStart = minX + seq.length;
+      reqNucRightEnd = minX + seq.length + numToGet;
       //requiredNucleotidesEndPromise = sequenceLoader.getSequence(chromName, minX+seq.length, minX+seq.length+numToGet);
       //console.log("ADDITIONSEQEND ", requiredNucleotides, minX+seq.length, minX+seq.length+numToGet);
     }
     // We have to get the required nucleotides from the next exon
-    else{
-      const currentExonNum =  getContainingExon(exonStarts, exonEnds, minX + lastNonPoint).exon;
+    else {
+      const currentExonNum = getContainingExon(
+        exonStarts,
+        exonEnds,
+        minX + lastNonPoint
+      ).exon;
       const nextExon = currentExonNum + 1;
       const nextExonStart = exonStarts[nextExon];
       reqNucRightStart = nextExonStart;
-      reqNucRightEnd = nextExonStart+numToGet;
+      reqNucRightEnd = nextExonStart + numToGet;
       //console.log("ADDITIONSEQEND2 ", currentExonNum, nextExon, nextExonStart, reqNucRightStart, reqNucRightEnd);
       //requiredNucleotidesEndPromise = sequenceLoader.getSequence(chromName, nextExonStart, nextExonStart+numToGet);
     }
-    
   }
 
-  const excessNucleotides = 
-  sequenceLoader.getExcessNucleotides(chromName, reqNucLeftStart, reqNucLeftEnd, reqNucRightStart, reqNucRightEnd)
+  // console.log(chromName,
+  //       chromLength,
+  //       strand,
+  //       reqNucLeftStart,
+  //       reqNucLeftEnd,
+  //       reqNucRightStart,
+  //       reqNucRightEnd)
+  const excessNucleotides = sequenceLoader
+    .getExcessNucleotides(
+      chromName,
+      chromLength,
+      strand,
+      reqNucLeftStart,
+      reqNucLeftEnd,
+      reqNucRightStart,
+      reqNucRightEnd
+    )
     .then((nucleotides) => {
       let seqMod = seq;
+      console.log("AAAAA",nucleotides);
       const initialCodonSeq = [];
       const finalCodonSeq = [];
 
-      for(let i=0; i<nucleotides.length; i++){
-        if(nucleotides[i].leftOrRight === "left"){
-
-          const leftNucleotides = nucleotides[i].value.split('');
+      for (let i = 0; i < nucleotides.length; i++) {
+        if (nucleotides[i].leftOrRight === "left") {
+          const leftNucleotides = nucleotides[i].value.split("");
           //console.log("leftNucleotides", leftNucleotides);
-          for(let j=0; j<leftNucleotides.length; j++){
+          for (let j = 0; j < leftNucleotides.length; j++) {
             initialCodonSeq.push({
               pos: reqNucLeftStart - minX + j,
-              letter: leftNucleotides[j]
+              letter: leftNucleotides[j],
             });
           }
-          
-        }
-        else if(nucleotides[i].leftOrRight === "right"){
-          const rightNucleotides = nucleotides[i].value.split('');
+        } else if (nucleotides[i].leftOrRight === "right") {
+          const rightNucleotides = nucleotides[i].value.split("");
           //console.log("rightNucleotides", rightNucleotides);
-          for(let j=0; j<rightNucleotides.length; j++){
+          for (let j = 0; j < rightNucleotides.length; j++) {
             finalCodonSeq.push({
               pos: reqNucRightStart - minX + j,
-              letter: rightNucleotides[j]
+              letter: rightNucleotides[j],
             });
           }
-
         }
         // Just add the additional Nuleotides to the right of the seqence. getFormattedCodons
         //will take care of it
@@ -266,73 +336,118 @@ export function getAminoAcidsForTile(HGC, seq, tileOffset, chromName, exonStarts
       //console.log("RETURNeED PROMISE ",nucleotides);
 
       //const codons = getFormattedCodons([], finalCodonSeq, firstNonPoint + tileOffset, seq, pixiTexts, HGC, minX  );
-      const codons = getFormattedCodons(initialCodonSeq, finalCodonSeq, firstNonPoint, seq, pixiTexts, HGC, minX  );
+      const codons = getFormattedCodons(
+        initialCodonSeq,
+        finalCodonSeq,
+        firstNonPoint,
+        seq,
+        pixiTexts,
+        strand,
+        chromLength,
+        HGC,
+        minX
+      );
       //console.log(codons);
       return codons;
     });
 
-  return excessNucleotides;
 
+  return excessNucleotides;
 }
 
-function getFormattedCodons(initialCodonSeq, finalCodonSeq, seqStart, seq, pixiTexts, HGC, minX ){
-
+function getFormattedCodons(
+  initialCodonSeq,
+  finalCodonSeq,
+  seqStart,
+  seq,
+  pixiTexts,
+  strand,
+  chromLength,
+  HGC,
+  minX
+) {
   let codons = [];
   let codonSeq = initialCodonSeq;
-  for(let i = seqStart; i < seq.length; i++){
+  for (let i = seqStart; i < seq.length; i++) {
     // We are fillig up a codon sequence array. When the length reaches 3, register it and reset.
-    if(seq[i] === "."){
+    if (seq[i] === ".") {
       continue;
     }
     //console.log(seq[i]);
     codonSeq.push({
       pos: i,
-      letter: seq[i]
+      letter: seq[i],
     });
 
-    if(codonSeq.length === 3){
-      codons = codons.concat(formatCodonSeqence(codonSeq, minX, pixiTexts, HGC));
+    if (codonSeq.length === 3) {
+      codons = codons.concat(
+        formatCodonSeqence(codonSeq, minX, pixiTexts, strand, chromLength, HGC)
+      );
       codonSeq = [];
     }
-    
   }
   //console.log("codonSeq",codonSeq, "finalCodonSeq", finalCodonSeq)
-  if(finalCodonSeq.length > 0 &&  codonSeq.length > 0){
+  if (finalCodonSeq.length > 0 && codonSeq.length > 0) {
     codonSeq = codonSeq.concat(finalCodonSeq);
-    if(codonSeq.length === 3){
-      codons = codons.concat(formatCodonSeqence(codonSeq, minX, pixiTexts, HGC));
+    if (codonSeq.length === 3) {
+      codons = codons.concat(
+        formatCodonSeqence(codonSeq, minX, pixiTexts, strand, chromLength, HGC)
+      );
     }
   }
 
   return codons;
 }
 
-
-function formatCodonSeqence(codonSeq, minX, pixiTexts, HGC){
-
-  const codons = []
-  const codonStr = codonSeq[0].letter.toUpperCase() + codonSeq[1].letter.toUpperCase() + codonSeq[2].letter.toUpperCase();
+function formatCodonSeqence(
+  codonSeq,
+  minX,
+  pixiTexts,
+  strand,
+  chromLength,
+  HGC
+) {
+  const codons = [];
+  const codonStr =
+    codonSeq[0].letter.toUpperCase() +
+    codonSeq[1].letter.toUpperCase() +
+    codonSeq[2].letter.toUpperCase();
   const aa = CODONS[codonStr];
-  if(!aa){
-    console.warn("Codon " + codonStr + " does not exist. Position: " + codonSeq[0].pos);
+  if (!aa) {
+    console.warn(
+      "Codon " + codonStr + " does not exist. Position: " + codonSeq[0].pos
+    );
     return codons;
   }
 
-  
-
   // if they are consecutive
-  if( (codonSeq[2].pos - codonSeq[1].pos === 1) && (codonSeq[1].pos - codonSeq[0].pos === 1)){
-    const pixiSprite = new HGC.libraries.PIXI.Sprite(pixiTexts[codonStr].texture);
+  if (
+    codonSeq[2].pos - codonSeq[1].pos === 1 &&
+    codonSeq[1].pos - codonSeq[0].pos === 1
+  ) {
+    const pixiSprite = new HGC.libraries.PIXI.Sprite(
+      pixiTexts[codonStr].texture
+    );
     pixiSprite.width = pixiTexts[codonStr].width;
     pixiSprite.height = pixiTexts[codonStr].height;
 
-    const pixiSpriteAbbrev = new HGC.libraries.PIXI.Sprite(pixiTexts[codonStr].textureAbbrev);
+    const pixiSpriteAbbrev = new HGC.libraries.PIXI.Sprite(
+      pixiTexts[codonStr].textureAbbrev
+    );
     pixiSpriteAbbrev.width = pixiTexts[codonStr].widthAbbrev;
     pixiSpriteAbbrev.height = pixiTexts[codonStr].heightAbbrev;
+    const posStart =
+      strand === "+"
+        ? minX + codonSeq[0].pos
+        : reverseChrCoord(minX + codonSeq[2].pos + 1, chromLength);
+    const posEnd =
+      strand === "+"
+        ? minX + codonSeq[2].pos
+        : reverseChrCoord(minX + codonSeq[0].pos + 1, chromLength);
 
     const codon = {
-      posStart: minX + codonSeq[0].pos,
-      posEnd: minX + codonSeq[2].pos,
+      posStart: posStart,
+      posEnd: posEnd,
       aminoAcid: aa,
       width: pixiSprite.width,
       height: pixiSprite.height,
@@ -344,18 +459,31 @@ function formatCodonSeqence(codonSeq, minX, pixiTexts, HGC){
     codons.push(codon);
   }
   // Split after first nucleotide
-  else if((codonSeq[1].pos - codonSeq[0].pos > 1)){
-    const pixiSprite1 = new HGC.libraries.PIXI.Sprite(pixiTexts[codonStr].texture);
+  else if (codonSeq[1].pos - codonSeq[0].pos > 1) {
+    const pixiSprite1 = new HGC.libraries.PIXI.Sprite(
+      pixiTexts[codonStr].texture
+    );
     pixiSprite1.width = pixiTexts[codonStr].width;
     pixiSprite1.height = pixiTexts[codonStr].height;
 
-    const pixiSpriteAbbrev1 = new HGC.libraries.PIXI.Sprite(pixiTexts[codonStr].textureAbbrev);
+    const pixiSpriteAbbrev1 = new HGC.libraries.PIXI.Sprite(
+      pixiTexts[codonStr].textureAbbrev
+    );
     pixiSpriteAbbrev1.width = pixiTexts[codonStr].widthAbbrev;
     pixiSpriteAbbrev1.height = pixiTexts[codonStr].heightAbbrev;
 
+    const posStart1 =
+      strand === "+"
+        ? minX + codonSeq[0].pos
+        : reverseChrCoord(minX + codonSeq[0].pos + 1, chromLength);
+    const posEnd1 =
+      strand === "+"
+        ? minX + codonSeq[0].pos
+        : reverseChrCoord(minX + codonSeq[0].pos + 1, chromLength);
+
     const codon1 = {
-      posStart: minX + codonSeq[0].pos,
-      posEnd: minX + codonSeq[0].pos,
+      posStart: posStart1,
+      posEnd: posEnd1,
       aminoAcid: aa,
       width: pixiSpriteAbbrev1.width,
       height: pixiSpriteAbbrev1.height,
@@ -366,17 +494,30 @@ function formatCodonSeqence(codonSeq, minX, pixiTexts, HGC){
     };
     codons.push(codon1);
 
-    const pixiSprite2 = new HGC.libraries.PIXI.Sprite(pixiTexts[codonStr].texture);
+    const pixiSprite2 = new HGC.libraries.PIXI.Sprite(
+      pixiTexts[codonStr].texture
+    );
     pixiSprite2.width = pixiTexts[codonStr].width;
     pixiSprite2.height = pixiTexts[codonStr].height;
 
-    const pixiSpriteAbbrev2 = new HGC.libraries.PIXI.Sprite(pixiTexts[codonStr].textureAbbrev);
+    const pixiSpriteAbbrev2 = new HGC.libraries.PIXI.Sprite(
+      pixiTexts[codonStr].textureAbbrev
+    );
     pixiSpriteAbbrev2.width = pixiTexts[codonStr].widthAbbrev;
     pixiSpriteAbbrev2.height = pixiTexts[codonStr].heightAbbrev;
 
+    const posStart2 =
+      strand === "+"
+        ? minX + codonSeq[1].pos
+        : reverseChrCoord(minX + codonSeq[2].pos + 1, chromLength);
+    const posEnd2 =
+      strand === "+"
+        ? minX + codonSeq[2].pos
+        : reverseChrCoord(minX + codonSeq[1].pos + 1, chromLength);
+
     const codon2 = {
-      posStart: minX + codonSeq[1].pos,
-      posEnd: minX + codonSeq[2].pos,
+      posStart: posStart2,
+      posEnd: posEnd2,
       aminoAcid: aa,
       width: pixiSprite2.width,
       height: pixiSprite2.height,
@@ -388,20 +529,33 @@ function formatCodonSeqence(codonSeq, minX, pixiTexts, HGC){
     codons.push(codon2);
   }
   // Split after first nucleotide
-  else if((codonSeq[2].pos - codonSeq[1].pos > 1)){
-    const pixiSprite1 = new HGC.libraries.PIXI.Sprite(pixiTexts[codonStr].texture);
+  else if (codonSeq[2].pos - codonSeq[1].pos > 1) {
+    const pixiSprite1 = new HGC.libraries.PIXI.Sprite(
+      pixiTexts[codonStr].texture
+    );
     pixiSprite1.width = pixiTexts[codonStr].width;
     pixiSprite1.height = pixiTexts[codonStr].height;
 
-    const pixiSpriteAbbrev1 = new HGC.libraries.PIXI.Sprite(pixiTexts[codonStr].textureAbbrev);
+    const pixiSpriteAbbrev1 = new HGC.libraries.PIXI.Sprite(
+      pixiTexts[codonStr].textureAbbrev
+    );
     pixiSpriteAbbrev1.width = pixiTexts[codonStr].widthAbbrev;
     pixiSpriteAbbrev1.height = pixiTexts[codonStr].heightAbbrev;
 
+    const posStart1 =
+      strand === "+"
+        ? minX + codonSeq[0].pos
+        : reverseChrCoord(minX + codonSeq[1].pos + 1, chromLength);
+    const posEnd1 =
+      strand === "+"
+        ? minX + codonSeq[1].pos
+        : reverseChrCoord(minX + codonSeq[0].pos + 1, chromLength);
+
     const codon1 = {
-      posStart: minX + codonSeq[0].pos,
-      posEnd: minX + codonSeq[1].pos,
+      posStart: posStart1,
+      posEnd: posEnd1,
       aminoAcid: aa,
-      width: pixiSprite1.width, 
+      width: pixiSprite1.width,
       height: pixiSprite1.height,
       sprite: pixiSprite1,
       widthAbbrev: pixiSpriteAbbrev1.width,
@@ -410,17 +564,30 @@ function formatCodonSeqence(codonSeq, minX, pixiTexts, HGC){
     };
     codons.push(codon1);
 
-    const pixiSprite2 = new HGC.libraries.PIXI.Sprite(pixiTexts[codonStr].texture);
+    const pixiSprite2 = new HGC.libraries.PIXI.Sprite(
+      pixiTexts[codonStr].texture
+    );
     pixiSprite2.width = pixiTexts[codonStr].width;
     pixiSprite2.height = pixiTexts[codonStr].height;
 
-    const pixiSpriteAbbrev2 = new HGC.libraries.PIXI.Sprite(pixiTexts[codonStr].textureAbbrev);
+    const pixiSpriteAbbrev2 = new HGC.libraries.PIXI.Sprite(
+      pixiTexts[codonStr].textureAbbrev
+    );
     pixiSpriteAbbrev2.width = pixiTexts[codonStr].widthAbbrev;
     pixiSpriteAbbrev2.height = pixiTexts[codonStr].heightAbbrev;
 
+    const posStart2 =
+      strand === "+"
+        ? minX + codonSeq[2].pos
+        : reverseChrCoord(minX + codonSeq[2].pos + 1, chromLength);
+    const posEnd2 =
+      strand === "+"
+        ? minX + codonSeq[2].pos
+        : reverseChrCoord(minX + codonSeq[2].pos + 1, chromLength);
+
     const codon2 = {
-      posStart: minX + codonSeq[2].pos,
-      posEnd: minX + codonSeq[2].pos,
+      posStart: posStart2,
+      posEnd: posEnd2,
       aminoAcid: aa,
       width: pixiSpriteAbbrev2.width, // Display the short version by default
       height: pixiSpriteAbbrev2.height,
@@ -433,9 +600,6 @@ function formatCodonSeqence(codonSeq, minX, pixiTexts, HGC){
   }
 
   return codons;
-
-
 }
-
 
 export default getContainingExon;

@@ -1,4 +1,8 @@
 import { RemoteFile } from "generic-filehandle";
+import {
+  reverseChrCoord,
+  getMinusStrandSeq,
+} from "./utils";
 
 class SequenceLoader {
   //constructor(dataConfig) {
@@ -140,39 +144,51 @@ class SequenceLoader {
   }
 
   // We assume that we are looking for subsequences within a chromosome
-  getExcessNucleotides(chromName, start1, end1, start2, end2){
+  getExcessNucleotides(chromName, chromLength, strand, start1, end1, start2, end2){
+
+    let start1used = start1;
+    let end1used = end1;
+    let start2used = start2;
+    let end2used = end2;
+
+    if(strand === "-"){
+      start1used = reverseChrCoord(end1, chromLength);
+      end1used = reverseChrCoord(start1, chromLength);
+      start2used = reverseChrCoord(end2, chromLength);;
+      end2used = reverseChrCoord(start2, chromLength);;
+    }
 
     const recordPromises = [];
 
-    if(start1 !== null && end1 !== null){
+    if(start1used !== null && end1used !== null){
       recordPromises.push(
         this.sequenceFile
           .getSequence(
             chromName,
-            start1,
-            end1
+            start1used,
+            end1used
           )
           .then((value) => {
             return {
               leftOrRight: "left",
-              value: value
+              value: strand === "+" ? value : getMinusStrandSeq(value)
             };
           })
       );
     }
 
-    if(start2 !== null && end2 !== null){
+    if(start2used !== null && end2used !== null){
       recordPromises.push(
         this.sequenceFile
           .getSequence(
             chromName,
-            start2,
-            end2
+            start2used,
+            end2used
           )
           .then((value) => {
             return {
               leftOrRight: "right",
-              value: value
+              value: strand === "+" ? value : getMinusStrandSeq(value)
             };
           })
       );
@@ -209,12 +225,12 @@ class SequenceLoader {
   }
 
   // get the sequence for a given tile with optionally an additional number of nuleodides in the beginning
-  getTile(z, x, tsInfo, frontExcess = 0) {
+  getTile(z, x, tsInfo) {
 
     const tileWidth = +tsInfo.max_width / 2 ** +z;
 
     // get the bounds of the tile
-    let minX = tsInfo.min_pos[0] + x * tileWidth - frontExcess;
+    let minX = tsInfo.min_pos[0] + x * tileWidth;
     const maxX = tsInfo.min_pos[0] + (x + 1) * tileWidth;
 
     const chromSizes = tsInfo.chrom_sizes.split('\t').map(x=>+x);

@@ -1,2 +1,10 @@
-export { initializePixiTexts, getContainingExon, getTileSequenceOffset, exonIntersect, getNextExon, getAminoAcidsForTile } from './sequenceUtils';
-
+export {
+  initializePixiTexts,
+  getContainingExon,
+  getTileSequenceOffset,
+  exonIntersect,
+  getNextExon,
+  getAminoAcidsForTile,
+  reverseChrCoord,
+  getMinusStrandSeq
+} from "./sequenceUtils";
