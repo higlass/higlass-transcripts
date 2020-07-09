@@ -1,9 +1,9 @@
 //import { scaleLinear, scaleOrdinal, schemeCategory10 } from "d3-scale";
 //import { color } from "d3-color";
-import boxIntersect from "box-intersect";
+//import boxIntersect from "box-intersect";
 import { scaleLinear } from "d3-scale";
-import classifyPoint from "robust-point-in-polygon";
-import { AMINO_ACIDS, CODONS } from "./configs";
+//import classifyPoint from "robust-point-in-polygon";
+//import { AMINO_ACIDS, CODONS } from "./configs";
 import {
   initializePixiTexts,
   getContainingExon,
@@ -14,7 +14,7 @@ import {
   reverseChrCoord,
   getMinusStrandSeq,
 } from "./utils";
-import { TextStyle } from "pixi.js";
+//import { TextStyle } from "pixi.js";
 import SequenceLoader from "./SequenceLoader";
 
 const TranscritpsTrack = (HGC, ...args) => {
@@ -82,12 +82,6 @@ const TranscritpsTrack = (HGC, ...args) => {
 
     tile.tileData.sort((a, b) => b.importance - a.importance);
 
-    // const geneEntries = tile.tileData
-    //   .filter(td => td.type !== 'filler')
-    //   .slice(0, maxGeneEntries);
-
-    //tile.tileData = geneEntries;
-
     tile.tileData.forEach((td, i) => {
       const transcriptInfo = td.fields;
       const transcriptName = transcriptInfo[3];
@@ -121,31 +115,6 @@ const TranscritpsTrack = (HGC, ...args) => {
 
     tile.initialized = true;
   }
-
-  // function getChromNameOfTile(track, tile){
-
-  //   const tileWidth = +track.tilesetInfo.max_width / 2 ** +track.zoomLevel;
-
-  //   // get the start of the tile
-  //   const tileId = +tile.tileId.split(".")[1];
-  //   let minX = track.tilesetInfo.min_pos[0] + tileId * tileWidth;
-
-  //   const chromSizes = track.tilesetInfo.chrom_sizes.split('\t').map(x=>+x);
-  //   const chromNames = track.tilesetInfo.chrom_names.split('\t');
-
-  //   const { chromLengths, cumPositions } = track.sequenceLoader.parseChromsizes(chromNames, chromSizes);
-
-  //   for (let i = 0; i < cumPositions.length; i++) {
-  //     const chromName = cumPositions[i].chr;
-  //     const chromStart = cumPositions[i].pos;
-  //     const chromEnd = cumPositions[i].pos + chromLengths[chromName];
-
-  //     if (chromStart <= minX && minX < chromEnd) {
-  //       return chromName;
-  //     }
-  //   }
-
-  // }
 
   function loadAminoAcidData(track, tile) {
     if (
@@ -187,13 +156,12 @@ const TranscritpsTrack = (HGC, ...args) => {
     const minXlocOrig = +absToChr(minX, chromInfo)[1];
     const maxXlocOrig = +absToChr(maxX, chromInfo)[1];
 
-    console.log("Tile bounds abs", minX, maxX);
-    console.log("Tile bounds chr", minXlocOrig, maxXlocOrig);
-    //console.log(chromInfo)
+    // console.log("Tile bounds abs", minX, maxX);
+    // console.log("Tile bounds chr", minXlocOrig, maxXlocOrig);
+    // console.log(chromInfo)
 
     // Compute the offsets of each exon, so that we can get codons accross exons
     tile.tileData.forEach((td) => {
-      
       const ts = td.fields;
       const tsFormatted = track.formatTranscriptData(ts);
       const transcriptId = tsFormatted.transcriptId;
@@ -202,12 +170,6 @@ const TranscritpsTrack = (HGC, ...args) => {
 
       let minXloc = minXlocOrig;
       let maxXloc = maxXlocOrig;
-
-      // if(transcriptInfo.transcriptName !== "CCNH-213"){
-      //   console.log("not RASA1-203");
-      //   return;
-      // }
-      console.log("current transcript", transcriptInfo);
 
       if (transcriptInfo["codingType"] !== "protein_coding") return;
 
@@ -224,15 +186,6 @@ const TranscritpsTrack = (HGC, ...args) => {
       let startCodonPos = transcriptInfo["startCodonPos"];
       let stopCodonPos = transcriptInfo["stopCodonPos"];
 
-      // console.log("exonStarts", exonStarts)
-      // console.log("exonStartsRev", reverseChrCoord(exonStarts, chromLength))
-      // console.log("exonEnds", exonEnds)
-      // console.log("exonEndsRev", reverseChrCoord(exonEnds, chromLength))
-      // console.log("startCodonPos", startCodonPos)
-      // console.log("startCodonPosRev", reverseChrCoord(startCodonPos, chromLength))
-      //console.log("stopCodonPos", stopCodonPos)
-      // console.log("stopCodonPosRev", reverseChrCoord(stopCodonPos, chromLength))
-
       if (strand === "-") {
         minXloc = reverseChrCoord(maxXloc, chromLength);
         maxXloc = reverseChrCoord(minXloc, chromLength);
@@ -244,29 +197,23 @@ const TranscritpsTrack = (HGC, ...args) => {
 
       let accumulatedOffset = 0;
       for (let i = 0; i < exonStarts.length; i++) {
-        //const exonId = track.exonId(transcriptInfo, exonStarts[i], exonEnds[i]);
-        //if (strand === "+") {
         if (exonStarts[i] <= startCodonPos) {
           tile.aaInfo["exonOffsets"][transcriptId].push(0);
         } else {
           const numNucleotidesInPrevExon =
             exonEnds[i - 1] - Math.max(exonStarts[i - 1], startCodonPos);
-          //console.log("numNucleotidesInPrevExon",numNucleotidesInPrevExon)
+
           const localOffset = (3 - (numNucleotidesInPrevExon % 3)) % 3;
-          //console.log("localOffset",localOffset)
           accumulatedOffset += localOffset;
           const offset = accumulatedOffset % 3;
-
           tile.aaInfo["exonOffsets"][transcriptId].push(offset);
         }
       }
 
       tileSequence.then((values) => {
         let seq = values[0];
-        //console.log("seq",seq)
         if (strand === "-") {
           seq = getMinusStrandSeq(seq);
-          //console.log("seqRev",getMinusStrandSeq(seq))
         }
 
         const intersection = exonIntersect(
@@ -277,8 +224,6 @@ const TranscritpsTrack = (HGC, ...args) => {
           minXloc,
           seq
         );
-
-        //console.log("intersection", intersection.join(''))
 
         // if there are no exons in this tile, stop.
         if (intersection.filter((nuc) => nuc !== ".").length === 0) {
@@ -302,11 +247,10 @@ const TranscritpsTrack = (HGC, ...args) => {
             minXloc
           );
         } else {
-
           //Tile stats before start codon -> no tile offset
-          if(minXloc < startCodonPos){
-            tile.aaInfo["tileOffset"] = 0
-          }else{
+          if (minXloc < startCodonPos) {
+            tile.aaInfo["tileOffset"] = 0;
+          } else {
             const nextExon = getNextExon(exonStarts, exonEnds, minXloc);
             console.log(
               "nextExon",
@@ -316,19 +260,14 @@ const TranscritpsTrack = (HGC, ...args) => {
               exonStarts[nextExon.exon],
               exonEnds[nextExon.exon]
             );
-            //console.log("nextExon", exonStarts, exonEnds);
-            //console.log("nextExon", tile.aaInfo["exonOffsets"][transcriptId]);
-  
+
             tile.aaInfo["tileOffset"] =
               nextExon !== null && minXloc > startCodonPos
                 ? tile.aaInfo["exonOffsets"][transcriptId][nextExon.exon]
                 : 0;
           }
-
-          
         }
-        //tile.aaInfo['aminoAcids'][transcriptId] = getAminoAcidsForTile(HGC, intersection, tile.aaInfo['tileOffset'], exonStarts, exonEnds, minXloc, frontExcessBases, {});
-        console.log("currentTileOffset", tile.aaInfo["tileOffset"])
+
         getAminoAcidsForTile(
           HGC,
           intersection,
@@ -345,175 +284,16 @@ const TranscritpsTrack = (HGC, ...args) => {
           tile.aaInfo["aminoAcids"][transcriptId] = aa;
           track.draw();
         });
-        
-        
       });
     });
-    //console.log(chromName);
-    console.log(tile);
-    //console.log(track.tilesetInfo);
 
     return;
-
-    // const tileId = +tile.tileId.split(".")[1];
-    // track.sequenceLoader
-    //   .getTile(track.zoomLevel, tileId, track.tilesetInfo)
-    //   .then((values) => {
-
-    //     const sequence =  values[0];
-    //     tile.aaInfo["sequence"] = sequence;
-
-    //     console.log(sequence);
-
-    //     const tileWidth = +track.tilesetInfo.max_width / 2 ** +track.zoomLevel ;
-
-    //     // get the bounds of the tile
-    //     const tileStart = track.tilesetInfo.min_pos[0] + tileId * tileWidth;// computed too many times - improve
-    //     const tileEnd = track.tilesetInfo.min_pos[0] + (tileId+1) * tileWidth;// computed too many times - improve
-    //     console.log(tileStart);
-
-    //     const visibleExons = []
-    //     tile.tileData.forEach(td => {
-    //       const geneInfo = td.fields;
-    //       //const geneName = geneInfo[3];
-    //       const geneId = track.transcriptId(geneInfo);
-    //       const strand = td.strand || geneInfo[5];
-
-    //       const exonStarts = td.fields[12].split(",").map((x) => +x);
-    //       const exonEnds = td.fields[13].split(",").map((x) => +x);
-
-    //       const entry = {
-    //         transcriptName: td.fields[3],
-    //         transcriptId: td.fields[7],
-    //         exonStart: [],
-    //         exonEnd: [],
-    //       };
-    //       for(let i = 0; i < exonStarts.length; i++){
-    //         if(
-    //           (exonStarts[i] <= tileStart && exonEnds[i] >= tileStart) ||
-    //           (exonStarts[i] >= tileStart && exonEnds[i] <= tileEnd) ||
-    //           (exonStarts[i] <= tileEnd && exonEnds[i] >= tileEnd)
-    //           ){
-    //             entry.exonStart.push(exonStarts[i]);
-    //             entry.exonEnd.push(exonEnds[i]);
-    //         }
-    //       }
-    //       visibleExons.push(entry);
-
-    //     });
-
-    //     console.log("Visible exonds", visibleExons);
-
-    //   });
-    // return;
-
-    // tile.tileData.forEach((td, i) => {
-
-    //   console.log(td);
-    // });
-    // return
-
-    // this.exonInformation = {};
-
-    // this.visibleAndFetchedTiles()
-    //   // tile hasn't been drawn properly because we likely got some
-    //   // bogus data from the server
-    //   .filter(tile => tile.drawnAtScale)
-    //   .forEach((tile) => {
-    //     tile.tileData.forEach((ts) => {
-    //       const tsId = this.transcriptId(ts.fields);
-    //       visibleTranscriptsObj[tsId] = ts.fields;
-    //     });
-    //   });
-
-    // if(this.zoomLevel === this.tilesetInfo.max_zoom && this.sequenceLoader !== undefined){
-    //   const tileId = +tile.tileId.split(".")[1];
-    //   this.sequenceLoader
-    //     .getTile(this.zoomLevel, tileId, this.tilesetInfo)
-    //     .then((values) => {
-
-    //       const sequence =  values[0];
-
-    //       //console.log(sequence);
-
-    //       const tileWidth = +this.tilesetInfo.max_width / 2 ** +this.zoomLevel ;
-
-    //       // get the bounds of the tile
-    //       const tileStart = this.tilesetInfo.min_pos[0] + tileId * tileWidth;// computed too many times - improve
-    //       const tileEnd = this.tilesetInfo.min_pos[0] + (tileId+1) * tileWidth;// computed too many times - improve
-    //       console.log(tileStart);
-
-    //       const visibleExons = []
-    //       tile.tileData.forEach(td => {
-    //         const exonStarts = td.fields[12].split(",").map((x) => +x);
-    //         const exonEnds = td.fields[13].split(",").map((x) => +x);
-
-    //         const entry = {
-    //           transcriptName: td.fields[3],
-    //           transcriptId: td.fields[7],
-    //           exonStart: [],
-    //           exonEnd: [],
-    //         };
-    //         for(let i = 0; i < exonStarts.length; i++){
-    //           if(
-    //             (exonStarts[i] <= tileStart && exonEnds[i] >= tileStart) ||
-    //             (exonStarts[i] >= tileStart && exonEnds[i] <= tileEnd) ||
-    //             (exonStarts[i] <= tileEnd && exonEnds[i] >= tileEnd)
-    //             ){
-    //               entry.exonStart.push(exonStarts[i]);
-    //               entry.exonEnd.push(exonEnds[i]);
-    //           }
-    //         }
-    //         visibleExons.push(entry);
-
-    //       });
-
-    //       console.log("Visible exonds", visibleExons);
-
-    //     });
-
-    // }
-  }
-
-  function getCaret(x, yMiddle, height, strand) {
-    if (strand === "+") {
-      const poly = [
-        x,
-        yMiddle - height,
-        x + 3,
-        yMiddle,
-        x,
-        yMiddle + height,
-        x - 1,
-        yMiddle + height,
-        x + 2,
-        yMiddle,
-        x - 1,
-        yMiddle - height,
-      ];
-      return poly;
-    } else {
-      const poly = [
-        x,
-        yMiddle - height,
-        x - 3,
-        yMiddle,
-        x,
-        yMiddle + height,
-        x + 2,
-        yMiddle + height,
-        x - 1,
-        yMiddle,
-        x + 2,
-        yMiddle - height,
-      ];
-      return poly;
-    }
   }
 
   /** Draw the exons within a gene */
   function drawExons(
     track,
+    tile,
     transcriptId,
     graphics,
     chrOffset,
@@ -524,7 +304,6 @@ const TranscritpsTrack = (HGC, ...args) => {
   ) {
     const topY = centerY - height / 2;
 
-    //const exonStarts = geneInfo[12];
     const exonStarts = track.transcriptInfo[transcriptId]["exonStarts"];
     const exonEnds = track.transcriptInfo[transcriptId]["exonEnds"];
     const isProteinCoding =
@@ -536,44 +315,23 @@ const TranscritpsTrack = (HGC, ...args) => {
       ? track.transcriptInfo[transcriptId]["stopCodonPos"] + chrOffset
       : -1;
 
-    const txStart = track.transcriptInfo[transcriptId]["txStart"]+ chrOffset;
-    const txEnd = track.transcriptInfo[transcriptId]["txEnd"]+ chrOffset;
+    const txStart = track.transcriptInfo[transcriptId]["txStart"] + chrOffset;
+    const txEnd = track.transcriptInfo[transcriptId]["txEnd"] + chrOffset;
 
     let exonOffsetStarts = exonStarts.map((x) => +x + chrOffset);
     let exonOffsetEnds = exonEnds.map((x) => +x + chrOffset);
 
-    // if(strand === "+"){
-    //   exonOffsetStarts = exonStarts.map((x) => +x + chrOffset);
-    //   exonOffsetEnds = exonEnds.map((x) => +x + chrOffset);
-    // }
-    // else{
-    //   exonOffsetStarts = exonStarts.map((x) => +x + chrOffset - 1);
-    //   exonOffsetEnds = exonEnds.map((x) => +x + chrOffset);
-    // }
-
     // Add start and stop codon to the exon list and distingush between UTR and coding reagion later
     if (isProteinCoding) {
-      // if(strand === "+"){
-      //   // stopCodonPos is the beginning of the stop codon, therefore we have to add 2
-      //   exonOffsetStarts.push(startCodonPos-1, stopCodonPos+2);
-      //   exonOffsetEnds.push(startCodonPos-1, stopCodonPos+2);
-      // }
-      // else{
-      //   exonOffsetStarts.push(startCodonPos+2, stopCodonPos-1);
-      //   exonOffsetEnds.push(startCodonPos+2, stopCodonPos-1);
-      // }
       exonOffsetStarts.push(startCodonPos, stopCodonPos);
       exonOffsetEnds.push(startCodonPos, stopCodonPos);
 
       exonOffsetStarts.sort();
       exonOffsetEnds.sort();
     }
-    //console.log(exonOffsetStarts);
-    //console.log(exonOffsetEnds);
 
     const xStartPos = track._xScale(txStart);
     const xEndPos = track._xScale(txEnd);
-    //console.log(txStart, xEndPos);
 
     const width = xEndPos - xStartPos;
     const yMiddle = centerY;
@@ -593,39 +351,8 @@ const TranscritpsTrack = (HGC, ...args) => {
       yMiddle + 1,
     ];
     graphics.drawPolygon(poly);
-    polys.push(poly);
-
-    // DIRECTIONAL CARETS ON MIDDLE LINE
-    // let isInnerExonCompletelyVisible = false;
-    // for (let j = 2; j < exonOffsetStarts.length-2; j++) {
-    //   const exonStart = exonOffsetStarts[j];
-    //   const exonEnd = exonOffsetEnds[j];
-    //   const xScaleStart = track.xScale().domain()[0];
-    //   const xScaleEnd = track.xScale().domain()[1];
-    //   if(exonStart > xScaleStart && exonEnd < xScaleEnd){
-    //     isInnerExonCompletelyVisible = true;
-    //     break;
-    //   }
-    // }
-
-    // // Only show the directional carets if no other inner exons are visible
-    // if(!isInnerExonCompletelyVisible){
-    //   // the distance between the mini-triangles
-    //   const triangleInterval = 5 * height;
-    //   graphics.beginFill(track.colors.black, 0.3);
-
-    //   for (
-    //     let j = Math.max(track.position[0] - track.dimensions[0], xStartPos) + triangleInterval;
-    //     j < Math.min(track.position[0] + 2*track.dimensions[0], xStartPos + width) - triangleInterval;
-    //     j += triangleInterval
-    //   ) {
-    //     poly = getCaret(j, yMiddle, track.miniTriangleHeight, strand);
-    //     polys.push(poly);
-    //     graphics.drawPolygon(poly);
-    //   }
-    // }
-
-    //console.log(exonOffsetStarts);
+    // For mouseOver
+    polys.push([xStartPos, xStartPos + width, topY, topY + height]);
 
     // draw the actual exons
     for (let j = 0; j < exonOffsetStarts.length; j++) {
@@ -657,6 +384,7 @@ const TranscritpsTrack = (HGC, ...args) => {
       let minX = xStartPos;
       let maxX = xEndPos;
       let localPoly = null;
+      let localRect = null; // without direction for mouseOver
 
       if (strand === "+") {
         //maxX = xEndPos - 0*track.transcriptHHeight;
@@ -681,6 +409,8 @@ const TranscritpsTrack = (HGC, ...args) => {
           rectStartX2,
           topY,
         ];
+
+        localRect = [rectStartX, rectEndX, topY, topY + height];
       } else {
         //minX = xStartPos + track.transcriptHHeight;
         const rectStartX = Math.max(xStart, minX);
@@ -704,83 +434,24 @@ const TranscritpsTrack = (HGC, ...args) => {
           rectStartX,
           topY + height / 2,
         ];
+
+        localRect = [rectStartX, rectEndX, topY, topY + height];
       }
 
-      polys.push(localPoly);
       graphics.drawPolygon(localPoly);
+      polys.push(localRect);
     }
 
-    return polys;
+    const polysForMouseOver = polys.map((x) => [
+      x,
+      track.transcriptInfo[transcriptId],
+    ]);
+    tile.allExonsForMouseOver = tile.allExonsForMouseOver.concat(
+      polysForMouseOver
+    );
+
+    return;
   }
-
-  // /** Draw the arrowheads at the ends of genes */
-  // function renderGeneSymbols(
-  //   genes,
-  //   track,
-  //   tile,
-  //   oldGraphics,
-  //   xScale,
-  //   color,
-  //   alpha,
-  //   centerY,
-  //   height,
-  //   strandSpacing
-  // ) {
-  //   genes.forEach((gene) => {
-  //     const transcriptId = track.transcriptId(gene.fields);
-  //     let centerYOffset =
-  //       track.transcriptInfo[transcriptId].displayOrder *
-  //       (height + strandSpacing);
-
-  //     if (track.options.showToggleTranscriptsButton) {
-  //       centerYOffset += track.toggleButtonHeight;
-  //     }
-
-  //     const topY = centerY + centerYOffset - height / 2;
-  //     const xStart = track._xScale(gene.xStart);
-  //     const xEnd = track._xScale(gene.xEnd);
-
-  //     const graphics = new HGC.libraries.PIXI.Graphics();
-  //     tile.rectGraphics.addChild(graphics);
-
-  //     graphics.beginFill(color, alpha);
-  //     //graphics.beginFill(color, 1.0);
-  //     graphics.interactive = true;
-  //     graphics.buttonMode = true;
-  //     //graphics.mouseup = (evt) => geneClickFunc(evt, track, gene);
-
-  //     let poly = [];
-  //     if (gene.strand === "+" || gene.fields[5] === "+") {
-  //       const pointerStart = Math.max(xStart, xEnd - track.transcriptHHeight);
-  //       const pointerEnd = pointerStart + track.transcriptHHeight;
-
-  //       poly = [
-  //         pointerStart,
-  //         topY,
-  //         pointerEnd,
-  //         topY + track.transcriptHHeight,
-  //         pointerStart,
-  //         topY + track.transcriptHeight,
-  //       ];
-  //     } else {
-  //       const pointerStart = Math.min(xEnd, xStart + track.transcriptHHeight);
-  //       const pointerEnd = pointerStart - track.transcriptHHeight;
-
-  //       poly = [
-  //         pointerStart,
-  //         topY,
-  //         pointerEnd,
-  //         topY + track.transcriptHHeight,
-  //         pointerStart,
-  //         topY + track.transcriptHeight,
-  //       ];
-  //     }
-
-  //     graphics.drawPolygon(poly);
-  //     tile.allRects.push([poly, gene.strand, gene]);
-  //     //centerYOffset = centerYOffset + height + strandSpacing;
-  //   });
-  // }
 
   function renderGeneExons(
     genes,
@@ -815,59 +486,18 @@ const TranscritpsTrack = (HGC, ...args) => {
       graphics.buttonMode = true;
       //graphics.mouseup = (evt) => geneClickFunc(evt, track, gene);
 
-      tile.allRects = tile.allRects.concat(
-        drawExons(
-          track,
-          transcriptId,
-          graphics,
-          chrOffset, // not used for now because we have just one chromosome
-          centerY + centerYOffset,
-          height,
-          gene.strand || gene.fields[5],
-          alpha
-        ).map((x) => [x, gene.strand, gene])
+      drawExons(
+        track,
+        tile,
+        transcriptId,
+        graphics,
+        chrOffset, // not used for now because we have just one chromosome
+        centerY + centerYOffset,
+        height,
+        gene.strand || gene.fields[5],
+        alpha
       );
-
-      //centerYOffset = centerYOffset + height + strandSpacing;
     });
-  }
-
-  function renderGenes(
-    genes,
-    track,
-    tile,
-    graphics,
-    xScale,
-    color,
-    alpha,
-    centerY,
-    height,
-    strandSpacing
-  ) {
-    // renderGeneSymbols(
-    //   genes,
-    //   track,
-    //   tile,
-    //   graphics,
-    //   xScale,
-    //   color,
-    //   alpha,
-    //   centerY,
-    //   height,
-    //   strandSpacing
-    // );
-    renderGeneExons(
-      genes,
-      track,
-      tile,
-      graphics,
-      xScale,
-      color,
-      alpha,
-      centerY,
-      height,
-      strandSpacing
-    );
   }
 
   /** Create a preventing this track from drawing outside of its
@@ -939,9 +569,6 @@ const TranscritpsTrack = (HGC, ...args) => {
     track.pForeground.addChild(track.pToggleButton);
     track.pToggleButton.clear();
     track.pToggleButton.removeChildren();
-    //console.log(track.pForeground);
-
-    //track.pToggleButton.beginFill(colorToHex('#ffffff'), 1);
 
     const text = new HGC.libraries.PIXI.Text("HIDE TRANSCRIPTS", {
       fontSize: `10px`,
@@ -964,8 +591,6 @@ const TranscritpsTrack = (HGC, ...args) => {
 
     track.pToggleButton.addChild(text);
     track.hasToggleBtnBeenRendered = true;
-    //console.log(track.pToggleButton);
-    //track.pToggleButton.drawRect(0, 0, track.dimensions[0], track.toggleButtonHeight);
   }
 
   class TranscritpsTrackClass extends HGC.tracks
@@ -986,6 +611,7 @@ const TranscritpsTrack = (HGC, ...args) => {
       this.trackHeightOld = 0;
 
       this.areTranscriptsHidden = false;
+      this.areCodonsShown = false;
 
       if (this.options.sequenceData !== undefined) {
         this.sequenceLoader = new SequenceLoader(
@@ -993,18 +619,11 @@ const TranscritpsTrack = (HGC, ...args) => {
           this.options.sequenceData.faiUrl
         );
 
-        this.pixiTexts = initializePixiTexts(this.options.codonText, HGC); // Promise
-        console.log("this.pixiTexts", this.pixiTexts);
+        this.pixiTexts = initializePixiTexts(this.options.codonText, HGC);
       }
 
       this.transcriptInfo = {};
       this.transcriptSequences = {};
-      //this.exonInformation = {};
-
-      //console.log("construct");
-
-      //console.log(context);
-      //console.log(this);
     }
 
     initOptions() {
@@ -1050,16 +669,9 @@ const TranscritpsTrack = (HGC, ...args) => {
         maxTexts: MAX_TEXTS,
       });
 
-      console.log("init");
-      //console.log(tile);
-      //console.log(this.tilesetInfo);
-      //console.log(this.zoomLevel);
-      //console.log(tile.tileId.split(".")[1]);
-
       // We have to rerender everything since the vertical position
       // of the tracks might have changed accross tiles
       this.rerender(this.options, true);
-      //this.renderTile(tile);
     }
 
     /** cleanup */
@@ -1111,49 +723,7 @@ const TranscritpsTrack = (HGC, ...args) => {
       });
 
       return true;
-
-      //requestAnimationFrame(track.animate);
     }
-
-    // updateTranscriptSequence(){
-
-    //   if (!this.tilesetInfo) {
-    //     return;
-    //   }
-
-    //   if(this.zoomLevel !== this.tilesetInfo.max_zoom || this.sequenceLoader === undefined){
-    //     this.transcriptSequences = {};
-    //     return;
-    //   }
-
-    //   for(const tsId in this.transcriptInfo) {
-    //     if(this.transcriptSequences[tsId] !== undefined){
-    //       continue;
-    //     }
-
-    //     const tsSeqObj = {};
-    //     const exonStarts = this.transcriptInfo[tsId]["exonStarts"];
-    //     const exonEnds = this.transcriptInfo[tsId]["exonEnds"];
-    //     const startCodonPos = this.transcriptInfo[tsId]["startCodonPos"];
-    //     const stopCodonPos = this.transcriptInfo[tsId]["stopCodonPos"];
-    //     const chromName = this.transcriptInfo[tsId]["chromName"];
-    //     console.log(exonStarts, exonEnds, startCodonPos, stopCodonPos);
-
-    //     this.sequenceLoader
-    //       .getSubSequence(chromName, exonStarts, exonEnds, startCodonPos, stopCodonPos)
-    //       .then((values) => {
-    //         tsSeqObj["nucleotideSeq"] = values;
-    //         console.log("Obtained SEQ", values);
-
-    //     });
-
-    //     // We load all the sequence data for the transcript
-
-    //     this.transcriptSequences[tsId] = tsSeqObj;
-    //   }
-
-    //   console.log("transcriptSequences", this.transcriptSequences);
-    // }
 
     formatTranscriptData(ts) {
       const strand = ts[5];
@@ -1191,7 +761,6 @@ const TranscritpsTrack = (HGC, ...args) => {
         //.filter(tile => tile.drawnAtScale)
         .forEach((tile) => {
           tile.tileData.forEach((ts) => {
-            //const tsId = this.transcriptId(ts.fields);
             visibleTranscriptsObj[ts.transcriptId] = ts.fields;
           });
         });
@@ -1201,18 +770,8 @@ const TranscritpsTrack = (HGC, ...args) => {
         visibleTranscripts.push(visibleTranscriptsObj[tsId]);
       }
 
-      // Delete transcripts that are not visible anymore and collext display orders
-      // for(const tsId in this.transcriptInfo) {
-      //   if(visibleTranscripts[tsId] === undefined){
-      //     delete this.transcriptInfo[tsId];
-      //   }
-      // }
       this.transcriptInfo = {};
       this.transcriptPositionInfo = {};
-
-      // const numTranscripts = Object.keys(visibleTranscripts).length;
-      // const availableDisplayOrders = [...Array(numTranscripts).keys()]
-      //   .filter(x => !displayOrders.includes(x));
 
       let displayOrder = 0;
       this.numTranscriptRows = 0;
@@ -1254,21 +813,10 @@ const TranscritpsTrack = (HGC, ...args) => {
         });
 
       this.numTranscriptRows = Object.keys(this.transcriptPositionInfo).length;
-
-      //console.log(visibleTranscripts);
-      //console.log("transcriptPositionInfo", this.transcriptPositionInfo);
-
-      console.log("transcriptInfo", this.transcriptInfo);
     }
 
     calculateTranscriptRowNumber(transcriptPositionInfo, txStart, txEnd) {
       const numRows = Object.keys(transcriptPositionInfo).length;
-
-      // if(numRows === 0){
-      //   return 0;
-      // }
-      //console.log(transcriptPositionInfo);
-      //console.log(numRows);
 
       for (let row = 0; row < numRows; row++) {
         let spaceAvailableOnCurrentRow = true;
@@ -1276,7 +824,6 @@ const TranscritpsTrack = (HGC, ...args) => {
           const currentTsStart = ts[0];
           const currentTsEnd = ts[1];
 
-          //console.log(row, currentTsStart, currentTsEnd);
           if (
             (currentTsStart <= txStart && txStart <= currentTsEnd) ||
             (currentTsStart <= txEnd && txEnd <= currentTsEnd)
@@ -1293,19 +840,6 @@ const TranscritpsTrack = (HGC, ...args) => {
       // If we are here, there are now available space on the existing rows.
       // Add a new one.
       return numRows;
-
-      // transcriptPositionInfo
-      //   .sort(function (a, b) {
-      //     return +a[0] - b[0];
-      //   })
-      //   .forEach((ts) => {
-      //     const currentRow = ts[0];
-      //     const currentTsStart = ts[1];
-      //     const currentTsEnd = ts[2];
-
-      //     //if(txStart > )
-
-      //   });
     }
 
     /*
@@ -1315,8 +849,7 @@ const TranscritpsTrack = (HGC, ...args) => {
     rerender(options, force) {
       const strOptions = JSON.stringify(options);
       if (!force && strOptions === this.prevOptions) return;
-      console.log("rerender");
-      //super.rerender(options, force);
+      //console.log("rerender");
 
       this.options = options;
       this.initOptions();
@@ -1326,7 +859,6 @@ const TranscritpsTrack = (HGC, ...args) => {
       renderToggleBtn(this);
 
       this.updateTranscriptInfo();
-      //this.updateTranscriptSequence();
 
       // Adjusting the track height leads to a full rerender.
       // No need to rerender again
@@ -1350,9 +882,7 @@ const TranscritpsTrack = (HGC, ...args) => {
     renderTile(tile) {
       if (!tile.initialized) return;
 
-      console.log("renderT");
-
-      tile.allRects = [];
+      tile.allExonsForMouseOver = [];
       // store the scale at while the tile was drawn at so that
       // we only resize it when redrawing
       tile.drawnAtScale = this._xScale.copy();
@@ -1364,13 +894,6 @@ const TranscritpsTrack = (HGC, ...args) => {
 
       const GENE_ALPHA = 1;
 
-      // let plusFillerRects = tile.tileData.filter(
-      //   td => td.type === 'filler' && td.strand === '+'
-      // );
-      // let minusFillerRects = tile.tileData.filter(
-      //   td => td.type === 'filler' && td.strand === '-'
-      // );
-
       const plusGenes = tile.tileData.filter(
         (td) =>
           td.type !== "filler" && (td.strand === "+" || td.fields[5] === "+")
@@ -1380,15 +903,8 @@ const TranscritpsTrack = (HGC, ...args) => {
           td.type !== "filler" && (td.strand === "-" || td.fields[5] === "-")
       );
 
-      //flagOverlappingFillers(plusGenes, plusFillerRects);
-      //flagOverlappingFillers(minusGenes, minusFillerRects);
+      const yMiddle = this.transcriptHeight + this.transcriptSpacing;
 
-      // remove the fillers that are contained within a gene
-      // plusFillerRects = plusFillerRects.filter(x => !x.hide);
-      // minusFillerRects = minusFillerRects.filter(x => !x.hide);
-      const yMiddle = this.transcriptHeight + this.transcriptSpacing; //this.dimensions[1] / 2;
-
-      // const fillerGeneSpacing = (this.options.fillerHeight - this.transcriptHeight) / 2;
       const strandCenterY =
         this.transcriptHeight / 2 + this.transcriptSpacing / 2;
 
@@ -1415,14 +931,8 @@ const TranscritpsTrack = (HGC, ...args) => {
         this.transcriptSpacing,
       ];
 
-      //renderRects(plusFillerRects, ...plusRenderContext);
-      //renderRects(minusFillerRects, ...minusRenderContext);
-
-      // plusRenderContext[5] = GENE_ALPHA;
-      // minusRenderContext[5] = GENE_ALPHA;
-
-      renderGenes(plusGenes, ...plusRenderContext);
-      renderGenes(minusGenes, ...minusRenderContext);
+      renderGeneExons(plusGenes, ...plusRenderContext);
+      renderGeneExons(minusGenes, ...minusRenderContext);
 
       renderMask(this, tile);
 
@@ -1430,15 +940,6 @@ const TranscritpsTrack = (HGC, ...args) => {
         (x) => x.rectGraphics,
         (x) => x.rectMaskGraphics,
       ]);
-
-      // for (const text of Object.values(tile.texts)) {
-      //   text.style = {
-      //     fontSize: `${this.fontSize}px`,
-      //     fontFamily: this.options.fontFamily,
-      //     fill: this.colors["labelFont"],
-      //   };
-      // }
-      //this.draw();
     }
 
     calculateZoomLevel() {
@@ -1461,6 +962,8 @@ const TranscritpsTrack = (HGC, ...args) => {
         (x) => x.rectGraphics,
         (x) => x.rectMaskGraphics,
       ]);
+
+      this.areCodonsShown = false;
 
       this.drawLabels();
       this.drawCodonSeparators();
@@ -1527,6 +1030,15 @@ const TranscritpsTrack = (HGC, ...args) => {
 
             for (var i = 0, n = codons.length; i < n; ++i) {
               const codon = codons[i];
+
+              const startPosX = this._xScale(codon.posStart + chrOffset);
+              const endPosX = this._xScale(codon.posEnd + chrOffset);
+
+              // if the codon is not visible, don't bother
+              if (endPosX < 0 || startPosX > this.dimensions[0]) {
+                continue;
+              }
+
               //const availableSpace = this._xScale((codon.posStart)) - this._xScale((codon.posEnd + 1));
               //console.log(availableSpace);
               if (codonWidth < this.minCodonDistance + 10) {
@@ -1560,12 +1072,13 @@ const TranscritpsTrack = (HGC, ...args) => {
           if (!tile.initialized || !tile.aaInfo || !tile.aaInfo.aminoAcids)
             return;
 
+          tile.allCodonsForMouseOver = [];
           tile.codonSeparatorGraphics.clear();
 
           // if individual codons are too close together, don't draw anything
           let alpha = 1.0;
           const codonWidth = this._xScale(3) - this._xScale(0);
-          //console.log(codonWidth);
+
           if (codonWidth < this.minCodonDistance) {
             return;
           } else if (
@@ -1579,6 +1092,8 @@ const TranscritpsTrack = (HGC, ...args) => {
               .clamp(true);
             alpha = alphaScale(codonWidth);
           }
+
+          this.areCodonsShown = true;
 
           const graphics = tile.codonSeparatorGraphics;
           graphics.beginFill(WHITE_HEX);
@@ -1603,11 +1118,6 @@ const TranscritpsTrack = (HGC, ...args) => {
               this.transcriptHeight / 2 +
               this.transcriptSpacing / 2;
 
-            // let textYMiddle =
-            // this.transcriptHeight / 2 +
-            // this.transcriptSpacing / 2 +
-            // textYMiddleOffset;
-
             if (this.options.showToggleTranscriptsButton) {
               yMiddle += this.toggleButtonHeight;
             }
@@ -1618,20 +1128,33 @@ const TranscritpsTrack = (HGC, ...args) => {
             for (var i = 0, n = codons.length; i < n; ++i) {
               const codon = codons[i];
 
+              const startPosX = this._xScale(codon.posStart + chrOffset);
+              const endPosX = this._xScale(codon.posEnd + chrOffset + 1);
+
+              // if the codon is not visible, don't bother
+              if (endPosX < 0 || startPosX > this.dimensions[0]) {
+                continue;
+              }
+
+              const rectArr = [startPosX, endPosX, yMiddleAbove, yMiddleBelow];
+              const codonForMouseOver = [rectArr, codon.aminoAcid];
+              tile.allCodonsForMouseOver.push(codonForMouseOver);
+
               if (
-                (transcript.strand === "+" && codon.posStart === transcript.startCodonPos) ||
-                (transcript.strand === "+" && transcript.exonStarts.includes(codon.posStart)) ||
-                (transcript.strand === "-" && codon.posEnd + 1 === transcript.startCodonPos) ||
-                (transcript.strand === "-" && transcript.exonEnds.includes(codon.posEnd + 1))
+                (transcript.strand === "+" &&
+                  codon.posStart === transcript.startCodonPos) ||
+                (transcript.strand === "+" &&
+                  transcript.exonStarts.includes(codon.posStart)) ||
+                (transcript.strand === "-" &&
+                  codon.posEnd + 1 === transcript.startCodonPos) ||
+                (transcript.strand === "-" &&
+                  transcript.exonEnds.includes(codon.posEnd + 1))
               ) {
                 continue;
               }
 
-              const caretPos =
-                transcript.strand === "+"
-                  ? codon.posStart + chrOffset
-                  : codon.posEnd + chrOffset + 1;
-              let rectStartX = this._xScale(caretPos);
+              const caretPos = transcript.strand === "+" ? startPosX : endPosX;
+              let rectStartX = caretPos;
               let rectStartX2 = rectStartX;
               let rectEndX = rectStartX;
               let rectEndX2 = rectStartX;
@@ -1726,11 +1249,7 @@ const TranscritpsTrack = (HGC, ...args) => {
             const chrOffset = +td.chrOffset;
             const txStart = transcript["txStart"] + chrOffset;
             const txEnd = transcript["txEnd"] + chrOffset;
-            // //const txMiddle = (txStart + txEnd) / 2;
-            // const txMiddle = Math.max(
-            //   this.xScale().domain()[0],
-            //   txStart - tile.textWidths[transcriptId]/2);
-            //console.log(txStart, txMiddle);
+
             let textYMiddleOffset =
               transcript.displayOrder *
               (this.transcriptHeight + this.transcriptSpacing);
@@ -1739,13 +1258,10 @@ const TranscritpsTrack = (HGC, ...args) => {
               textYMiddleOffset += this.toggleButtonHeight;
             }
 
-            //console.log(txStart,txEnd,txMiddle, chrOffset, tile.textHeights[transcriptId]);
             let textYMiddle =
               this.transcriptHeight / 2 +
               this.transcriptSpacing / 2 +
               textYMiddleOffset;
-
-            //const fontRectPadding = (this.transcriptHeight - this.fontSize) / 2;
 
             // take care of label positioning at start or end of transcripts
             if (transcript.strand === "+") {
@@ -1784,9 +1300,7 @@ const TranscritpsTrack = (HGC, ...args) => {
 
             // Determine if the current text should be hidden
             let showText = true;
-            //console.log(this.transcriptInfo[transcriptId]);
             const dpo = transcript.displayOrder;
-            //console.log(this.transcriptPositionInfo[dpo]);
 
             this.transcriptPositionInfo[dpo]
               .filter((ts) => {
@@ -1827,7 +1341,6 @@ const TranscritpsTrack = (HGC, ...args) => {
           });
         });
 
-      //this.hideOverlaps(this.allBoxes, this.allTexts);
       this.renderTextBg(this.allBoxes, this.allTexts, allTiles);
     }
 
@@ -1900,37 +1413,34 @@ const TranscritpsTrack = (HGC, ...args) => {
       });
     }
 
-    // hideOverlaps(allBoxes, allTexts) {
-    //   boxIntersect(allBoxes, (i, j) => {
-    //     if (allTexts[i].importance > allTexts[j].importance) {
-    //       allTexts[j].text.visible = false;
-    //     } else {
-    //       allTexts[i].text.visible = false;
-    //     }
-    //   });
-    // }
-
     setPosition(newPosition) {
       super.setPosition(newPosition);
-
       [this.pMain.position.x, this.pMain.position.y] = this.position;
     }
 
     setDimensions(newDimensions) {
       this.updateTranscriptInfo();
-
       // This will rerender all tiles.
       super.setDimensions(newDimensions);
-      //console.log("setDimensions", this.dimensions);
     }
 
     zoomed(newXScale, newYScale) {
       this.xScale(newXScale);
       this.yScale(newYScale);
-
       this.refreshTiles();
-
       this.draw();
+    }
+
+    isPointInRectangle(rect, point) {
+      if (
+        rect[0] < point[0] &&
+        rect[1] > point[0] &&
+        rect[2] < point[1] &&
+        rect[3] > point[1]
+      ) {
+        return true;
+      }
+      return false;
     }
 
     getMouseOverHtml(trackX, trackY) {
@@ -1941,40 +1451,67 @@ const TranscritpsTrack = (HGC, ...args) => {
       const point = [trackX, trackY];
 
       for (const tile of this.visibleAndFetchedTiles()) {
-        for (let i = 0; i < tile.allRects.length; i++) {
-          // console.log('tile.allRects:', tile.allRects);
-          // copy the visible rects array
-          if (tile.allRects[i][2].type === "filler") {
-            continue;
-          }
-          const rect = tile.allRects[i][0].slice(0);
-          // console.log('rect:', rect);
+        for (let i = 0; i < tile.allExonsForMouseOver.length; i++) {
+          const rect = tile.allExonsForMouseOver[i][0];
 
-          const newArr = [];
-          while (rect.length) {
-            const newPoint = rect.splice(0, 2);
-            newPoint[0] =
-              newPoint[0] * tile.rectGraphics.scale.x +
-              tile.rectGraphics.position.x;
-            newPoint[1] =
-              newPoint[1] * tile.rectGraphics.scale.y +
-              tile.rectGraphics.position.y;
+          if (this.isPointInRectangle(rect, point)) {
+            //console.log('ar:', tile.allExonsForMouseOver[i]);
+            const transcript = tile.allExonsForMouseOver[i][1];
 
-            newArr.push(newPoint);
-          }
+            if (this.areCodonsShown) {
+              for (let j = 0; j < tile.allCodonsForMouseOver.length; j++) {
+                const rectDim = tile.allCodonsForMouseOver[j][0];
 
-          const pc = classifyPoint(newArr, point);
+                if (this.isPointInRectangle(rectDim, point)) {
+                  //console.log(tile.allCodonsForMouseOver[j][1]);
+                  const aa = tile.allCodonsForMouseOver[j][1];
 
-          if (pc === -1) {
-            // console.log('ar:', tile.allRects[i]);
-            const gene = tile.allRects[i][2];
+                  if (aa.key === "X") {
+                    return `
+                      <div style="text-align: center; padding:10px;">
+                        <div style="text-transform: uppercase;">
+                          <b>${aa.name}</b>
+                        </div>
+                        <div style="font-size: 10px;">
+                          ${aa.codons.join(", ")}
+                        </div>
+                      </div>
+                    `;
+                  }
 
-            return `
-              <div>
-                <p><b>${gene.fields[3]}</b></p>
-                <p>${gene.fields[0]}:${gene.fields[1]}-${gene.fields[2]} Strand: ${gene.strand}</p>
-              </div>
-            `;
+                  const essential = aa.essential
+                    ? "essential"
+                    : "non-essential";
+                  return `
+                    <div style="text-align: center; padding:10px;">
+                      <div>
+                        <img class="fit-picture" 
+                             src="${aa.image}" 
+                             style="width:125px;height:125px"
+                             alt="${aa.name}">
+                      </div>
+                      <div style="text-transform: uppercase; padding-top:6px;">
+                        <b>${aa.name}</b>
+                      </div>
+                      <div style="padding-top:0px;">
+                        <i>${aa.property}, ${essential}</i>
+                      </div>
+                      <div style="font-size: 10px;">
+                        ${aa.codons.join(", ")}
+                      </div>
+                    </div>
+                  `;
+                }
+              }
+            } else {
+              return `
+                <div>
+                  <div><b>Transcript: ${transcript.transcriptName}</b></div>
+                  <div>Position: ${transcript.chromName}:${transcript.txStart}-${transcript.txEnd}</div>
+                  <div>Strand: ${transcript.strand}</div>
+                </div>
+              `;
+            }
           }
         }
       }

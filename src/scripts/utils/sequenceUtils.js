@@ -2,7 +2,7 @@ import { AMINO_ACIDS, CODONS } from "../configs";
 
 export function initializePixiTexts(textOptions, HGC) {
   const codonTexts = {};
-  const sequences = Object.keys(AMINO_ACIDS).concat(Object.keys(CODONS));
+  //const sequences = Object.keys(AMINO_ACIDS).concat(Object.keys(CODONS));
 
   Object.keys(CODONS).forEach((sequence) => {
     const codonText = {};
@@ -38,33 +38,6 @@ export function initializePixiTexts(textOptions, HGC) {
   return codonTexts;
 }
 
-export function initializePixiTextsOLD(textOptions, HGC) {
-  const codonTexts = {};
-  const sequences = Object.keys(AMINO_ACIDS).concat(Object.keys(CODONS));
-
-  sequences.forEach((sequence) => {
-    const codonText = {};
-    codonText["sequence"] = sequence;
-    let aaText = "";
-    if (CODONS[sequence]) {
-      aaText = CODONS[sequence].nameAbbrev;
-    } else if (AMINO_ACIDS[sequence]) {
-      aaText = sequence;
-    }
-    console.log(sequence, aaText);
-    const pixiText = new HGC.libraries.PIXI.Text(aaText, textOptions);
-    pixiText.updateText();
-
-    // We get sharper edges if we scale down a large text
-    // This holds the 3 letter AA
-    codonText["width"] = pixiText.getBounds().width / 2;
-    codonText["height"] = pixiText.getBounds().height / 2;
-    codonText["texture"] = pixiText.texture;
-
-    codonTexts[sequence] = codonText;
-  });
-  return codonTexts;
-}
 
 // Get the exon number, where pos falls in (in chr coordinates)
 export function getContainingExon(starts, ends, pos) {
@@ -97,18 +70,7 @@ export function exonIntersect(
   evalArr
 ) {
   const intersection = [...evalArr];
-  // console.log(
-  //   "exonIntersect",
-  //   starts,
-  //   ends,
-  //   evalStart,
-  //   evalArr,
-  //   intersection.length,
-  //   evalStart + intersection.length
-  // );
-
-  //return [];
-
+  
   for (let i = 0; i < intersection.length; i++) {
     let found = false;
     for (let numExon = 0; numExon < starts.length; numExon++) {
@@ -121,7 +83,6 @@ export function exonIntersect(
       ) {
         found = true;
       }
-      //console.log(i,starts[numExon],ends[numExon],found);
     }
 
     if (!found) {
@@ -192,17 +153,11 @@ export function getAminoAcidsForTile(
   pixiTexts,
   sequenceLoader
 ) {
-  //console.log("PIXITEXTS", pixiTexts);
+
   const codons = [];
   let seqFiltered = seq.filter((nuc) => nuc !== ".");
   // We cut off the tile offset and last bases, so that we get a length that is a multiple of 3
-  //seqFiltered = seqFiltered.slice(tileOffset);
-  //seqFiltered = seqFiltered.slice(0, seqFiltered.length - (seqFiltered.length % 3));
-
-  //console.log(seq.join(''));
-  //console.log(seqFiltered.join(''), seqFiltered.length);
-  //console.log("tileOffset", tileOffset);
-
+ 
   // Get the first non .
   let firstNonPoint = 0;
   for (let i = 0; i < seq.length; i++) {
@@ -221,7 +176,7 @@ export function getAminoAcidsForTile(
     }
   }
 
-  console.log("firstNonPoint", firstNonPoint, "lastNonPoint", lastNonPoint, minX)
+  //console.log("firstNonPoint", firstNonPoint, "lastNonPoint", lastNonPoint, minX)
 
   let reqNucLeftStart = null;
   let reqNucLeftEnd = null;
@@ -234,19 +189,16 @@ export function getAminoAcidsForTile(
         exonEnds,
         minX + firstNonPoint
       ).exon;
-      //console.log("currentExonNum", currentExonNum)
+
       const previousExon = currentExonNum - 1;
       const previousExonEnd = exonEnds[previousExon];
       reqNucLeftStart = previousExonEnd - (3 - tileOffset);
       reqNucLeftEnd = previousExonEnd;
-      //requiredNucleotidesStartPromise = sequenceLoader.getSequence(chromName, previousExonEnd-(3-tileOffset), previousExonEnd);
     }
     // The required nucleotides are in the same exon
     else {
       reqNucLeftStart = minX - (3 - tileOffset);
       reqNucLeftEnd = minX;
-      //requiredNucleotidesStartPromise = sequenceLoader.getSequence(chromName, minX-(3-tileOffset), minX);
-      //console.log("ADDITIONSEQ ", requiredNucleotides, minX, firstNonPoint, minX-(3-tileOffset), minX);
     }
   }
 
@@ -261,8 +213,6 @@ export function getAminoAcidsForTile(
     if (lastNonPoint === seq.length - 1) {
       reqNucRightStart = minX + seq.length;
       reqNucRightEnd = minX + seq.length + numToGet;
-      //requiredNucleotidesEndPromise = sequenceLoader.getSequence(chromName, minX+seq.length, minX+seq.length+numToGet);
-      //console.log("ADDITIONSEQEND ", requiredNucleotides, minX+seq.length, minX+seq.length+numToGet);
     }
     // We have to get the required nucleotides from the next exon
     else {
@@ -275,18 +225,9 @@ export function getAminoAcidsForTile(
       const nextExonStart = exonStarts[nextExon];
       reqNucRightStart = nextExonStart;
       reqNucRightEnd = nextExonStart + numToGet;
-      //console.log("ADDITIONSEQEND2 ", currentExonNum, nextExon, nextExonStart, reqNucRightStart, reqNucRightEnd);
-      //requiredNucleotidesEndPromise = sequenceLoader.getSequence(chromName, nextExonStart, nextExonStart+numToGet);
     }
   }
 
-  // console.log(chromName,
-  //       chromLength,
-  //       strand,
-  //       reqNucLeftStart,
-  //       reqNucLeftEnd,
-  //       reqNucRightStart,
-  //       reqNucRightEnd)
   const excessNucleotides = sequenceLoader
     .getExcessNucleotides(
       chromName,
@@ -298,15 +239,14 @@ export function getAminoAcidsForTile(
       reqNucRightEnd
     )
     .then((nucleotides) => {
-      let seqMod = seq;
-      console.log("AAAAA",nucleotides);
+
       const initialCodonSeq = [];
       const finalCodonSeq = [];
 
       for (let i = 0; i < nucleotides.length; i++) {
         if (nucleotides[i].leftOrRight === "left") {
           const leftNucleotides = nucleotides[i].value.split("");
-          //console.log("leftNucleotides", leftNucleotides);
+
           for (let j = 0; j < leftNucleotides.length; j++) {
             initialCodonSeq.push({
               pos: reqNucLeftStart - minX + j,
@@ -315,7 +255,7 @@ export function getAminoAcidsForTile(
           }
         } else if (nucleotides[i].leftOrRight === "right") {
           const rightNucleotides = nucleotides[i].value.split("");
-          //console.log("rightNucleotides", rightNucleotides);
+
           for (let j = 0; j < rightNucleotides.length; j++) {
             finalCodonSeq.push({
               pos: reqNucRightStart - minX + j,
@@ -323,19 +263,9 @@ export function getAminoAcidsForTile(
             });
           }
         }
-        // Just add the additional Nuleotides to the right of the seqence. getFormattedCodons
-        //will take care of it
-        // else if(nucleotides[i].leftOrRight === "right"){
-        //   seqMod = seqMod.concat(nucleotides[i].value.split(''));
-        // }
+        
       }
-      //console.log(seq);
-      //console.log(reqNucLeftStart, minX);
-      //console.log("initialCodonSeq", initialCodonSeq);
-      //console.log("finalCodonSeq", finalCodonSeq);
-      //console.log("RETURNeED PROMISE ",nucleotides);
-
-      //const codons = getFormattedCodons([], finalCodonSeq, firstNonPoint + tileOffset, seq, pixiTexts, HGC, minX  );
+     
       const codons = getFormattedCodons(
         initialCodonSeq,
         finalCodonSeq,
@@ -347,7 +277,6 @@ export function getAminoAcidsForTile(
         HGC,
         minX
       );
-      //console.log(codons);
       return codons;
     });
 
@@ -373,7 +302,7 @@ function getFormattedCodons(
     if (seq[i] === ".") {
       continue;
     }
-    //console.log(seq[i]);
+
     codonSeq.push({
       pos: i,
       letter: seq[i],
@@ -386,7 +315,7 @@ function getFormattedCodons(
       codonSeq = [];
     }
   }
-  //console.log("codonSeq",codonSeq, "finalCodonSeq", finalCodonSeq)
+
   if (finalCodonSeq.length > 0 && codonSeq.length > 0) {
     codonSeq = codonSeq.concat(finalCodonSeq);
     if (codonSeq.length === 3) {
