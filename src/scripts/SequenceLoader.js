@@ -12,17 +12,6 @@ class SequenceLoader {
 
     const { IndexedFasta } = require("@gmod/indexedfasta");
 
-    //this.chromInfo = null;
-
-    // this.chromsizePromise = fetch(dataConfig.chromSizesUrl, {
-    //   method: "GET",
-    // })
-    //   .then((response) => response.text())
-    //   .then((chrInfoText) => {
-    //     const data = tsvParseRows(chrInfoText);
-    //     this.chromInfo = this.parseChromsizesRows(data);
-    //   });
-
     const remoteFA = new RemoteFile(fastaUrl);
     const remoteFAI = new RemoteFile(faiUrl);
 
@@ -32,84 +21,6 @@ class SequenceLoader {
     });
   }
 
-  // tilesetInfo(callback) {
-  //   this.tilesetInfoLoading = true;
-  //   return this.chromsizePromise
-  //     .then(() => {
-  //       this.tilesetInfoLoading = false;
-
-  //       const TILE_SIZE = 1024;
-  //       const totalLenth = this.chromInfo.totalLength;
-  //       const maxZoom = Math.ceil(
-  //         Math.log(totalLenth / TILE_SIZE) / Math.log(2)
-  //       );
-
-  //       let retVal = {};
-
-  //       retVal = {
-  //         tile_size: TILE_SIZE,
-  //         bins_per_dimension: TILE_SIZE,
-  //         max_zoom: maxZoom,
-  //         max_width: TILE_SIZE * 2 ** maxZoom,
-  //         min_pos: [0],
-  //         max_pos: [totalLenth],
-  //       };
-
-  //       if (callback) {
-  //         callback(retVal);
-  //       }
-
-  //       return retVal;
-  //     })
-  //     .catch((err) => {
-  //       this.tilesetInfoLoading = false;
-
-  //       if (callback) {
-  //         callback({
-  //           error: `Error parsing chromsizes: ${err}`,
-  //         });
-  //       } else {
-  //         console.error("Could not fetch tileInfo for sequence track.");
-  //       }
-  //     });
-  // }
-
-  // fetchTilesDebounced(receivedTiles, tileIds) {
-  //   const tiles = {};
-  //   const zoomLevels = [];
-  //   const tilePos = [];
-  //   const validTileIds = [];
-  //   const tilePromises = [];
-
-  //   for (const tileId of tileIds) {
-  //     const parts = tileId.split(".");
-  //     const z = parseInt(parts[0], 10);
-  //     const x = parseInt(parts[1], 10);
-
-  //     if (Number.isNaN(x) || Number.isNaN(z)) {
-  //       console.warn("Invalid tile zoom or position:", z, x);
-  //       continue;
-  //     }
-  //     zoomLevels.push(z);
-  //     tilePos.push([x]);
-  //     validTileIds.push(tileId);
-  //     tilePromises.push(this.tile(z, x));
-  //   }
-
-  //   Promise.all(tilePromises).then((values) => {
-  //     for (let i = 0; i < values.length; i++) {
-  //       const validTileId = validTileIds[i];
-  //       tiles[validTileId] = {};
-  //       tiles[validTileId].dense = values[i];
-  //       tiles[validTileId].zoomLevel = zoomLevels[i];
-  //       tiles[validTileId].tilePos = tilePos[i];
-  //       tiles[validTileId].tilePositionId = validTileId;
-  //     }
-
-  //     receivedTiles(tiles);
-  //   });
-  //   return tiles;
-  // }
 
   // We assume that we are looking for subsequences within a chromosome
   getSubSequence(chromName, exonStarts, exonEnds, startCodonPos, stopCodonPos){
@@ -146,6 +57,8 @@ class SequenceLoader {
   // We assume that we are looking for subsequences within a chromosome
   getExcessNucleotides(chromName, chromLength, strand, start1, end1, start2, end2){
 
+    //console.log(chromName, chromLength, strand, start1, end1, start2, end2)
+
     let start1used = start1;
     let end1used = end1;
     let start2used = start2;
@@ -160,7 +73,7 @@ class SequenceLoader {
 
     const recordPromises = [];
 
-    if(start1used !== null && end1used !== null){
+    if(start1used && end1used){
       recordPromises.push(
         this.sequenceFile
           .getSequence(
@@ -177,7 +90,7 @@ class SequenceLoader {
       );
     }
 
-    if(start2used !== null && end2used !== null){
+    if(start2used && end2used){
       recordPromises.push(
         this.sequenceFile
           .getSequence(

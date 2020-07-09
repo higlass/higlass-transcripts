@@ -32,7 +32,6 @@ const TranscritpsTrack = (HGC, ...args) => {
 
   // these are default values that are overwritten by the track's options
 
-  const MAX_TEXTS = 100;
   const WHITE_HEX = colorToHex("#ffffff");
   const DARKGREY_HEX = colorToHex("#999999");
 
@@ -90,8 +89,10 @@ const TranscritpsTrack = (HGC, ...args) => {
 
       td["transcriptId"] = transcriptId;
 
+
       // don't draw texts for the latter entries in the tile
       if (i >= maxTexts) return;
+
 
       const text = new HGC.libraries.PIXI.Text(transcriptName, {
         fontSize: `${fontSize}px`,
@@ -252,14 +253,14 @@ const TranscritpsTrack = (HGC, ...args) => {
             tile.aaInfo["tileOffset"] = 0;
           } else {
             const nextExon = getNextExon(exonStarts, exonEnds, minXloc);
-            console.log(
-              "nextExon",
-              transcriptInfo["transcriptName"],
-              minXloc,
-              nextExon,
-              exonStarts[nextExon.exon],
-              exonEnds[nextExon.exon]
-            );
+            // console.log(
+            //   "nextExon",
+            //   transcriptInfo["transcriptName"],
+            //   minXloc,
+            //   nextExon,
+            //   exonStarts[nextExon.exon],
+            //   exonEnds[nextExon.exon]
+            // );
 
             tile.aaInfo["tileOffset"] =
               nextExon !== null && minXloc > startCodonPos
@@ -613,14 +614,14 @@ const TranscritpsTrack = (HGC, ...args) => {
       this.areTranscriptsHidden = false;
       this.areCodonsShown = false;
 
-      if (this.options.sequenceData !== undefined) {
-        this.sequenceLoader = new SequenceLoader(
-          this.options.sequenceData.fastaUrl,
-          this.options.sequenceData.faiUrl
-        );
+      // if (this.options.sequenceData !== undefined) {
+      //   this.sequenceLoader = new SequenceLoader(
+      //     this.options.sequenceData.fastaUrl,
+      //     this.options.sequenceData.faiUrl
+      //   );
 
-        this.pixiTexts = initializePixiTexts(this.options.codonText, HGC);
-      }
+      //   this.pixiTexts = initializePixiTexts(this.codonTextOptions, HGC);
+      // }
 
       this.transcriptInfo = {};
       this.transcriptSequences = {};
@@ -640,12 +641,21 @@ const TranscritpsTrack = (HGC, ...args) => {
       // controls when the abbreviated codon text are displayed
       this.minCodonDistance = 15;
 
-      this.options.codonText = {
+      this.codonTextOptions = {
         fontSize: `${this.fontSize * 2}px`,
         fontFamily: this.options.fontFamily,
         fill: WHITE_HEX,
         fontWeight: "bold",
       };
+
+      if (this.options.sequenceData !== undefined) {
+        this.sequenceLoader = new SequenceLoader(
+          this.options.sequenceData.fastaUrl,
+          this.options.sequenceData.faiUrl
+        );
+
+        this.pixiTexts = initializePixiTexts(this.codonTextOptions, HGC);
+      }
 
       this.colors = {};
       this.colors["+"] = colorToHex(this.options.plusStrandColor);
@@ -666,7 +676,7 @@ const TranscritpsTrack = (HGC, ...args) => {
         fontFamily: this.options.fontFamily,
         maxGeneEntries: MAX_GENE_ENTRIES,
         maxFillerEntries: MAX_FILLER_ENTRIES,
-        maxTexts: MAX_TEXTS,
+        maxTexts: this.options.maxTexts,
       });
 
       // We have to rerender everything since the vertical position
@@ -867,6 +877,7 @@ const TranscritpsTrack = (HGC, ...args) => {
       this.visibleAndFetchedTiles().forEach((tile) => {
         this.renderTile(tile);
       });
+
     }
 
     drawTile() {}
@@ -1022,7 +1033,7 @@ const TranscritpsTrack = (HGC, ...args) => {
                 (this.transcriptHeight + this.transcriptSpacing) +
               this.transcriptHeight / 2 +
               this.transcriptSpacing / 2 -
-              1;
+              this.fontSize / 2 - 1;
 
             if (this.options.showToggleTranscriptsButton) {
               yMiddle += this.toggleButtonHeight;
@@ -1048,7 +1059,7 @@ const TranscritpsTrack = (HGC, ...args) => {
                   ) -
                   codon.widthAbbrev / 2; //(codon.posStart + codon.posEnd + 1) / 2 + chrOffset
                 codon.spriteAbbrev.position.x = xMiddle;
-                codon.spriteAbbrev.position.y = yMiddle - 5;
+                codon.spriteAbbrev.position.y = yMiddle;
                 graphics.addChild(codon.spriteAbbrev);
               } else {
                 const xMiddle =
@@ -1057,7 +1068,7 @@ const TranscritpsTrack = (HGC, ...args) => {
                   ) -
                   codon.width / 2; //(codon.posStart + codon.posEnd + 1) / 2 + chrOffset
                 codon.sprite.position.x = xMiddle;
-                codon.sprite.position.y = yMiddle - 5;
+                codon.sprite.position.y = yMiddle;
                 graphics.addChild(codon.sprite);
               }
             }
@@ -1551,7 +1562,7 @@ TranscritpsTrack.config = {
     fontFamily: "Helvetica",
     transcriptSpacing: 2,
     transcriptHeight: 11,
-    maxTexts: 100,
+    maxTexts: 20,
     plusStrandColor: "#bdbfff",
     minusStrandColor: "#fabec2",
     utrColor: "#C0EAAF",
