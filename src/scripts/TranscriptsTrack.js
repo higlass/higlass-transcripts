@@ -305,6 +305,12 @@ const TranscritpsTrack = (HGC, ...args) => {
   ) {
     const topY = centerY - height / 2;
 
+    // get the bounds of the tile
+    const tileId = +tile.tileId.split(".")[1];
+    const tileWidth = +track.tilesetInfo.max_width / 2 ** +track.zoomLevel;
+    const tileMinX = track.tilesetInfo.min_pos[0] + tileId * tileWidth; // abs coordinates
+    const tileMaxX = track.tilesetInfo.min_pos[0] + (tileId + 1) * tileWidth;
+
     const exonStarts = track.transcriptInfo[transcriptId]["exonStarts"];
     const exonEnds = track.transcriptInfo[transcriptId]["exonEnds"];
     const isProteinCoding =
@@ -360,6 +366,13 @@ const TranscritpsTrack = (HGC, ...args) => {
       const exonStart = exonOffsetStarts[j];
       const exonEnd = exonOffsetEnds[j];
 
+      // if the exon has no overlap with the tile, go on
+      if(exonEnd < tileMinX || exonStart > tileMaxX){
+        //continue
+      }
+
+      //console.log(exonStart, exonEnd, tileMinX, tileMaxX)
+
       const isNonCodingOrUtr =
         !isProteinCoding ||
         (strand === "+" &&
@@ -373,10 +386,10 @@ const TranscritpsTrack = (HGC, ...args) => {
       } else {
         graphics.beginFill(track.colors[strand], alpha);
       }
-
+      
       const xStart = track._xScale(exonStart);
       const localWidth = Math.max(
-        1,
+        2,
         track._xScale(exonEnd) - track._xScale(exonStart)
       );
 
@@ -451,6 +464,7 @@ const TranscritpsTrack = (HGC, ...args) => {
       polysForMouseOver
     );
 
+
     return;
   }
 
@@ -479,19 +493,19 @@ const TranscritpsTrack = (HGC, ...args) => {
         centerYOffset += track.toggleButtonHeight;
       }
 
-      const graphics = new HGC.libraries.PIXI.Graphics();
-      tile.rectGraphics.addChild(graphics);
+      // const graphics = new HGC.libraries.PIXI.Graphics();
+      // tile.rectGraphics.addChild(graphics);
 
-      graphics.beginFill(color, alpha);
-      graphics.interactive = true;
-      graphics.buttonMode = true;
+      // graphics.beginFill(color, alpha);
+      // graphics.interactive = true;
+      // graphics.buttonMode = true;
       //graphics.mouseup = (evt) => geneClickFunc(evt, track, gene);
 
       drawExons(
         track,
         tile,
         transcriptId,
-        graphics,
+        tile.rectGraphics, //graphics,
         chrOffset, // not used for now because we have just one chromosome
         centerY + centerYOffset,
         height,
@@ -653,8 +667,9 @@ const TranscritpsTrack = (HGC, ...args) => {
           this.options.sequenceData.fastaUrl,
           this.options.sequenceData.faiUrl
         );
-
-        this.pixiTexts = initializePixiTexts(this.codonTextOptions, HGC);
+        if(!this.pixiTexts){
+          this.pixiTexts = initializePixiTexts(this.codonTextOptions, HGC);
+        }
       }
 
       this.colors = {};
@@ -688,11 +703,14 @@ const TranscritpsTrack = (HGC, ...args) => {
     destroyTile(tile) {
       tile.rectGraphics.destroy();
       tile.rectMaskGraphics.destroy();
+      tile.labelGraphics.removeChildren();
       tile.labelGraphics.destroy();
       tile.labelBgGraphics.destroy();
       tile.codonSeparatorGraphics.destroy();
+      tile.codonTextGraphics.removeChildren();
       tile.codonTextGraphics.destroy();
       tile.graphics.destroy();
+      tile = null;
     }
 
     computeTrackHeight() {
@@ -956,6 +974,7 @@ const TranscritpsTrack = (HGC, ...args) => {
     calculateZoomLevel() {
       // offset by 2 because 1D tiles are more dense than 2D tiles
       // 1024 points per tile vs 256 for 2D tiles
+      
       const xZoomLevel = tileProxy.calculateZoomLevel(
         this._xScale,
         this.tilesetInfo.min_pos[0],
@@ -965,6 +984,7 @@ const TranscritpsTrack = (HGC, ...args) => {
       let zoomLevel = Math.min(xZoomLevel, this.maxZoom);
       zoomLevel = Math.max(zoomLevel, 0);
 
+      //console.log(zoomLevel, this._xScale.domain())
       return zoomLevel;
     }
 
