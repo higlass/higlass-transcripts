@@ -604,7 +604,7 @@ const TranscritpsTrack = (HGC, ...args) => {
       this.geneStrandHSpacing = this.transcriptSpacing / 2;
       this.transcriptHHeight = this.transcriptHeight / 2;
 
-      this.miniTriangleHeight = (4 * this.transcriptHeight) / 9;
+      this.trackHeightAdjustment = this.options.trackHeightAdjustment === "automatic";
 
       this.toggleButtonHeight = 26;
       // controls when the abbreviated codon text are displayed
@@ -838,7 +838,8 @@ const TranscritpsTrack = (HGC, ...args) => {
 
       // Adjusting the track height leads to a full rerender.
       // No need to rerender again
-      if (this.adjustTrackHeight()) return;
+
+      if (this.trackHeightAdjustment && this.adjustTrackHeight()) return;
 
       this.visibleAndFetchedTiles().forEach((tile) => {
         this.renderTile(tile);
@@ -1499,6 +1500,7 @@ TranscritpsTrack.config = {
     "labelBackgroundColor",
     "labelFontColor",
     "showToggleTranscriptsButton",
+    "trackHeightAdjustment",
     "sequenceData",
   ],
   defaultOptions: {
@@ -1512,6 +1514,7 @@ TranscritpsTrack.config = {
     utrColor: "#C0EAAF",
     labelBackgroundColor: "#ffffff",
     labelFontColor: "#333333",
+    trackHeightAdjustment: "automatic",
     showToggleTranscriptsButton: true,
   },
 };
