@@ -1478,7 +1478,7 @@ const TranscritpsTrack = (HGC, ...args) => {
 };
 
 const icon =
-  '<svg width="20" height="20" xmlns="http://www.w3.org/2000/svg"><path fill="#fff" d="M-1-1h22v22H-1z"/><g><path stroke="#007fff" stroke-width="1.5" fill="#007fff" d="M-.667-.091h5v20.167h-5z"/><path stroke-width="1.5" stroke="#e8e500" fill="#e8e500" d="M5.667.242h5v20.167h-5z"/><path stroke-width="1.5" stroke="#ff0038" fill="#ff0038" d="M15.833.076h5v20.167h-5z"/><path stroke="green" stroke-width="1.5" fill="green" d="M10.833-.258H14.5v20.167h-3.667z"/></g></svg>';
+  '<svg width="20" height="20" xmlns="http://www.w3.org/2000/svg"> <g> <title>background</title> <rect fill="#fff" id="canvas_background" height="3.24996" width="3.24996" y="-1" x="-1"/> <g display="none" id="canvasGrid"> <rect fill="url(#gridpattern)" stroke-width="0" y="0" x="0" height="100%" width="100%" id="svg_2"/> </g> </g> <g> <title>Layer 1</title> <rect id="svg_1" height="20" width="20" stroke-width="0" stroke="#000" fill="#C0EAAF"/> <path stroke="#bdbfff" id="svg_4" d="m11.42795,10.0119l-4.10746,-6.99997l2.70509,0l4.10746,6.99997l-4.10746,6.99997l-2.70509,0l4.10746,-6.99997z" stroke-width="6" fill="#bdbfff"/> </g> </svg>';
 
 // default
 TranscritpsTrack.config = {
