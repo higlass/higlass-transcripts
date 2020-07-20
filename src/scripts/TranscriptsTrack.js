@@ -459,6 +459,12 @@ const TranscritpsTrack = (HGC, ...args) => {
       const chrOffset = +transcript.chrOffset;
 
       const transcriptId = track.transcriptId(transcriptInfo);
+
+
+      if (track.areTranscriptsHidden && track.transcriptInfo[transcriptId].displayOrder !== 0){
+        return;
+      };
+
       let centerYOffset =
         track.transcriptInfo[transcriptId].displayOrder *
         (height + strandSpacing);
@@ -514,10 +520,12 @@ const TranscritpsTrack = (HGC, ...args) => {
 
   const toggleBtnClick = (event, track) => {
     if (!track.areTranscriptsHidden) {
-      track.buttons["pToggleButton"].children[0].text = "SHOW TRANSCRIPTS";
+      const numNonVisibleTranscripts = Object.keys(track.transcriptInfo).length - track.transcriptPositionInfo[0].length;
+      const numTranscripts = Math.max(0, numNonVisibleTranscripts) ;
+      track.buttons["pToggleButton"].children[0].text = "SHOW " + numTranscripts + " MORE TRANSCRIPTS...";
       track.areTranscriptsHidden = true;
     } else {
-      track.buttons["pToggleButton"].children[0].text = "HIDE TRANSCRIPTS";
+      track.buttons["pToggleButton"].children[0].text = "SHOW FEWER TRANSCRIPTS...";
       track.areTranscriptsHidden = false;
     }
 
@@ -541,7 +549,7 @@ const TranscritpsTrack = (HGC, ...args) => {
     pToggleButton.clear();
     pToggleButton.removeChildren();
 
-    const text = new HGC.libraries.PIXI.Text("HIDE TRANSCRIPTS", {
+    const text = new HGC.libraries.PIXI.Text("SHOW FEWER TRANSCRIPTS...", {
       fontSize: `10px`,
       fontFamily: track.options.fontFamily,
       fontWeight: "500",
@@ -671,7 +679,9 @@ const TranscritpsTrack = (HGC, ...args) => {
       const trackMargin = 10;
 
       if (this.areTranscriptsHidden) {
-        height = this.toggleButtonHeight + trackMargin;
+        height = this.toggleButtonHeight + 
+          Math.min(1, this.numTranscriptRows) * (this.transcriptHeight + this.transcriptSpacing) + 
+          trackMargin;
       } else {
         const tbh = this.options.showToggleTranscriptsButton
           ? this.toggleButtonHeight
@@ -750,7 +760,6 @@ const TranscritpsTrack = (HGC, ...args) => {
       this.transcriptInfo = {};
       this.transcriptPositionInfo = {};
 
-      let displayOrder = 0;
       this.numTranscriptRows = 0;
       visibleTranscripts
         .sort(function (a, b) {
@@ -786,10 +795,16 @@ const TranscritpsTrack = (HGC, ...args) => {
             importance: tsFormatted.importance,
           };
           this.transcriptInfo[tInfo.transcriptId] = tInfo;
-          displayOrder += 1;
         });
 
       this.numTranscriptRows = Object.keys(this.transcriptPositionInfo).length;
+
+      // Update the button text.
+      if (this.areTranscriptsHidden && this.buttons["pToggleButton"].children[0] && this.transcriptPositionInfo[0]) {
+        const numNonVisibleTranscripts = Object.keys(this.transcriptInfo).length - this.transcriptPositionInfo[0].length;
+        const numTranscripts = Math.max(0, numNonVisibleTranscripts) ;
+        this.buttons["pToggleButton"].children[0].text = "SHOW " + numTranscripts + " MORE TRANSCRIPTS...";
+      } 
     }
 
     calculateTranscriptRowNumber(transcriptPositionInfo, txStart, txEnd) {
@@ -867,8 +882,6 @@ const TranscritpsTrack = (HGC, ...args) => {
       tile.rectGraphics.clear();
       tile.labelBgGraphics.clear();
 
-      if (this.areTranscriptsHidden) return;
-
       const plusTranscripts = tile.tileData.filter(
         (td) =>
           td.type !== "filler" && (td.strand === "+" || td.fields[5] === "+")
@@ -877,6 +890,7 @@ const TranscritpsTrack = (HGC, ...args) => {
         (td) =>
           td.type !== "filler" && (td.strand === "-" || td.fields[5] === "-")
       );
+
 
       const strandCenterY =
         this.transcriptHeight / 2 + this.transcriptSpacing / 2;
@@ -969,10 +983,15 @@ const TranscritpsTrack = (HGC, ...args) => {
             if (
               !this.transcriptInfo[transcriptId] ||
               !tile.aaInfo.aminoAcids[transcriptId]
-            )
+            ){
               return;
+            }
 
             const transcript = this.transcriptInfo[transcriptId];
+
+            if (this.areTranscriptsHidden && transcript.displayOrder !== 0) {
+              return;
+            }
 
             const chrOffset = +td.chrOffset;
             const codons = tile.aaInfo.aminoAcids[transcriptId];
@@ -1065,10 +1084,15 @@ const TranscritpsTrack = (HGC, ...args) => {
             if (
               !this.transcriptInfo[transcriptId] ||
               !tile.aaInfo.aminoAcids[transcriptId]
-            )
+            ){
               return;
-
+            }
+              
             const transcript = this.transcriptInfo[transcriptId];
+
+            if (this.areTranscriptsHidden && transcript.displayOrder !== 0) {
+              return;
+            }
 
             const chrOffset = +td.chrOffset;
             const codons = tile.aaInfo.aminoAcids[transcriptId];
@@ -1185,7 +1209,7 @@ const TranscritpsTrack = (HGC, ...args) => {
 
             if (!text) return;
 
-            if (this.areTranscriptsHidden) {
+            if (this.areTranscriptsHidden && transcript.displayOrder !== 0) {
               text.visible = false;
               return;
             }
