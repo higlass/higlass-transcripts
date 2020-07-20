@@ -176,8 +176,6 @@ export function getAminoAcidsForTile(
     }
   }
 
-  //console.log("firstNonPoint", firstNonPoint, "lastNonPoint", lastNonPoint, minX)
-
   let reqNucLeftStart = null;
   let reqNucLeftEnd = null;
   // load the first codon
