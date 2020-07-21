@@ -1,9 +1,6 @@
-//import { scaleLinear, scaleOrdinal, schemeCategory10 } from "d3-scale";
-//import { color } from "d3-color";
-//import boxIntersect from "box-intersect";
 import { scaleLinear } from "d3-scale";
-//import classifyPoint from "robust-point-in-polygon";
-//import { AMINO_ACIDS, CODONS } from "./configs";
+import slugid from 'slugid';
+
 import {
   initializePixiTexts,
   getContainingExon,
@@ -14,7 +11,7 @@ import {
   reverseChrCoord,
   getMinusStrandSeq,
 } from "./utils";
-//import { TextStyle } from "pixi.js";
+
 import SequenceLoader from "./SequenceLoader";
 
 const TranscritpsTrack = (HGC, ...args) => {
@@ -35,15 +32,12 @@ const TranscritpsTrack = (HGC, ...args) => {
   const WHITE_HEX = colorToHex("#ffffff");
   const DARKGREY_HEX = colorToHex("#999999");
 
-  const MAX_GENE_ENTRIES = 50;
-  const MAX_FILLER_ENTRIES = 5000;
-
   /**
    * Initialize a tile. Pulled out from the track so that it
    * can be modified without having to modify the track
-   * object (e.g. in an Observable notebooke)
+   * object (e.g. in an Observable notebook)
    *
-   * @param  {HorizontalGeneAnnotationsTrack} track   The track object
+   * @param  {TranscriptsTrack} track   The track object
    * @param  {Object} tile    The tile to render
    * @param  {Object} options The track's options
    */
@@ -329,6 +323,7 @@ const TranscritpsTrack = (HGC, ...args) => {
     const yMiddle = centerY;
 
     const polys = [];
+    const polysSVG = []; // holds all polygons that need to be drawn for SVG export
 
     graphics.beginFill(track.colors.intron);
     // draw the middle line
@@ -347,6 +342,13 @@ const TranscritpsTrack = (HGC, ...args) => {
     // For mouseOver
     polys.push([xStartPos, xStartPos + width, topY, topY + height]);
 
+    // For SVG export
+    polysSVG.push({
+      rect: poly,
+      color: track.colors.intronHEX,
+      paintOrder: 0
+    });
+
     // draw the actual exons
     for (let j = 0; j < exonOffsetStarts.length; j++) {
       const exonStart = exonOffsetStarts[j];
@@ -364,12 +366,10 @@ const TranscritpsTrack = (HGC, ...args) => {
         (strand === "-" &&
           (exonStart >= startCodonPos || exonEnd <= stopCodonPos));
 
-      if (isNonCodingOrUtr) {
-        graphics.beginFill(track.colors.utr);
-      } else {
-        graphics.beginFill(track.colors[strand]);
-      }
-
+      const colorUsed = isNonCodingOrUtr ? track.colors.utr : track.colors[strand];
+      const colorUsedSVG = isNonCodingOrUtr ? track.options.utrColor : track.colors[strand+"HEX"];
+      
+      graphics.beginFill(colorUsed);
       const xStart = track._xScale(exonStart);
       const localWidth = Math.max(
         2,
@@ -433,14 +433,26 @@ const TranscritpsTrack = (HGC, ...args) => {
 
       graphics.drawPolygon(localPoly);
       polys.push(localRect);
+
+      // For SVG export
+      polysSVG.push({
+        rect: localPoly,
+        color: colorUsedSVG,
+        paintOrder: 1
+      });
     }
 
     const polysForMouseOver = polys.map((x) => [
       x,
       track.transcriptInfo[transcriptId],
     ]);
+
     tile.allExonsForMouseOver = tile.allExonsForMouseOver.concat(
       polysForMouseOver
+    );
+
+    tile.allExonsForSVG = tile.allExonsForSVG.concat(
+      polysSVG
     );
 
     return;
@@ -638,10 +650,13 @@ const TranscritpsTrack = (HGC, ...args) => {
       this.colors = {};
       this.colors["+"] = colorToHex(this.options.plusStrandColor);
       this.colors["-"] = colorToHex(this.options.minusStrandColor);
+      this.colors["+HEX"] = this.options.plusStrandColor;
+      this.colors["-HEX"] = this.options.minusStrandColor;
       this.colors["utr"] = colorToHex(this.options.utrColor);
       this.colors["labelFont"] = colorToHex(this.options.labelFontColor);
       this.colors["black"] = colorToHex("#000000");
       this.colors["intron"] = colorToHex("#CFCFCF");
+      this.colors["intronHEX"] = "#CFCFCF";
       this.colors["labelBackground"] = colorToHex(
         this.options.labelBackgroundColor
       );
@@ -875,6 +890,7 @@ const TranscritpsTrack = (HGC, ...args) => {
       if (!tile.initialized) return;
 
       tile.allExonsForMouseOver = [];
+      tile.allExonsForSVG = [];
       // store the scale at while the tile was drawn at so that
       // we only resize it when redrawing
       tile.drawnAtScale = this._xScale.copy();
@@ -1498,6 +1514,127 @@ const TranscritpsTrack = (HGC, ...args) => {
 
       return "";
     }
+
+    exportSVG() {
+      let track = null;
+      let base = null;
+  
+      base = document.createElement('g');
+      track = base;
+
+      const clipPathId = slugid.nice();
+
+      const gClipPath = document.createElement('g');
+      gClipPath.setAttribute('style', `clip-path:url(#${clipPathId});`);
+
+      track.appendChild(gClipPath);
+
+      // define the clipping area as a polygon defined by the track's
+      // dimensions on the canvas
+      const clipPath = document.createElementNS(
+        'http://www.w3.org/2000/svg',
+        'clipPath'
+      );
+      clipPath.setAttribute('id', clipPathId);
+      track.appendChild(clipPath);
+
+      const clipPolygon = document.createElementNS(
+        'http://www.w3.org/2000/svg',
+        'polygon'
+      );
+      clipPath.appendChild(clipPolygon);
+
+      clipPolygon.setAttribute(
+        'points',
+        `${this.position[0]},${this.position[1]} ` +
+          `${this.position[0] + this.dimensions[0]},${this.position[1]} ` +
+          `${this.position[0] + this.dimensions[0]},${this.position[1] +
+            this.dimensions[1]} ` +
+          `${this.position[0]},${this.position[1] + this.dimensions[1]} `
+      );
+
+      const output = document.createElement('g');
+      
+      output.setAttribute(
+        'transform',
+        `translate(${this.position[0]},${this.position[1]})`
+      );
+  
+      gClipPath.appendChild(output);
+
+      // We need to draw the lower order rectables first (middle line)
+      const paintOrders = [0,1];
+
+      paintOrders.forEach(paintOrder => {
+
+        this.visibleAndFetchedTiles()
+          .filter(tile => tile.allExonsForSVG)
+          .forEach(tile => {
+            const gTile = document.createElement('g');
+            gTile.setAttribute(
+              'transform',
+              `translate(${tile.rectGraphics.position.x},
+              ${tile.rectGraphics.position.y})
+              scale(${tile.rectGraphics.scale.x},
+              ${tile.rectGraphics.scale.y})`
+            );
+    
+            tile.allExonsForSVG
+            .filter(rect => rect.paintOrder === paintOrder)
+            .forEach(rect => {
+              const r = document.createElement('path');
+              const poly = rect.rect;
+
+              let d = `M ${poly[0]} ${poly[1]}`;
+
+              for (let i = 2; i < poly.length; i += 2) {
+                d += ` L ${poly[i]} ${poly[i + 1]}`;
+              }
+
+              r.setAttribute('d', d);
+              r.setAttribute('fill', rect.color);
+              r.setAttribute('opacity', '1');
+              gTile.appendChild(r);
+            });
+            output.appendChild(gTile);
+          });
+
+      });
+      
+      // We dont want to draw textsw twice
+      const allreadyDrawnTexts = [];
+
+      this.allTexts
+        .filter(text => text.text.visible)
+        .forEach(text => {
+
+          if(allreadyDrawnTexts.includes(text.text.text)){
+            return;
+          }
+
+          const g = document.createElement('g');
+          const t = document.createElement('text');
+          t.setAttribute('text-anchor', 'start');
+          t.setAttribute('font-family', this.options.fontFamily);
+          t.setAttribute('font-size', `${this.fontSize}px`);
+  
+          g.setAttribute('transform', `scale(${text.text.scale.x},1)`);
+  
+          t.setAttribute('fill', this.colors["labelFont"]);
+          t.innerHTML = text.text.text;
+          allreadyDrawnTexts.push(text.text.text);
+  
+          g.appendChild(t);
+          g.setAttribute(
+            'transform',
+            `translate(${text.text.x},${text.text.y + this.transcriptHeight/4})scale(${text.text.scale.x},1)`
+          );
+          output.appendChild(g);
+        });
+  
+      return [base, base];
+    }
+
   }
   return new TranscritpsTrackClass(...args);
 };
