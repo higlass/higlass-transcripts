@@ -1,0 +1,11 @@
+# Extract transcripts data from GTF file
+
+python extract_transcript_data.py
+
+# Aggregate with clods
+
+clodius aggregate bedfile --max-per-tile 20 --importance-column 5 --chromsizes-filename chromInfo_hg38.txt --output-file transcripts_20200722.db --delimiter $'\t' gene_table_v2_transcripts_names_new.txt
+
+# Ingest to server
+
+python manage.py ingest_tileset --filename data/transcripts_20200722.db --filetype beddb --datatype gene-annotation --uid transcripts_20200722

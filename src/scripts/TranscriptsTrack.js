@@ -735,10 +735,10 @@ const TranscritpsTrack = (HGC, ...args) => {
 
     formatTranscriptData(ts) {
       const strand = ts[5];
-      const stopCodonPos = ts[15] === "." ? "." : (strand === "+" ? +ts[15] + 2 : +ts[15] - 1);
-      const startCodonPos = ts[14] === "." ? "." : (strand === "+" ? +ts[14] - 1 : +ts[14] + 2);
-      const exonStarts = ts[12].split(",").map((x) => +x - 1);
-      const exonEnds = ts[13].split(",").map((x) => +x);
+      const stopCodonPos = ts[12] === "." ? "." : (strand === "+" ? +ts[12] + 2 : +ts[12] - 1);
+      const startCodonPos = ts[11] === "." ? "." : (strand === "+" ? +ts[11] - 1 : +ts[11] + 2);
+      const exonStarts = ts[9].split(",").map((x) => +x - 1);
+      const exonEnds = ts[10].split(",").map((x) => +x);
       const txStart = +ts[1] - 1;
       const txEnd = +ts[2];
 
