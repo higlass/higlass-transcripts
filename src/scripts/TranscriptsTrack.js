@@ -156,7 +156,7 @@ const TranscritpsTrack = (HGC, ...args) => {
       let minXloc = minXlocOrig;
       let maxXloc = maxXlocOrig;
 
-      if (transcriptInfo["codingType"] !== "protein_coding") return;
+      if (transcriptInfo["startCodonPos"] === "." || transcriptInfo["stopCodonPos"] === ".") return;
 
       const strand = transcriptInfo["strand"];
       tile.aaInfo["exonOffsets"][transcriptId] = [];
@@ -291,7 +291,8 @@ const TranscritpsTrack = (HGC, ...args) => {
     const exonEnds = track.transcriptInfo[transcriptId]["exonEnds"];
 
     const isProteinCoding =
-      track.transcriptInfo[transcriptId]["codingType"] === "protein_coding";
+      track.transcriptInfo[transcriptId]["startCodonPos"] !== "." && track.transcriptInfo[transcriptId]["stopCodonPos"] !== ".";
+
 
     const startCodonPos = isProteinCoding
       ? track.transcriptInfo[transcriptId]["startCodonPos"] + chrOffset
@@ -593,6 +594,7 @@ const TranscritpsTrack = (HGC, ...args) => {
       this.trackId = this.id;
 
       this.animate = animate;
+
       this.options = options;
       this.initOptions();
 
@@ -601,7 +603,7 @@ const TranscritpsTrack = (HGC, ...args) => {
       this.trackHeight = 0;
       this.trackHeightOld = 0;
 
-      this.areTranscriptsHidden = false;
+      this.areTranscriptsHidden = this.options.startCollapsed;
       this.areCodonsShown = false;
 
       this.transcriptInfo = {};
@@ -733,8 +735,8 @@ const TranscritpsTrack = (HGC, ...args) => {
 
     formatTranscriptData(ts) {
       const strand = ts[5];
-      const stopCodonPos = strand === "+" ? +ts[15] + 2 : +ts[15] - 1;
-      const startCodonPos = strand === "+" ? +ts[14] - 1 : +ts[14] + 2;
+      const stopCodonPos = ts[15] === "." ? "." : (strand === "+" ? +ts[15] + 2 : +ts[15] - 1);
+      const startCodonPos = ts[14] === "." ? "." : (strand === "+" ? +ts[14] - 1 : +ts[14] + 2);
       const exonStarts = ts[12].split(",").map((x) => +x - 1);
       const exonEnds = ts[13].split(",").map((x) => +x);
       const txStart = +ts[1] - 1;
@@ -1562,7 +1564,7 @@ const TranscritpsTrack = (HGC, ...args) => {
   
       gClipPath.appendChild(output);
 
-      // We need to draw the lower order rectables first (middle line)
+      // We need to draw the lower order rectangles first (middle line)
       const paintOrders = [0,1];
 
       paintOrders.forEach(paintOrder => {
@@ -1660,6 +1662,7 @@ TranscritpsTrack.config = {
     "utrColor",
     "labelBackgroundColor",
     "labelFontColor",
+    "startCollapsed",
     "showToggleTranscriptsButton",
     "trackHeightAdjustment",
     "sequenceData",
@@ -1675,6 +1678,7 @@ TranscritpsTrack.config = {
     utrColor: "#C0EAAF",
     labelBackgroundColor: "#ffffff",
     labelFontColor: "#333333",
+    startCollapsed: true,
     trackHeightAdjustment: "automatic",
     showToggleTranscriptsButton: true,
   },
