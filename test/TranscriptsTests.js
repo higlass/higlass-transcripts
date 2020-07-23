@@ -48,9 +48,7 @@ describe("Transcripts", () => {
 
       const tile = trackObj.visibleAndFetchedTiles()[2];
 
-      setTimeout(() => {
-
-        expect(trackObj.trackHeight).to.equal(106);
+      expect(trackObj.trackHeight).to.equal(106);
         expect(Object.keys(trackObj.transcriptInfo).length).to.equal(5);
 
         const transcriptInfo = trackObj.transcriptInfo["ENST00000270722.9_chr1_3069211_3438621"];
@@ -59,10 +57,10 @@ describe("Transcripts", () => {
         expect(transcriptInfo.displayOrder).to.equal(4);
 
         // Check position info
-        const posInfo = trackObj.transcriptPositionInfo["4"][0]
-        expect(trackObj.areTranscriptsHidden).to.equal(false);
-
+        const posInfo = trackObj.transcriptPositionInfo[4][0]
         expect(posInfo[1]).to.equal(3438621);
+
+        expect(trackObj.areTranscriptsHidden).to.equal(false);
 
         // Check vertical positioning of exon
         
@@ -73,7 +71,9 @@ describe("Transcripts", () => {
 
         done();
 
-      }, 1000);
+      // setTimeout(() => {
+
+      // }, 1000);
 
 
       
