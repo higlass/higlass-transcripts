@@ -17,7 +17,7 @@ df_orig = read_gtf(gencode_file)
 df = df_orig
 total_entries = len(df)
 print("Length of dataframe: ", total_entries)
-#exit()
+
 data = {}
 
 # We use random ints for the importance column. Could be replaces with publication counts
@@ -84,6 +84,9 @@ for i, v in df.iterrows():
 data = dict(sorted(data.items()))
 
 for gene_id, transcripts in data.items():
+    # Each transcript of the same gene gets the same importance value (could be changed)
+    importance = random.randint(1,100)
+
     for transcript_id, info in transcripts.items():
         if info['gene_type'] == 'protein_coding' or info['gene_type'] == 'miRNA':
             if info['chr'] in chrms:
@@ -114,7 +117,7 @@ for gene_id, transcripts in data.items():
                 exons_end_formated = sorted([int(i) for i in exons_end])
                 info['ExonEnds'] = ",".join([str(e) for e in exons_end_formated])
 
-                info['citationCount'] = random.randint(1,100)
+                info['citationCount'] = importance
                 # if transcript_id in pub_count:
                 #     info['citationCount'] = pub_count[transcript_id]
 
@@ -147,11 +150,6 @@ for gene_id, transcripts in data.items():
                         'StopCodonStart': info['StopCodonStart']}
 
                     output.append(data_clean[info['gene_id']][info['transcript_id']])
-
-# prepare for aggregation
-#for gene_id, transcripts in data_clean.items():
-#    for transcript_id, info in transcripts.items():
-
 
 headers = output[0].keys()
 with open(output_file, 'w') as opf:
