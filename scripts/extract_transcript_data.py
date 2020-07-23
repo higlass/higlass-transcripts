@@ -3,7 +3,16 @@ import gzip
 import csv
 import random
 
-df_orig = read_gtf('gencode.v29.annotation.gtf')
+# Input/Output file names (need to be in same folder)
+# Gencode file
+gencode_file = 'gencode.v29.annotation.gtf'
+# Chromosome file
+chr_file = 'chromInfo_hg38.txt'
+# Output file
+output_file = 'gene_table_v2_transcripts_names_new.txt'
+
+
+df_orig = read_gtf(gencode_file)
 #df = df_orig.head(20000)
 df = df_orig
 total_entries = len(df)
@@ -20,7 +29,7 @@ data = {}
 #             pub_count[line[0]] = 0
 #         pub_count[line[0]] = pub_count[line[0]] + 1
 
-with open('chromInfo_hg38.txt', 'r') as opf:
+with open(chr_file, 'r') as opf:
     chrsizes = opf.readlines()
 
 chrms = [i.split('\t')[0] for i in chrsizes]
@@ -145,7 +154,7 @@ for gene_id, transcripts in data.items():
 
 
 headers = output[0].keys()
-with open('gene_table_v2_transcripts_names_new.txt', 'w') as opf:
+with open(output_file, 'w') as opf:
     myWriter = csv.DictWriter(opf, delimiter='\t', fieldnames=headers)
     for row in output:
         myWriter.writerow(row)
