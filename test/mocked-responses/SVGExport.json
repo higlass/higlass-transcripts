@@ -67,5 +67,103 @@
    6,
    256
   ]
- }
+ },
+ "transcripts_20200723_3": {
+  "zoom_step": 1,
+  "max_length": 3088269833,
+  "assembly": null,
+  "chrom_names": "chr1\tchr2\tchr3\tchr4\tchr5\tchr6\tchr7\tchr8\tchr9\tchr10\tchr11\tchr12\tchr13\tchr14\tchr15\tchr16\tchr17\tchr18\tchr19\tchr20\tchr21\tchr22\tchrX\tchrY",
+  "chrom_sizes": "248956422\t242193529\t198295559\t190214555\t181538259\t170805979\t159345973\t145138636\t138394717\t133797422\t135086622\t133275309\t114364328\t107043718\t101991189\t90338345\t83257441\t80373285\t58617616\t64444167\t46709983\t50818468\t156040895\t57227415",
+  "tile_size": 1024,
+  "max_zoom": 22,
+  "max_width": 4294967296,
+  "min_pos": [
+   1
+  ],
+  "max_pos": [
+   3088269833
+  ],
+  "header": "",
+  "name": "transcripts_20200723_3.beddb",
+  "datatype": "gene-annotation",
+  "coordSystem": "",
+  "coordSystem2": ""
+ },
+ "transcripts_20200723_3.22.2949": [],
+ "transcripts_20200723_3.22.2950": [
+  {
+   "xStart": 3021483,
+   "xEnd": 3022903,
+   "chrOffset": 0,
+   "importance": 15,
+   "uid": "Q39CH2IKQw6zALoPWancFA",
+   "fields": [
+    "chr1",
+    "3021483",
+    "3022903",
+    "ACTRT2-201",
+    "15",
+    "+",
+    "ENSG00000169717.6",
+    "ENST00000378404.3",
+    "protein_coding",
+    "3021483",
+    "3022903",
+    "3021687",
+    "3022818"
+   ],
+   "name": "ACTRT2-201"
+  }
+ ],
+ "transcripts_20200723_3.22.2951": [
+  {
+   "xStart": 3021483,
+   "xEnd": 3022903,
+   "chrOffset": 0,
+   "importance": 15,
+   "uid": "Q39CH2IKQw6zALoPWancFA",
+   "fields": [
+    "chr1",
+    "3021483",
+    "3022903",
+    "ACTRT2-201",
+    "15",
+    "+",
+    "ENSG00000169717.6",
+    "ENST00000378404.3",
+    "protein_coding",
+    "3021483",
+    "3022903",
+    "3021687",
+    "3022818"
+   ],
+   "name": "ACTRT2-201"
+  }
+ ],
+ "transcripts_20200723_3.22.2952": [
+  {
+   "xStart": 3021483,
+   "xEnd": 3022903,
+   "chrOffset": 0,
+   "importance": 15,
+   "uid": "Q39CH2IKQw6zALoPWancFA",
+   "fields": [
+    "chr1",
+    "3021483",
+    "3022903",
+    "ACTRT2-201",
+    "15",
+    "+",
+    "ENSG00000169717.6",
+    "ENST00000378404.3",
+    "protein_coding",
+    "3021483",
+    "3022903",
+    "3021687",
+    "3022818"
+   ],
+   "name": "ACTRT2-201"
+  }
+ ],
+ "transcripts_20200723_3.22.2953": []
 }

@@ -14,6 +14,8 @@ module.exports = function(config) {
       'node_modules/react-bootstrap/dist/react-bootstrap.js',
       'node_modules/bootstrap/dist/css/bootstrap.min.css',
       'test/SVGExportTests.js',
+      //'test/AminoAcidTests.js',
+      'test/TranscriptsTests.js',
       'node_modules/higlass/dist/hglib.css',
       'node_modules/higlass/dist/hglib.js',
     ],

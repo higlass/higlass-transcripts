@@ -9,23 +9,6 @@
     {
       "tracks": {
         "top": [
-          
-          {
-            "server": "http://higlass.io/api/v1",
-            "tilesetUid": "NyITQvZsS_mOFNlz5C2LJg",
-            "uid": "Lb1oLu6rSiaIFcdrouucQg",
-            "type": "horizontal-chromosome-labels",
-            "options": {
-              "color": "#808080",
-              "stroke": "#ffffff",
-              "fontSize": 12,
-              "fontIsLeftAligned": false,
-              "showMousePosition": false,
-              "mousePositionColor": "#000000"
-            },
-            "width": 768,
-            "height": 30
-          },
           {
             "server": "http://localhost:8001/api/v1",
             "tilesetUid": "transcripts_20200723_3",
@@ -47,7 +30,13 @@
               "maxTexts": 100,
               "showToggleTranscriptsButton": true,
               "trackHeightAdjustment": "automatic",
-              "startCollapsed": false
+              "startCollapsed": false,
+              "sequenceData": {
+                "type": "fasta",
+                "fastaUrl": "https://aveit.s3.amazonaws.com/higlass/data/sequence/hg38.fa",
+                "faiUrl": "https://aveit.s3.amazonaws.com/higlass/data/sequence/hg38.fa.fai",
+                "chromSizesUrl": "https://aveit.s3.amazonaws.com/higlass/data/sequence/hg38.mod.chrom.sizes"
+              }
             },
             "width": 768,
             "height": 40
@@ -61,8 +50,8 @@
         "gallery": []
       },
       "initialXDomain": [
-      3020000,
-        3024000
+        3067674.52669861,
+        3069731.7217806783
       ],
       "initialYDomain": [
         -2681156982.8645544,

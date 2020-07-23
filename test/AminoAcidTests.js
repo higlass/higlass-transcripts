@@ -11,7 +11,7 @@ import {
   removeHGComponent,
 } from "./utils/test-helpers";
 
-import viewConf from "./view-configs/simple-track";
+import viewConf from "./view-configs/simple-track-aa";
 
 import TranscriptsTrack from "../src/scripts/TranscriptsTrack";
 
@@ -21,14 +21,14 @@ register({
   config: TranscriptsTrack.config,
 });
 
-describe("SVG export", () => {
-  const fetchMockHelper = new FetchMockHelper("", "SVGExport");
+describe("Amino acid", () => {
+  const fetchMockHelper = new FetchMockHelper("", "AminoAcidTests");
 
   beforeAll(async () => {
     await fetchMockHelper.activateFetchMock();
   });
 
-  describe("SVG export", () => {
+  describe("Amino acid tests", () => {
     let hgc = null;
     let div = null;
 
@@ -37,30 +37,31 @@ describe("SVG export", () => {
     });
 
     it("tests that the export works and contains the correct data", (done) => {
-      hgc.instance().handleExportSVG();
 
       const trackObj = getTrackObjectFromHGC(
         hgc.instance(),
         viewConf.views[0].uid,
-        viewConf.views[0].tracks.top[1].uid
+        viewConf.views[0].tracks.top[0].uid
       );
+      const tile = trackObj.visibleAndFetchedTiles()[0];
 
-      const tile = trackObj.visibleAndFetchedTiles()[1];
-      const exon = tile.allExonsForSVG[1];
+      setTimeout(() => {  
+        
+        
+        console.log(tile.aaInfo.exonOffsets["ENST00000378404.3_chr1_3021483_3022903"]);
+        console.log(tile.aaInfo.aminoAcids);
 
-
-      expect(exon.rect[0]).to.equal(285.285);
-      expect(exon.rect[5]).to.equal(33);
-      expect(exon.color).to.equal("#C0EAAF");
-
-      const exon2 = tile.allExonsForSVG[2];
-
-      expect(exon2.rect[0]).to.equal(324.555);
-      expect(exon2.rect[5]).to.equal(33);
-      expect(exon2.color).to.equal("#bdbfff");
+        done();
+       }, 2000);
 
 
-      done();
+
+
+
+     
+
+
+      
     });
 
     afterAll(() => {
