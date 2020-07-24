@@ -33,6 +33,7 @@ To create an aggregated `beddb` file from that data, you can use the script
 ```
 python /scripts/aggregate_transcripts.py
 ```
+Example `bed` and `beddb` files can be found in the `examples` folder.
 
 To ingest the data into higlass-server:
 ```
