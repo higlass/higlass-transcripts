@@ -546,6 +546,7 @@ const TranscritpsTrack = (HGC, ...args) => {
       height: track.computeTrackHeight(),
       resizeParentDiv: true,
       trackId: track.trackId,
+      viewId: track.viewId,
     });
   };
 
@@ -589,9 +590,10 @@ const TranscritpsTrack = (HGC, ...args) => {
     .HorizontalGeneAnnotationsTrack {
     constructor(context, options) {
       super(context, options);
-      const { animate } = context;
+      const { animate, viewUid } = context;
 
       this.trackId = this.id;
+      this.viewId = viewUid;
 
       this.animate = animate;
 
@@ -728,6 +730,7 @@ const TranscritpsTrack = (HGC, ...args) => {
         height: this.trackHeight,
         resizeParentDiv: true,
         trackId: this.trackId,
+        viewId: this.viewId
       });
 
       return true;
