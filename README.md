@@ -1,6 +1,6 @@
 # HiGlass Transcripts Track - Under development
 
-Disply gene transcripts in HiGlass!
+Display gene transcripts in HiGlass!
 
 Zoomed out:
 
