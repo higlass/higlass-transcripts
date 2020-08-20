@@ -1,4 +1,4 @@
-# HiGlass Transcripts Track - Under development
+# HiGlass Transcripts Track
 
 Display gene transcripts in HiGlass!
 
