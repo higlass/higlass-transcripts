@@ -123,71 +123,30 @@ And some other text
             "width": 768,
             "height": 25
           },
-          // {
-          //   "server": "http://54.88.112.8:8170/api/v1",
-          //   "tilesetUid": "Zxm6Y5h0Rgi0kqUTVqNu6A",
-          //   "uid": "BlekgyHTTImLDJmooDS8Pw",
-          //   "type": "horizontal-transcripts",
-          //   "options": {
-          //     "fontSize": 10,
-          //     "labelFontColor": "#333333",
-          //     "labelBackgroundColor": "#e9e9e9",
-          //     "labelPosition": "hidden",
-          //     "labelLeftMargin": 0,
-          //     "labelRightMargin": 0,
-          //     "labelTopMargin": 0,
-          //     "labelBottomMargin": 0,
-          //     "minHeight": 24,
-          //     "plusStrandColor": "blue",
-          //     "minusStrandColor": "red",
-          //     "trackBorderWidth": 0,
-          //     "trackBorderColor": "black",
-          //     "showMousePosition": false,
-          //     "mousePositionColor": "#000000",
-          //     "geneAnnotationHeight": 18,
-          //     "geneLabelPosition": "outside",
-          //     "geneStrandSpacing": 5,
-          //     "name": "transcripts-annotations",
-          //     "fontFamily": "Arial",
-          //     "maxTexts": 20,
-          //     "showToggleTranscriptsButton": true,
-          //     "sequenceData": {
-          //       "type": "fasta",
-          //       "fastaUrl": "https://aveit.s3.amazonaws.com/higlass/data/sequence/hg38.fa",
-          //       "faiUrl": "https://aveit.s3.amazonaws.com/higlass/data/sequence/hg38.fa.fai",
-          //       "chromSizesUrl": "https://aveit.s3.amazonaws.com/higlass/data/sequence/hg38.mod.chrom.sizes"
-          //     },
-          //   },
-          //   "width": 768,
-          //   "height": 358
-          // },
           {
-            "server": "http://localhost:8001/api/v1",
-            "tilesetUid": "transcript_annotation_v1",
+            // "server": "http://localhost:8001/api/v1",
+            // "tilesetUid": "transcripts_20200723_3",
+            "server": "http://ec2-3-231-224-18.compute-1.amazonaws.com/api/v1",
+            "tilesetUid": "transcripts_hg38",
             "uid": "transcript_annotation",
             "type": "horizontal-transcripts",
             "options": {
               "fontSize": 9,
               "labelFontColor": "#222222",
               "labelBackgroundColor": "#e9e9e9",
-              "labelPosition": "hidden",
-              "labelLeftMargin": 0,
-              "labelRightMargin": 0,
-              "labelTopMargin": 0,
-              "labelBottomMargin": 0,
               "minHeight": 24,
               "plusStrandColor": "#bdbfff",
               "minusStrandColor": "#fabec2",
-              "trackBorderWidth": 0,
-              "trackBorderColor": "black",
-              "showMousePosition": false,
+              "utrColor": "#C0EAAF",
               "mousePositionColor": "#000000",
               "transcriptHeight": 12,
               "transcriptSpacing": 2,
-              "name": "transcripts-annotations",
+              "name": "Gene transcripts",
               "fontFamily": "Helvetica",
-              "maxTexts": 20,
+              "maxTexts": 100,
               "showToggleTranscriptsButton": true,
+              "trackHeightAdjustment": "automatic",
+              "startCollapsed": false,
               "sequenceData": {
                 "type": "fasta",
                 "fastaUrl": "https://aveit.s3.amazonaws.com/higlass/data/sequence/hg38.fa",
@@ -196,7 +155,7 @@ And some other text
               },
             },
             "width": 768,
-            "height": 358
+            "height": 40
           },
           
           {
@@ -223,12 +182,14 @@ And some other text
         "gallery": []
       },
       "initialXDomain": [
-      2148820.8089092625,
-        2148904.489478085
+      // 2148820.8089092625,
+      //   2148904.489478085
       // 114780590.55746861,
       //   114780613.7433006
-      // 3185728.7019935627,
-      //   3186320.9211128424
+      // 3020000,
+      //   3024000
+        3021674.52669861,
+        3021731.7217806783
         // 3021672.8733434854,
         // 3021717.752634499
         // 451246665.4697236,

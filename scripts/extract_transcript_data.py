@@ -7,9 +7,9 @@ import random
 # Gencode file
 gencode_file = 'gencode.v29.annotation.gtf'
 # Chromosome file
-chr_file = 'chromInfo_hg38.txt'
+chr_file = 'hg38_full.txt'
 # Output file
-output_file = 'gene_table_v2_transcripts_names_new.txt'
+output_file = 'extracted_transcripts_20200814.txt'
 
 
 df_orig = read_gtf(gencode_file)
