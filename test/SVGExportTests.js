@@ -48,14 +48,13 @@ describe("SVG export", () => {
       const tile = trackObj.visibleAndFetchedTiles()[1];
       const exon = tile.allExonsForSVG[1];
 
-
-      expect(exon.rect[0]).to.equal(285.285);
+      expect(exon.rect[0]).to.equal(285.4775);
       expect(exon.rect[5]).to.equal(33);
       expect(exon.color).to.equal("#C0EAAF");
 
       const exon2 = tile.allExonsForSVG[2];
 
-      expect(exon2.rect[0]).to.equal(324.555);
+      expect(exon2.rect[0]).to.equal(324.7475);
       expect(exon2.rect[5]).to.equal(33);
       expect(exon2.color).to.equal("#bdbfff");
 

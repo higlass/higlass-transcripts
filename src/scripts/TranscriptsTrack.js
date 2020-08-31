@@ -317,8 +317,8 @@ const TranscritpsTrack = (HGC, ...args) => {
       exonOffsetEnds.sort();
     }
 
-    const xStartPos = track._xScale(txStart);
-    const xEndPos = track._xScale(txEnd);
+    const xStartPos = track._xScale(txStart + 1);
+    const xEndPos = track._xScale(txEnd + 1);
 
     const width = xEndPos - xStartPos;
     const yMiddle = centerY;
@@ -371,10 +371,10 @@ const TranscritpsTrack = (HGC, ...args) => {
       const colorUsedSVG = isNonCodingOrUtr ? track.options.utrColor : track.colors[strand+"HEX"];
       
       graphics.beginFill(colorUsed);
-      const xStart = track._xScale(exonStart);
+      const xStart = track._xScale(exonStart + 1);
       const localWidth = Math.max(
         2,
-        track._xScale(exonEnd) - track._xScale(exonStart)
+        track._xScale(exonEnd + 1) - track._xScale(exonStart + 1)
       );
 
       let minX = xStartPos;
@@ -409,7 +409,7 @@ const TranscritpsTrack = (HGC, ...args) => {
       } else {
         const rectStartX = Math.max(xStart, minX);
         const rectStartX2 = Math.min(rectStartX + 5, xEndPos);
-        const rectEndX = Math.max(xStart + localWidth, minX);
+        const rectEndX = Math.min(Math.max(xStart + localWidth, minX),xEndPos);
         const rectEndX2 = Math.min(rectEndX + 5, xEndPos);
 
         localPoly = [
@@ -743,7 +743,7 @@ const TranscritpsTrack = (HGC, ...args) => {
       const exonStarts = ts[9].split(",").map((x) => +x - 1);
       const exonEnds = ts[10].split(",").map((x) => +x);
       const txStart = +ts[1] - 1;
-      const txEnd = +ts[2];
+      const txEnd = +ts[2] - 1;
 
       const result = {
         transcriptId: this.transcriptId(ts),
@@ -1032,8 +1032,8 @@ const TranscritpsTrack = (HGC, ...args) => {
             for (var i = 0, n = codons.length; i < n; ++i) {
               const codon = codons[i];
 
-              const startPosX = this._xScale(codon.posStart + chrOffset);
-              const endPosX = this._xScale(codon.posEnd + chrOffset);
+              const startPosX = this._xScale(codon.posStart + chrOffset + 1);
+              const endPosX = this._xScale(codon.posEnd + chrOffset + 1);
 
               // if the codon is not visible, don't bother
               if (endPosX < 0 || startPosX > this.dimensions[0]) {
@@ -1045,7 +1045,7 @@ const TranscritpsTrack = (HGC, ...args) => {
               if (codonWidth < this.minCodonDistance + 10) {
                 const xMiddle =
                   this._xScale(
-                    (codon.posStart + codon.posEnd + 1) / 2 + chrOffset
+                    (codon.posStart + codon.posEnd + 1) / 2 + chrOffset + 1
                   ) -
                   codon.widthAbbrev / 2; //(codon.posStart + codon.posEnd + 1) / 2 + chrOffset
                 codon.spriteAbbrev.position.x = xMiddle;
@@ -1054,7 +1054,7 @@ const TranscritpsTrack = (HGC, ...args) => {
               } else {
                 const xMiddle =
                   this._xScale(
-                    (codon.posStart + codon.posEnd + 1) / 2 + chrOffset
+                    (codon.posStart + codon.posEnd + 1) / 2 + chrOffset + 1
                   ) -
                   codon.width / 2; //(codon.posStart + codon.posEnd + 1) / 2 + chrOffset
                 codon.sprite.position.x = xMiddle;
@@ -1134,8 +1134,8 @@ const TranscritpsTrack = (HGC, ...args) => {
             for (var i = 0, n = codons.length; i < n; ++i) {
               const codon = codons[i];
 
-              const startPosX = this._xScale(codon.posStart + chrOffset);
-              const endPosX = this._xScale(codon.posEnd + chrOffset + 1);
+              const startPosX = this._xScale(codon.posStart + chrOffset + 1);
+              const endPosX = this._xScale(codon.posEnd + chrOffset + 2);
 
               // if the codon is not visible, don't bother
               if (endPosX < 0 || startPosX > this.dimensions[0]) {
@@ -1270,7 +1270,7 @@ const TranscritpsTrack = (HGC, ...args) => {
             if (transcript.strand === "+") {
               text.position.x = Math.max(
                 this._xScale(this.xScale().domain()[0]) + TEXT_MARGIN,
-                this._xScale(txStart) -
+                this._xScale(txStart + 1) -
                   tile.textWidths[transcriptId] -
                   2 * TEXT_MARGIN -
                   CARET_MARGIN
@@ -1280,7 +1280,7 @@ const TranscritpsTrack = (HGC, ...args) => {
                 this._xScale(this.xScale().domain()[0]) +
                   TEXT_MARGIN +
                   CARET_WIDTH,
-                this._xScale(txStart) -
+                this._xScale(txStart + 1) -
                   tile.textWidths[transcriptId] -
                   2 * TEXT_MARGIN
               );
@@ -1296,7 +1296,7 @@ const TranscritpsTrack = (HGC, ...args) => {
 
             text.position.x = Math.min(
               text.position.x,
-              this._xScale(txEnd) - marginRight
+              this._xScale(txEnd + 1) - marginRight
             );
 
             text.position.y = textYMiddle;
@@ -1311,7 +1311,7 @@ const TranscritpsTrack = (HGC, ...args) => {
                 return ts[1] < transcript.txStart;
               })
               .forEach((ts) => {
-                const endOfTranscript = this._xScale(ts[1] + chrOffset);
+                const endOfTranscript = this._xScale(ts[1] + chrOffset + 1);
 
                 if (endOfTranscript > text.position.x - 4 * TEXT_MARGIN) {
                   showText = false;
@@ -1608,7 +1608,7 @@ const TranscritpsTrack = (HGC, ...args) => {
       
       // We dont want to draw textsw twice
       const allreadyDrawnTexts = [];
-
+      console.log(this.allTexts)
       this.allTexts
         .filter(text => text.text.visible)
         .forEach(text => {
@@ -1618,7 +1618,14 @@ const TranscritpsTrack = (HGC, ...args) => {
           }
 
           const g = document.createElement('g');
+          const rect = document.createElement('rect');
           const t = document.createElement('text');
+          rect.setAttribute('fill', 'lightgrey');
+          rect.setAttribute('width', text.text.width);
+          rect.setAttribute('height', this.transcriptHeight);
+          rect.setAttribute('y', -this.transcriptHeight*0.75);
+          
+
           t.setAttribute('text-anchor', 'start');
           t.setAttribute('font-family', this.options.fontFamily);
           t.setAttribute('font-size', `${this.fontSize}px`);
@@ -1629,6 +1636,7 @@ const TranscritpsTrack = (HGC, ...args) => {
           t.innerHTML = text.text.text;
           allreadyDrawnTexts.push(text.text.text);
   
+          g.appendChild(rect);
           g.appendChild(t);
           g.setAttribute(
             'transform',
