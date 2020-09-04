@@ -478,6 +478,10 @@ const TranscritpsTrack = (HGC, ...args) => {
         return;
       };
 
+      if(!track.transcriptInfo[transcriptId]){
+        return;
+      }
+
       let centerYOffset =
         track.transcriptInfo[transcriptId].displayOrder *
         (height + strandSpacing);
