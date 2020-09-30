@@ -14,7 +14,7 @@ import {
 
 import SequenceLoader from "./SequenceLoader";
 
-const TranscritpsTrack = (HGC, ...args) => {
+const TranscriptsTrack = (HGC, ...args) => {
   if (!new.target) {
     throw new Error(
       'Uncaught TypeError: Class constructor cannot be invoked without "new"'
@@ -590,7 +590,7 @@ const TranscritpsTrack = (HGC, ...args) => {
     track.hasToggleBtnBeenRendered = true;
   }
 
-  class TranscritpsTrackClass extends HGC.tracks
+  class TranscriptsTrackClass extends HGC.tracks
     .HorizontalGeneAnnotationsTrack {
     constructor(context, options) {
       super(context, options);
@@ -665,9 +665,11 @@ const TranscritpsTrack = (HGC, ...args) => {
       this.colors["black"] = colorToHex("#000000");
       this.colors["intron"] = colorToHex("#CFCFCF");
       this.colors["intronHEX"] = "#CFCFCF";
-      this.colors["labelBackground"] = colorToHex(
-        this.options.labelBackgroundColor
-      );
+      this.colors["labelBackgroundPlus"] = colorToHex(this.options.labelBackgroundPlusStrandColor);
+      this.colors["labelBackgroundMinus"] = colorToHex(this.options.labelBackgroundMinusStrandColor);
+      this.colors["labelStrokePlus"] = colorToHex(this.options.labelStrokePlusStrandColor);
+      this.colors["labelStrokeMinus"] = colorToHex(this.options.labelStrokeMinusStrandColor);
+      this.colors["background"] = colorToHex(this.options.backgroundColor);
     }
 
     initTile(tile) {
@@ -1365,32 +1367,33 @@ const TranscritpsTrack = (HGC, ...args) => {
           const ytm = yt - margin;
 
           if (text.strand === "+") {
-            allTiles[i].beginFill(DARKGREY_HEX);
+            allTiles[i].beginFill(this.colors["labelStrokePlus"]);
 
             // Directional label
             let polyBorder = [xl, yb, xr, yb, xr + 5, minY, xr, yt, xl, yt];
 
             allTiles[i].drawPolygon(polyBorder);
 
-            allTiles[i].beginFill(this.colors["labelBackground"]);
+            allTiles[i].beginFill(this.colors["labelBackgroundPlus"]);
 
             // Directional label
             let poly = [xlm, ybm, xr, ybm, xrm + 3, minY, xr, ytm, xlm, ytm];
             allTiles[i].drawPolygon(poly);
-          } else {
-            allTiles[i].beginFill(WHITE_HEX);
+          } 
+          else {
+            allTiles[i].beginFill(this.colors["background"]);
 
             let polyBg = [xl - 5, yb, xr, yb, xr, yt, xl - 5, yt];
 
             allTiles[i].drawPolygon(polyBg);
 
-            allTiles[i].beginFill(DARKGREY_HEX);
+            allTiles[i].beginFill(this.colors["labelStrokeMinus"]);
             // Directional label
             let polyBorder = [xl - 5, minY, xl, yb, xr, yb, xr, yt, minX, yt];
 
             allTiles[i].drawPolygon(polyBorder);
 
-            allTiles[i].beginFill(this.colors["labelBackground"]);
+            allTiles[i].beginFill(this.colors["labelBackgroundMinus"]);
 
             // Directional label
             let poly = [
@@ -1570,6 +1573,17 @@ const TranscritpsTrack = (HGC, ...args) => {
       );
   
       gClipPath.appendChild(output);
+      
+      // paint a backing rectangle with options.backgroundColor
+      const backingRect = document.createElement('rect');
+      backingRect.setAttribute('fill', this.options.backgroundColor);
+      backingRect.setAttribute('fill-opacity', '1');
+      backingRect.setAttribute('stroke-opacity', '0');
+      backingRect.setAttribute('width', this.dimensions[0]);
+      backingRect.setAttribute('height', this.dimensions[1]);
+      backingRect.setAttribute('x', '0');
+      backingRect.setAttribute('y', '0');
+      output.appendChild(backingRect);
 
       // We need to draw the lower order rectangles first (middle line)
       const paintOrders = [0,1];
@@ -1612,7 +1626,17 @@ const TranscritpsTrack = (HGC, ...args) => {
       
       // We dont want to draw textsw twice
       const allreadyDrawnTexts = [];
-      console.log(this.allTexts)
+      //console.log(this.allTexts)
+
+      const polyMargin = {
+        'left' : 2,
+        'right' : 2,
+        'top' : 1,
+        'bottom' : 1
+      };
+      const polyTriangleWidth = 5;
+      const labelYOffsetAdjustment = 1;
+
       this.allTexts
         .filter(text => text.text.visible)
         .forEach(text => {
@@ -1621,46 +1645,66 @@ const TranscritpsTrack = (HGC, ...args) => {
             return;
           }
 
-          const g = document.createElement('g');
-          const rect = document.createElement('rect');
-          const t = document.createElement('text');
-          rect.setAttribute('fill', 'lightgrey');
-          rect.setAttribute('width', text.text.width);
-          rect.setAttribute('height', this.transcriptHeight);
-          rect.setAttribute('y', -this.transcriptHeight*0.75);
-          
+          const poly = document.createElement('polygon');
+          poly.setAttribute('stroke-width', '1');
+          poly.setAttribute('stroke-opacity', '1');
+          // strand-orient the points
+          const polyTopLeft = `${-polyMargin.left},${polyMargin.top}`;
+          const polyTopRight = `${text.text.width + polyMargin.right},${polyMargin.top}`;
+          const polyBottomRight = `${text.text.width + polyMargin.right},${-this.transcriptHeight*0.75 - polyMargin.bottom}`;
+          const polyBottomLeft = `${-polyMargin.left},${-this.transcriptHeight*0.75 - polyMargin.bottom}`;
+          switch (text.strand) {
+            case '-':
+              const polyStrokeMinusColor = (typeof this.options.labelStrokeMinusStrandColor !== 'undefined') ? this.options.labelStrokeMinusStrandColor : TranscriptsTrack.config.defaultOptions.labelStrokeMinusStrandColor;
+              poly.setAttribute('stroke', polyStrokeMinusColor);
+              const polyFillMinusColor = (typeof this.options.labelBackgroundMinusStrandColor !== 'undefined') ? this.options.labelBackgroundMinusStrandColor : TranscriptsTrack.config.defaultOptions.labelBackgroundMinusStrandColor;
+              poly.setAttribute('fill', polyFillMinusColor);
+              const polyMiddleLeft = `${-polyMargin.left - polyTriangleWidth},${-this.transcriptHeight*0.75/2.0}`;
+              poly.setAttribute('points', `${polyMiddleLeft} ${polyTopLeft} ${polyTopRight} ${polyBottomRight} ${polyBottomLeft}`);
+              break;
+            case '+':
+            default:
+              const polyStrokePlusColor = (typeof this.options.labelStrokeMinusStrandColor !== 'undefined') ? this.options.labelStrokeMinusStrandColor : TranscriptsTrack.config.defaultOptions.labelStrokeMinusStrandColor;
+              poly.setAttribute('stroke', polyStrokePlusColor);
+              const polyFillPlusColor = (typeof this.options.labelBackgroundPlusStrandColor !== 'undefined') ? this.options.labelBackgroundPlusStrandColor : TranscriptsTrack.config.defaultOptions.labelBackgroundPlusStrandColor;
+              poly.setAttribute('fill', polyFillPlusColor);
+              const polyMiddleRight = `${text.text.width + polyMargin.right + polyTriangleWidth},${-this.transcriptHeight*0.75/2.0}`;
+              poly.setAttribute('points', `${polyTopLeft} ${polyTopRight} ${polyMiddleRight} ${polyBottomRight} ${polyBottomLeft}`);
+              break;
+          }
 
+          const t = document.createElement('text');
           t.setAttribute('text-anchor', 'start');
           t.setAttribute('font-family', this.options.fontFamily);
           t.setAttribute('font-size', `${this.fontSize}px`);
-  
-          g.setAttribute('transform', `scale(${text.text.scale.x},1)`);
-  
-          t.setAttribute('fill', this.colors["labelFont"]);
+          t.setAttribute('fill', this.options.labelFontColor);
           t.innerHTML = text.text.text;
           allreadyDrawnTexts.push(text.text.text);
-  
-          g.appendChild(rect);
+
+          const g = document.createElement('g');
+          g.setAttribute('transform', `scale(${text.text.scale.x},1)`);
+          g.appendChild(poly);
           g.appendChild(t);
           g.setAttribute(
             'transform',
-            `translate(${text.text.x},${text.text.y + this.transcriptHeight/4})scale(${text.text.scale.x},1)`
+            `translate(${text.text.x},${text.text.y + this.transcriptHeight/4 + labelYOffsetAdjustment})scale(${text.text.scale.x},1)`
           );
+
           output.appendChild(g);
-        });
+        });  
   
       return [base, base];
     }
 
   }
-  return new TranscritpsTrackClass(...args);
+  return new TranscriptsTrackClass(...args);
 };
 
 const icon =
   '<svg width="20" height="20" xmlns="http://www.w3.org/2000/svg"> <g> <title>background</title> <rect fill="#fff" id="canvas_background" height="3.24996" width="3.24996" y="-1" x="-1"/> <g display="none" id="canvasGrid"> <rect fill="url(#gridpattern)" stroke-width="0" y="0" x="0" height="100%" width="100%" id="svg_2"/> </g> </g> <g> <title>Layer 1</title> <rect id="svg_1" height="20" width="20" stroke-width="0" stroke="#000" fill="#C0EAAF"/> <path stroke="#bdbfff" id="svg_4" d="m11.42795,10.0119l-4.10746,-6.99997l2.70509,0l4.10746,6.99997l-4.10746,6.99997l-2.70509,0l4.10746,-6.99997z" stroke-width="6" fill="#bdbfff"/> </g> </svg>';
 
 // default
-TranscritpsTrack.config = {
+TranscriptsTrack.config = {
   type: "horizontal-transcripts",
   datatype: ["gene-annotation"],
   local: false,
@@ -1675,12 +1719,16 @@ TranscritpsTrack.config = {
     "plusStrandColor",
     "minusStrandColor",
     "utrColor",
-    "labelBackgroundColor",
+    "labelBackgroundPlusStrandColor",
+    "labelBackgroundMinusStrandColor",
     "labelFontColor",
+    "labelStrokePlusStrandColor",
+    "labelStrokeMinusStrandColor",
     "startCollapsed",
     "showToggleTranscriptsButton",
     "trackHeightAdjustment",
     "sequenceData",
+    "backgroundColor",
   ],
   defaultOptions: {
     fontSize: 9,
@@ -1691,12 +1739,16 @@ TranscritpsTrack.config = {
     plusStrandColor: "#bdbfff",
     minusStrandColor: "#fabec2",
     utrColor: "#C0EAAF",
-    labelBackgroundColor: "#ffffff",
+    labelBackgroundPlusStrandColor: "#ffffff",
+    labelBackgroundMinusStrandColor: "#ffffff",
     labelFontColor: "#333333",
-    startCollapsed: true,
+    labelStrokePlusStrandColor: "#999999",
+    labelStrokeMinusStrandColor: "#999999",
+    startCollapsed: false,
     trackHeightAdjustment: "automatic",
     showToggleTranscriptsButton: true,
+    backgroundColor: "#ffffff",
   },
 };
 
-export default TranscritpsTrack;
+export default TranscriptsTrack;
