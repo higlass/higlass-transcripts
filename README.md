@@ -70,11 +70,15 @@ The following options are available:
   "options": {
     "fontSize": 9, // font size for labels and amino acids (if available)
     "fontFamily": "Helvetica",
-    "labelFontColor": "#222222",
-    "labelBackgroundColor": "#e9e9e9",
+    "labelFontColor": "#333333",
+    "labelBackgroundPlusStrandColor": "#ffffff",
+    "labelBackgroundMinusStrandColor": "#ffffff",
+    "labelStrokePlusStrandColor": "#999999",
+    "labelStrokeMinusStrandColor": "#999999",
     "plusStrandColor": "#bdbfff", // color of coding parts of the exon on the plus strand
     "minusStrandColor": "#fabec2", // color of coding parts of the exon on the negative strand
     "utrColor": "#C0EAAF", // color of untranslated regions of the exons
+    "backgroundColor": "#ffffff", // color of track background
     "transcriptHeight": 12, // height of the transcripts
     "transcriptSpacing": 2, // space in between the transcripts
     "name": "Gene transcripts",
@@ -103,7 +107,7 @@ Whenever there is a statement such as the following, assuming `higlass-transcrip
 import { TranscriptsTrack } from 'higlass-transcripts';
 ```
 
-Then TranscriptsTrack would automatically be imported from the `./es` directory (set via package.json's `"module"` value). 
+Then `TranscriptsTrack` would automatically be imported from the `./es` directory (set via package.json's `"module"` value). 
 
 ## Support
 

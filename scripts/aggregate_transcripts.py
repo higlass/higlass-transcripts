@@ -10,20 +10,7 @@ import slugid
 import math
 import collections as col
 import json
-
-filepath = "extracted_transcripts_20200814.txt"
-#filepath = "gene_table_v2_transcripts_names_new.txt"
-output_file = "transcripts_20200814.beddb"
-#output_file = "transcripts_20200723_3.beddb"
-importance_column = 5
-has_header = False
-chromosome = None
-max_transcripts_per_tile = 5
-tile_size = 1024
-delimiter = '\t'
-chromsizes_filename = 'hg38_full.txt'
-offset = 0
-
+import click
 
 def load_chromsizes(chromsizes_filename, assembly=None):
     """
@@ -473,17 +460,38 @@ def aggregate_bedfile(
     conn.commit()
     return True
 
+@click.command(context_settings=dict(
+    allow_extra_args=False,
+))
+@click.help_option('--help', '-h')
+@click.option('-i', '--input-filename', required=True, type=str)
+@click.option('-c', '--chromsizes-filename', required=True, type=str)
+@click.option('-o', '--output-filename', required=True, type=str)
+def main(**kwargs):
+    filepath = kwargs["input_filename"]
+    #filepath = "gene_table_v2_transcripts_names_new.txt"
+    output_file = kwargs["output_filename"]
+    #output_file = "transcripts_20200723_3.beddb"
+    importance_column = 5
+    has_header = False
+    chromosome = None
+    max_transcripts_per_tile = 5
+    tile_size = 1024
+    delimiter = '\t'
+    chromsizes_filename = kwargs["chromsizes_filename"]
+    offset = 0
+    aggregate_bedfile(
+        filepath,
+        output_file,
+        importance_column,
+        has_header,
+        chromosome,
+        max_transcripts_per_tile,
+        tile_size,
+        delimiter,
+        chromsizes_filename,
+        offset,
+    )
 
-
-aggregate_bedfile(
-    filepath,
-    output_file,
-    importance_column,
-    has_header,
-    chromosome,
-    max_transcripts_per_tile,
-    tile_size,
-    delimiter,
-    chromsizes_filename,
-    offset,
-)
+if __name__ == '__main__':
+    main()
