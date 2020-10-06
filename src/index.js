@@ -1,6 +1,6 @@
 import register from 'higlass-register';
 
-import { TranscriptsTrack} from './scripts';
+import { TranscriptsTrack } from './scripts';
 
 register({
   name: 'TranscriptsTrack',

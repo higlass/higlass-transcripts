@@ -9,4 +9,6 @@ es
 *.log
 *.DS_cache
 .idea/
+scripts/extra
 *.DS_Store
+.vscode/settings.json
