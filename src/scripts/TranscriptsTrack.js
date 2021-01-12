@@ -1428,8 +1428,8 @@ const TranscriptsTrack = (HGC, ...args) => {
 
     setDimensions(newDimensions) {
       this.updateTranscriptInfo();
-      // This will rerender all tiles.
       super.setDimensions(newDimensions);
+      this.rerender(this.options, true);
     }
 
     zoomed(newXScale, newYScale) {
@@ -1459,6 +1459,9 @@ const TranscriptsTrack = (HGC, ...args) => {
       const point = [trackX, trackY];
 
       for (const tile of this.visibleAndFetchedTiles()) {
+        if(!tile.allExonsForMouseOver){
+          return;
+        }
         for (let i = 0; i < tile.allExonsForMouseOver.length; i++) {
           const rect = tile.allExonsForMouseOver[i][0];
 
