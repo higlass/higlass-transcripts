@@ -3292,7 +3292,7 @@ const TranscriptsTrack = (HGC, ...args) => {
           t.setAttribute('font-size', `${this.options.labelFontSize}px`);
           t.setAttribute('fill', this.options.labelFontColor);
           t.innerHTML = text.text.text;
-          allreadyDrawnTexts.push(text.text.text);
+          alreadyDrawnTexts.push(text.text.text);
 
           const g = document.createElement('g');
           g.setAttribute('transform', `scale(${text.text.scale.x},1)`);
