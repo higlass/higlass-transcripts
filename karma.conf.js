@@ -56,14 +56,15 @@ module.exports = function(config) {
     singleRun: false,
     concurrency: 1, // because we use server-side
     customLaunchers: {
-      Chrome_travis_ci: {
+      Chrome_ci: {
         base: 'Chrome',
         flags: ['--no-sandbox'],
       },
     },
   });
 
-  if (process.env.TRAVIS) {
-    config.browsers = ['Chrome_travis_ci'];
+  if (process.env.GITHUB_ACTIONS) {
+    config.browsers = ['Chrome_ci'];
+    config.singleRun = true;
   }
 };
