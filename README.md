@@ -83,9 +83,16 @@ The following options are available:
     "transcriptSpacing": 2, // space in between the transcripts
     "name": "Gene transcripts",
     "maxTexts": 50, // Maximum number of labels shown on the screen
+    "maxRows": null, // Maximum number of rows to display (useful for mobile devices)
     "showToggleTranscriptsButton": true, // If the "Show fewer transcripts"/"Show more transcripts" is shown
     "trackHeightAdjustment": "automatic", // if "automatic", the height of the track is adjusted to the number of visible transcripts.
     "startCollapsed": false, // if true, only one transcript is shown
+    "blockStyle": "directional", // "UCSC-like" for UCSC block style, or "boxplot" to use BED12 attributes to mimic Tukey box-and-whisker plot style 
+    "highlightTranscriptType": "none", // If "longestIsoform" or "apprisPrincipalIsoform", a principal or canonical annotation is highlighted.
+    "highlightTranscriptTrackBackgroundColor": "#f0f0f0",
+    "highlightTranscriptLabelBackgroundColor": "#f0f0f0",
+    "highlightTranscriptLabelFontWeight": "700",
+    "showHighlightedTranscriptsOnly": false, // Only show highlighted annotations
     "sequenceData": { // If this is set, transcribed amino acids are displayed when sufficiently zoomed in
       "type": "fasta",
       "fastaUrl": "https://aveit.s3.amazonaws.com/higlass/data/sequence/hg38.fa",

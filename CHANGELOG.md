@@ -1,3 +1,12 @@
+**Current**
+
+- UCSC genome browser-like annotation block style
+- UCSC genome browser-like intron, exon, 5'UTR, 3'UTR feature count labeling
+- Boxplot (Tukey box-and-whisker) annotation block style
+- Color applied from BED12 annotation field (unless overwritten by user, or unspecified)
+- Canonical or APPRIS isoform highlight flag and color options
+- Improved PNG/SVG export for all `blockStyle` modes
+- Can now specify maximum row rendering for constrained device viewport (i.e., mobile)
 
 **v0.3.0**
 
