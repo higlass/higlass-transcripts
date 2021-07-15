@@ -496,7 +496,8 @@ const TranscriptsTrack = (HGC, ...args) => {
         (strand === "+" &&
           (exonEnd <= startCodonPos || exonStart >= stopCodonPos)) ||
         (strand === "-" &&
-          (exonStart >= startCodonPos || exonEnd <= stopCodonPos));
+          (exonStart >= startCodonPos || exonEnd <= stopCodonPos)) ||
+        true;
 
       const colorUsed = (itemRgbIndex !== -1) ? itemRgbFill : isNonCodingOrUtr ? track.colors.utr : track.colors[strand];
 
