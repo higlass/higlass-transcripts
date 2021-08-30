@@ -99,6 +99,7 @@ The following options are available:
       "faiUrl": "https://aveit.s3.amazonaws.com/higlass/data/sequence/hg38.fa.fai",
       "chromSizesUrl": "https://aveit.s3.amazonaws.com/higlass/data/sequence/hg38.mod.chrom.sizes"
     },
+    isVisible: true, // if true, track has non-zero height and is rendered
   },
   "width": 768,
   "height": 40

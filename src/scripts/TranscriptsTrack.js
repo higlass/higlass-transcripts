@@ -426,6 +426,7 @@ const TranscriptsTrack = (HGC, ...args) => {
 
     const itemRgbIndex = track.transcriptInfo[transcriptId]["itemRgbIndex"];
     const itemRgb = track.transcriptInfo[transcriptId]["itemRgb"];
+    const itemRgbColorMode = (itemRgb === "protein_coding") ? "default" : "custom";
     const itemRgbForSVG = `rgb(${itemRgb})`;
     const itemRgbTriplet = itemRgb.split(',');
     const itemRgbFill = HGC.libraries.PIXI.utils.rgb2hex([
@@ -433,8 +434,6 @@ const TranscriptsTrack = (HGC, ...args) => {
       itemRgbTriplet[1] / 255.0,
       itemRgbTriplet[2] / 255.0
     ]);
-
-    // console.log(`${track.transcriptInfo[transcriptId]["transcriptName"]} ${itemRgbIndex} ${itemRgb} ${itemRgbFill} ${track.colors[strand+"HEX"]}`);
 
     // draw the middle line
     graphics.beginFill((itemRgbIndex !== -1) ? itemRgbFill : track.colors.intron);
@@ -478,6 +477,7 @@ const TranscriptsTrack = (HGC, ...args) => {
     polysSVG.push({
       rect: poly,
       color: (itemRgbIndex !== -1) ? itemRgbForSVG : track.colors.intronHEX,
+      colorMode: itemRgbColorMode,
       paintOrder: 0
     });
 
@@ -496,10 +496,10 @@ const TranscriptsTrack = (HGC, ...args) => {
         (strand === "+" &&
           (exonEnd <= startCodonPos || exonStart >= stopCodonPos)) ||
         (strand === "-" &&
-          (exonStart >= startCodonPos || exonEnd <= stopCodonPos)) ||
-        true;
+          (exonStart >= startCodonPos || exonEnd <= stopCodonPos));
 
       const colorUsed = (itemRgbIndex !== -1) ? itemRgbFill : isNonCodingOrUtr ? track.colors.utr : track.colors[strand];
+      const colorUsedSVG = (itemRgbIndex !== -1) ? itemRgbForSVG : isNonCodingOrUtr ? track.options.utrColor : track.colors[strand+"HEX"];
 
       // graphics.beginFill(colorUsed);
       const xStart = track._xScale(exonStart + 1);
@@ -575,7 +575,8 @@ const TranscriptsTrack = (HGC, ...args) => {
             graphics.endFill();
             polysSVG.push({
               rect: chevronPoly,
-              color: (itemRgbIndex !== -1) ? itemRgbForSVG : track.colors.intronHEX,
+              color: (itemRgbIndex !== -1) ? colorUsedSVG : track.colors.intronHEX,
+              colorMode: itemRgbColorMode,
               paintOrder: 0
             });
           }
@@ -631,7 +632,8 @@ const TranscriptsTrack = (HGC, ...args) => {
             graphics.endFill();
             polysSVG.push({
               rect: chevronPoly,
-              color: (itemRgbIndex !== -1) ? itemRgbForSVG : track.colors.intronHEX,
+              color: (itemRgbIndex !== -1) ? colorUsedSVG : track.colors.intronHEX,
+              colorMode: itemRgbColorMode,
               paintOrder: 0
             });
           }
@@ -648,7 +650,8 @@ const TranscriptsTrack = (HGC, ...args) => {
           // For SVG export
           polysSVG.push({
             rect: localPoly,
-            color: itemRgbForSVG,
+            color: colorUsedSVG,
+            colorMode: itemRgbColorMode,
             paintOrder: 1
           });
           break;
@@ -660,7 +663,8 @@ const TranscriptsTrack = (HGC, ...args) => {
           // For SVG export
           polysSVG.push({
             rect: blockPoly,
-            color: itemRgbForSVG,
+            color: colorUsedSVG,
+            colorMode: itemRgbColorMode,
             paintOrder: 1
           });
           break;
@@ -1200,15 +1204,12 @@ const TranscriptsTrack = (HGC, ...args) => {
 
       if (!this.options.isVisible) this.trackHeight = 0;
 
-      this.allowResizeParentDiv = (this.options.allowResizeParentDiv) ? this.options.allowResizeParentDiv : true;
-
       if (this.trackHeightOld === this.trackHeight) {
         return false;
       }
 
       this.pubSub.publish("trackDimensionsModified", {
         height: this.trackHeight,
-        resizeParentDiv: this.allowResizeParentDiv,
         trackId: this.trackId,
         viewId: this.viewId
       });
@@ -2185,7 +2186,6 @@ const TranscriptsTrack = (HGC, ...args) => {
 
       this.pubSub.publish("trackDimensionsModified", {
         height: this.trackHeight,
-        resizeParentDiv: this.allowResizeParentDiv,
         trackId: this.trackId,
         viewId: this.viewId
       });
@@ -3367,7 +3367,6 @@ TranscriptsTrack.config = {
     "highlightTranscriptLabelFontWeight",
     "showHighlightedTranscriptsOnly",
     "isVisible",
-    "allowResizeParentDiv",
   ],
   defaultOptions: {
     fontSize: 9,
@@ -3397,7 +3396,6 @@ TranscriptsTrack.config = {
     highlightTranscriptLabelFontWeight: "700",
     showHighlightedTranscriptsOnly: false,
     isVisible: true,
-    allowResizeParentDiv: true,
   },
 };
 
