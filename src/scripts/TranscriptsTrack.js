@@ -2076,7 +2076,7 @@ const TranscriptsTrack = (HGC, ...args) => {
 
       this.prevOptions = strOptions;
 
-      renderToggleBtn(this);
+      if (this.isVisible) renderToggleBtn(this);
 
       this.updateTranscriptInfo();
 
@@ -2948,7 +2948,7 @@ const TranscriptsTrack = (HGC, ...args) => {
     }
 
     getMouseOverHtml(trackX, trackY) {
-      if (!this.tilesetInfo) {
+      if (!this.tilesetInfo || !this.options.isVisible) {
         return "";
       }
 
