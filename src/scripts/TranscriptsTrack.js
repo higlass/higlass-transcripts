@@ -3367,6 +3367,7 @@ TranscriptsTrack.config = {
     "highlightTranscriptLabelFontWeight",
     "showHighlightedTranscriptsOnly",
     "isVisible",
+    "trackMargin",
   ],
   defaultOptions: {
     fontSize: 9,
@@ -3396,6 +3397,12 @@ TranscriptsTrack.config = {
     highlightTranscriptLabelFontWeight: "700",
     showHighlightedTranscriptsOnly: false,
     isVisible: true,
+    trackMargin: {
+      top: 0,
+      left: 0,
+      bottom: 10,
+      right: 0,
+    },
   },
 };
 

@@ -100,6 +100,12 @@ The following options are available:
       "chromSizesUrl": "https://aveit.s3.amazonaws.com/higlass/data/sequence/hg38.mod.chrom.sizes"
     },
     isVisible: true, // if true, track has non-zero height and is rendered
+    trackMargin: { // sets default margins drawn around track content
+      top: 0,
+      left: 0,
+      bottom: 10,
+      right: 0,
+    },
   },
   "width": 768,
   "height": 40
