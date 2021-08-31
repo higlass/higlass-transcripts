@@ -1208,6 +1208,19 @@ const TranscriptsTrack = (HGC, ...args) => {
       return height;
     }
 
+    debounce = (callback, wait, immediate = false) => {
+      let timeout = null;
+      return function() {
+        const callNow = immediate && !timeout;
+        const next = () => callback.apply(this, arguments);
+        clearTimeout(timeout)
+        timeout = setTimeout(next, wait);
+        if (callNow) {
+          next();
+        }
+      }
+    }
+
     adjustTrackHeight(tileId) {
 
       const computeTrackHeightT0 = performance.now(); 
@@ -1221,14 +1234,16 @@ const TranscriptsTrack = (HGC, ...args) => {
         return false;
       }
 
-      const pubSubPublishT0 = performance.now();
-      this.pubSub.publish("trackDimensionsModified", {
-        height: this.trackHeight,
-        trackId: this.trackId,
-        viewId: this.viewId
-      });
-      const pubSubPublishT1 = performance.now();
-      console.log(`TranscriptsTrack -> pubSubPublish(${tileId}): ${Math.round((pubSubPublishT1 - pubSubPublishT0)*100)/100} ms`);
+      this.debounce(() => {
+        const pubSubPublishT0 = performance.now();
+        this.pubSub.publish("trackDimensionsModified", {
+          height: this.trackHeight,
+          trackId: this.trackId,
+          viewId: this.viewId
+        });
+        const pubSubPublishT1 = performance.now();
+        console.log(`TranscriptsTrack -> pubSubPublish(${tileId}): ${Math.round((pubSubPublishT1 - pubSubPublishT0)*100)/100} ms`);
+      }, 100);
 
       if (this.trackHeightOld === 0) {
         const trackHeightOldZeroRerenderT0 = performance.now();
