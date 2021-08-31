@@ -1228,7 +1228,10 @@ const TranscriptsTrack = (HGC, ...args) => {
       });
 
       if (this.trackHeightOld === 0) {
+        const trackHeightOldZeroRerenderT0 = performance.now();
         this.rerender(this.options, true, tileId);
+        const trackHeightOldZeroRerenderT1 = performance.now();
+        console.log(`TranscriptsTrack -> trackHeightOldZeroRerender(${tileId}): ${Math.round((trackHeightOldZeroRerenderT1 - trackHeightOldZeroRerenderT0)*100)/100} ms`);
       }
 
       return true;
