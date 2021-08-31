@@ -81,6 +81,9 @@ const TranscriptsTrack = (HGC, ...args) => {
     tile.tileData.sort((a, b) => b.importance - a.importance);
 
     tile.tileData.forEach((td, i) => {
+      // don't draw texts for the latter entries in the tile
+      if (i >= maxTexts) return;
+
       const ts = td.fields;
       const tsFormatted = track.formatTranscriptData(ts);
 
@@ -94,9 +97,6 @@ const TranscriptsTrack = (HGC, ...args) => {
 
       td["transcriptId"] = transcriptId;
       td["transcriptName"] = transcriptName;
-
-      // don't draw texts for the latter entries in the tile
-      if (i >= maxTexts) return;
 
       const text = new HGC.libraries.PIXI.Text(transcriptName, {
         fontSize: `${labelFontSize}px`,
@@ -1159,6 +1159,7 @@ const TranscriptsTrack = (HGC, ...args) => {
       (this.options) && this.rerender(this.options, true, tile.tileId);
       const rerenderT1 = performance.now();
       console.log(`TranscriptsTrack -> rerender(${tile.tileId}): ${Math.round((rerenderT1 - rerenderT0)*100)/100} ms`);
+      console.log(`----`);
     }
 
     /** cleanup */
@@ -1966,7 +1967,7 @@ const TranscriptsTrack = (HGC, ...args) => {
       this.visibleAndFetchedTiles().forEach((tile) => {
         tile.tileData.forEach((ts) => {
           visibleTranscriptsObj[ts.transcriptId] = ts.fields;
-          console.log(`ts.transcriptId ${ts.transcriptId}`);
+          // console.log(`ts.transcriptId ${ts.transcriptId}`);
         });
       });
 
@@ -2073,8 +2074,7 @@ const TranscriptsTrack = (HGC, ...args) => {
     }
 
     /*
-     * Redraw the track because the options
-     * changed
+     * Redraw the track because the options changed
      */
     rerender(options, force, tileId) {
       const strOptions = JSON.stringify(options);
