@@ -1966,6 +1966,7 @@ const TranscriptsTrack = (HGC, ...args) => {
       this.visibleAndFetchedTiles().forEach((tile) => {
         tile.tileData.forEach((ts) => {
           visibleTranscriptsObj[ts.transcriptId] = ts.fields;
+          console.log(`ts.transcriptId ${ts.transcriptId}`);
         });
       });
 
@@ -1973,7 +1974,6 @@ const TranscriptsTrack = (HGC, ...args) => {
       for (const tsId in visibleTranscriptsObj) {
         if (visibleTranscriptsObj[tsId]) {
           visibleTranscripts.push(visibleTranscriptsObj[tsId]);
-          console.log(`tsId ${tsId}`);
         }
       }
 
