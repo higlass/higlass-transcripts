@@ -1216,7 +1216,10 @@ const TranscriptsTrack = (HGC, ...args) => {
         clearTimeout(timeout)
         timeout = setTimeout(next, wait);
         if (callNow) {
+          const pubSubPublishT0 = performance.now();
           next();
+          const pubSubPublishT1 = performance.now();
+        console.log(`TranscriptsTrack -> pubSubPublish(${tileId}): ${Math.round((pubSubPublishT1 - pubSubPublishT0)*100)/100} ms`);
         }
       }
     }
@@ -1235,14 +1238,11 @@ const TranscriptsTrack = (HGC, ...args) => {
       }
 
       this.debounce(() => {
-        const pubSubPublishT0 = performance.now();
         this.pubSub.publish("trackDimensionsModified", {
           height: this.trackHeight,
           trackId: this.trackId,
           viewId: this.viewId
         });
-        const pubSubPublishT1 = performance.now();
-        console.log(`TranscriptsTrack -> pubSubPublish(${tileId}): ${Math.round((pubSubPublishT1 - pubSubPublishT0)*100)/100} ms`);
       }, 100);
 
       if (this.trackHeightOld === 0) {
