@@ -1254,631 +1254,631 @@ const TranscriptsTrack = (HGC, ...args) => {
       return true;
     }
 
-    // calculateTranscriptBlocks(txStart, txEnd, strand, startCodonPos, stopCodonPos, exonStarts, exonEnds, strandedStartCodonPos, strandedStopCodonPos, strandedTxStart, strandedTxEnd) {
-    //   let blocks = [];
-    //   const txDiff = parseFloat(txEnd - txStart);
-    //   let blockIdx = 0;
-    //   let exonTypeIdx = 0;
-    //   let intronTypeIdx = 0;
-    //   let fivePrimeUTRTypeIdx = 0;
-    //   let threePrimeUTRTypeIdx = 0;
-    //   switch (strand) {
-    //     case "+": {
-    //       for (let exonIdx = 0; exonIdx < exonStarts.length; exonIdx++) {
-    //         const exonStart = exonStarts[exonIdx];
-    //         const exonEnd = exonEnds[exonIdx] - 1;
-    //         const exonDiff = exonEnd - exonStart;
-    //         const exonStartOffset = parseFloat(exonStart - txStart);
-    //         if ((startCodonPos !== ".") && (stopCodonPos !== ".")) {
-    //           if ((exonIdx === 0) && (exonStart > strandedTxStart) && (exonStart < strandedStartCodonPos) && (exonEnd < strandedStartCodonPos)) {
-    //             intronTypeIdx += 1;
-    //             blocks.push({
-    //               "type" : "Intron",
-    //               "subtype" : "",
-    //               "range" : [
-    //                 0.0,
-    //                 exonStartOffset / txDiff,
-    //               ],
-    //               "idx" : blockIdx,
-    //               "typeIdx" : intronTypeIdx,
-    //               "subtypeIdx" : null,
-    //             });
-    //             blockIdx += 1;
-    //             exonTypeIdx += 1;
-    //             fivePrimeUTRTypeIdx += 1;
-    //             blocks.push({
-    //               "type" : "Exon",
-    //               "subtype" : "5'UTR",
-    //               "range" : [
-    //                 exonStartOffset / txDiff,
-    //                 (exonStartOffset + exonDiff) / txDiff,
-    //               ],
-    //               "idx" : blockIdx,
-    //               "typeIdx" : exonTypeIdx,
-    //               "subtypeIdx" : fivePrimeUTRTypeIdx,
-    //             });
-    //             blockIdx += 1;
-    //             if (exonIdx < exonStarts.length - 1) {
-    //               const nextStrandedExonStartOffset = exonStarts[exonIdx + 1] - txStart;
-    //               intronTypeIdx += 1;
-    //               blocks.push({
-    //                 "type" : "Intron",
-    //                 "subtype" : "",
-    //                 "range" : [
-    //                   (exonStartOffset + exonDiff) / txDiff,
-    //                   nextStrandedExonEndOffset / txDiff,
-    //                 ],
-    //                 "idx" : blockIdx,
-    //                 "typeIdx" : intronTypeIdx,
-    //                 "subtypeIdx" : null,
-    //               });
-    //               blockIdx += 1;
-    //             }
-    //           }
-    //           else if ((exonStart === strandedTxStart) && (exonStart < strandedStartCodonPos) && (exonEnd < strandedStartCodonPos)) {
-    //             exonTypeIdx += 1;
-    //             fivePrimeUTRTypeIdx += 1;
-    //             blocks.push({
-    //               "type" : "Exon",
-    //               "subtype" : "5'UTR",
-    //               "range" : [
-    //                 exonStartOffset / txDiff,
-    //                 (exonStartOffset + exonDiff) / txDiff,
-    //               ],
-    //               "idx" : blockIdx,
-    //               "typeIdx" : exonTypeIdx,
-    //               "subtypeIdx" : fivePrimeUTRTypeIdx,
-    //             });
-    //             blockIdx += 1;
-    //             if (exonIdx < exonStarts.length - 1) {
-    //               const nextStrandedExonStartOffset = exonStarts[exonIdx + 1] - txStart;
-    //               intronTypeIdx += 1;
-    //               blocks.push({
-    //                 "type" : "Intron",
-    //                 "subtype" : "",
-    //                 "range" : [
-    //                   (exonStartOffset + exonDiff) / txDiff,
-    //                   nextStrandedExonStartOffset / txDiff,
-    //                 ],
-    //                 "idx" : blockIdx,
-    //                 "typeIdx" : intronTypeIdx,
-    //                 "subtypeIdx" : null,
-    //               });
-    //               blockIdx += 1;
-    //             }
-    //           }
-    //           else if ((exonStart < strandedStartCodonPos) && (exonEnd >= strandedStartCodonPos)) {
-    //             const codonDiff = strandedStartCodonPos - exonStart;
-    //             exonTypeIdx += 1;
-    //             fivePrimeUTRTypeIdx += 1;
-    //             blocks.push({
-    //               "type" : "Exon",
-    //               "subtype" : "5'UTR",
-    //               "range" : [
-    //                 exonStartOffset / txDiff,
-    //                 (exonStartOffset + codonDiff) / txDiff,
-    //               ],
-    //               "idx" : blockIdx,
-    //               "typeIdx" : exonTypeIdx,
-    //               "subtypeIdx" : fivePrimeUTRTypeIdx,
-    //             });
-    //             blockIdx += 1;
-    //             blocks.push({
-    //               "type" : "Exon",
-    //               "subtype" : "",
-    //               "range" : [
-    //                 (exonStartOffset + codonDiff) / txDiff,
-    //                 (exonStartOffset + exonDiff) / txDiff,
-    //               ],
-    //               "idx" : blockIdx,
-    //               "typeIdx" : exonTypeIdx,
-    //               "subtypeIdx" : null,
-    //             });
-    //             blockIdx += 1;
-    //             if (exonIdx < exonStarts.length - 1) {
-    //               const nextStrandedExonStartOffset = exonStarts[exonIdx + 1] - txStart;
-    //               intronTypeIdx += 1;
-    //               blocks.push({
-    //                 "type" : "Intron",
-    //                 "subtype" : "",
-    //                 "range" : [
-    //                   (exonStartOffset + exonDiff) / txDiff,
-    //                   nextStrandedExonStartOffset / txDiff,
-    //                 ],
-    //                 "idx" : blockIdx,
-    //                 "typeIdx" : intronTypeIdx,
-    //                 "subtypeIdx" : null,
-    //               });
-    //               blockIdx += 1;
-    //             }
-    //           }
-    //           else if ((exonStart > strandedStartCodonPos) && (exonEnd > strandedStartCodonPos) && (exonStart < strandedStopCodonPos) && (exonEnd < strandedStopCodonPos)) {
-    //             exonTypeIdx += 1;
-    //             blocks.push({
-    //               "type" : "Exon",
-    //               "subtype": "",
-    //               "range" : [
-    //                 exonStartOffset / txDiff,
-    //                 (exonStartOffset + exonDiff) / txDiff,
-    //               ],
-    //               "idx" : blockIdx,
-    //               "typeIdx" : exonTypeIdx,
-    //               "subtypeIdx" : null,
-    //             });
-    //             blockIdx += 1;
-    //             if (exonIdx < exonStarts.length - 1) {
-    //               const nextStrandedExonStartOffset = exonStarts[exonIdx + 1] - txStart;
-    //               intronTypeIdx += 1;
-    //               blocks.push({
-    //                 "type" : "Intron",
-    //                 "subtype" : "",
-    //                 "range" : [
-    //                   (exonStartOffset + exonDiff) / txDiff,
-    //                   nextStrandedExonStartOffset / txDiff,
-    //                 ],
-    //                 "idx" : blockIdx,
-    //                 "typeIdx" : intronTypeIdx,
-    //                 "subtypeIdx" : null,
-    //               });
-    //               blockIdx += 1;
-    //             }
-    //           }
-    //           else if ((exonStart < strandedStopCodonPos) && (exonEnd >= strandedStopCodonPos)) {
-    //             const codonDiff = strandedStopCodonPos - exonStart;
-    //             exonTypeIdx += 1;
-    //             blocks.push({
-    //               "type" : "Exon",
-    //               "subtype" : "",
-    //               "range" : [
-    //                 exonStartOffset / txDiff,
-    //                 (exonStartOffset + codonDiff) / txDiff,
-    //               ],
-    //               "idx" : blockIdx,
-    //               "typeIdx" : exonTypeIdx,
-    //               "subtypeIdx" : null,
-    //             });
-    //             blockIdx += 1;
-    //             threePrimeUTRTypeIdx += 1;
-    //             blocks.push({
-    //               "type" : "Exon",
-    //               "subtype" : "3'UTR",
-    //               "range" : [
-    //                 (exonStartOffset + codonDiff) / txDiff,
-    //                 (exonStartOffset + exonDiff) / txDiff,
-    //               ],
-    //               "idx" : blockIdx,
-    //               "typeIdx" : exonTypeIdx,
-    //               "subtypeIdx" : threePrimeUTRTypeIdx,
-    //             });
-    //             blockIdx += 1;
-    //             if (exonIdx < exonStarts.length - 1) {
-    //               const nextStrandedExonStartOffset = exonStarts[exonIdx + 1] - txStart;
-    //               intronTypeIdx += 1;
-    //               blocks.push({
-    //                 "type" : "Intron",
-    //                 "subtype" : "",
-    //                 "range" : [
-    //                   (exonStartOffset + exonDiff) / txDiff,
-    //                   nextStrandedExonStartOffset / txDiff,
-    //                 ],
-    //                 "idx" : blockIdx,
-    //                 "typeIdx" : intronTypeIdx,
-    //                 "subtypeIdx" : null,
-    //               });
-    //               blockIdx += 1;
-    //             }
-    //           }
-    //           else if ((exonEnd < strandedTxEnd) && (exonStart > strandedStopCodonPos) && (exonEnd >= strandedStopCodonPos)) {
-    //             exonTypeIdx += 1;
-    //             threePrimeUTRTypeIdx += 1;
-    //             blocks.push({
-    //               "type" : "Exon",
-    //               "subtype" : "3'UTR",
-    //               "range" : [
-    //                 exonStartOffset / txDiff,
-    //                 (exonStartOffset + exonDiff) / txDiff,
-    //               ],
-    //               "idx" : blockIdx,
-    //               "typeIdx" : exonTypeIdx,
-    //               "subtypeIdx" : threePrimeUTRTypeIdx,
-    //             });
-    //             blockIdx += 1;
-    //             if (exonIdx < exonStarts.length - 1) {
-    //               const nextStrandedExonStartOffset = exonStarts[exonIdx + 1] - txStart;
-    //               intronTypeIdx += 1;
-    //               blocks.push({
-    //                 "type" : "Intron",
-    //                 "subtype" : "",
-    //                 "range" : [
-    //                   (exonStartOffset + exonDiff) / txDiff,
-    //                   nextStrandedExonStartOffset / txDiff,
-    //                 ],
-    //                 "idx" : blockIdx,
-    //                 "typeIdx" : intronTypeIdx,
-    //                 "subtypeIdx" : null,
-    //               });
-    //               blockIdx += 1;
-    //             }
-    //           }
-    //           else if ((exonEnd === strandedTxEnd) && (exonStart > strandedStopCodonPos) && (exonEnd >= strandedStopCodonPos)) {
-    //             exonTypeIdx += 1;
-    //             threePrimeUTRTypeIdx += 1;
-    //             blocks.push({
-    //               "type" : "Exon",
-    //               "subtype" : "3'UTR",
-    //               "range" : [
-    //                 exonStartOffset / txDiff,
-    //                 (exonStartOffset + exonDiff) / txDiff,
-    //               ],
-    //               "idx" : blockIdx,
-    //               "typeIdx" : exonTypeIdx,
-    //               "subtypeIdx" : threePrimeUTRTypeIdx,
-    //             });
-    //             blockIdx += 1;
-    //           }
-    //         }
-    //         else {
-    //           // default block type
-    //           exonTypeIdx += 1;
-    //           blocks.push({ 
-    //             "type" : "Exon", 
-    //             "subtype" : "",
-    //             "range" : [ 
-    //               exonStartOffset / txDiff, 
-    //               (exonStartOffset + exonDiff) / txDiff 
-    //             ],
-    //             "idx" : blockIdx,
-    //             "typeIdx" : exonTypeIdx,
-    //             "subtypeIdx" : null,
-    //           });
-    //           blockIdx += 1;
-    //           if (exonIdx < exonStarts.length - 1) {
-    //             intronTypeIdx += 1;
-    //             // const nextStrandedExonEndOffset = exonEnds[exonIdx - 1] - txStart - 1;
-    //             // const nextStrandedExonEndOffset = exonEnds[exonIdx - 1] - strandedTxStart - 1;
-    //             const nextStrandedExonEndOffset = exonEnds[exonIdx] - strandedTxStart - 1;
-    //             blocks.push({
-    //               "type" : "Intron",
-    //               "subtype" : "",
-    //               "range" : [
-    //                 nextStrandedExonEndOffset / txDiff,
-    //                 exonStartOffset / txDiff,
-    //               ],
-    //               "idx" : blockIdx,
-    //               "typeIdx" : intronTypeIdx,
-    //               "subtypeIdx" : null,
-    //             });
-    //             blockIdx += 1;
-    //           }
-    //         }
-    //       }
-    //       break;
-    //     }
-    //     case "-": {
-    //       for (let exonIdx = exonStarts.length - 1; exonIdx >= 0; exonIdx--) {
-    //         const exonStart = exonStarts[exonIdx];
-    //         const exonEnd = exonEnds[exonIdx] - 1;
-    //         const exonDiff = exonEnd - exonStart;
-    //         const exonStartOffset = parseFloat(exonStart - txStart);
-    //         if ((startCodonPos !== ".") && (stopCodonPos !== ".")) {
-    //           if ((exonEnd === strandedTxStart) && (exonStart > strandedStartCodonPos) && (exonEnd >= strandedStartCodonPos)) {
-    //             exonTypeIdx += 1;
-    //             fivePrimeUTRTypeIdx += 1;
-    //             blocks.push({
-    //               "type" : "Exon",
-    //               "subtype" : "5'UTR",
-    //               "range" : [
-    //                 exonStartOffset / txDiff,
-    //                 (exonStartOffset + exonDiff) / txDiff,
-    //               ],
-    //               "idx" : blockIdx,
-    //               "typeIdx" : exonTypeIdx,
-    //               "subtypeIdx" : fivePrimeUTRTypeIdx,
-    //             });
-    //             blockIdx += 1;
-    //             if (exonIdx > 0) {
-    //               intronTypeIdx += 1;
-    //               const nextStrandedExonEndOffset = exonEnds[exonIdx - 1] - txStart - 1;
-    //               blocks.push({
-    //                 "type" : "Intron",
-    //                 "subtype" : "",
-    //                 "range" : [
-    //                   nextStrandedExonEndOffset / txDiff,
-    //                   exonStartOffset / txDiff,
-    //                 ],
-    //                 "idx" : blockIdx,
-    //                 "typeIdx" : intronTypeIdx,
-    //                 "subtypeIdx" : null,
-    //               });
-    //               blockIdx += 1;
-    //             }
-    //           }
-    //           else if ((exonEnd < strandedTxStart) && (exonStart > strandedStartCodonPos) && (exonEnd >= strandedStartCodonPos)) {
-    //             if (exonIdx === exonStarts.length - 1) {
-    //               intronTypeIdx += 1;
-    //               blocks.push({
-    //                 "type" : "Intron",
-    //                 "subtype" : "",
-    //                 "range" : [
-    //                   (exonStartOffset + exonDiff) / txDiff,
-    //                   1.0,
-    //                 ],
-    //                 "idx" : blockIdx,
-    //                 "typeIdx" : intronTypeIdx,
-    //                 "subtypeIdx" : null,
-    //               });
-    //               blockIdx += 1;
-    //             }
-    //             exonTypeIdx += 1;
-    //             fivePrimeUTRTypeIdx += 1;
-    //             blocks.push({
-    //               "type" : "Exon",
-    //               "subtype" : "5'UTR",
-    //               "range" : [
-    //                 exonStartOffset / txDiff,
-    //                 (exonStartOffset + exonDiff) / txDiff,
-    //               ],
-    //               "idx" : blockIdx,
-    //               "typeIdx" : exonTypeIdx,
-    //               "subtypeIdx" : fivePrimeUTRTypeIdx,
-    //             });
-    //             blockIdx += 1;
-    //             if (exonIdx > 0) {
-    //               intronTypeIdx += 1;
-    //               const nextStrandedExonEndOffset = exonEnds[exonIdx - 1] - txStart - 1;
-    //               blocks.push({
-    //                 "type" : "Intron",
-    //                 "subtype" : "",
-    //                 "range" : [
-    //                   nextStrandedExonEndOffset / txDiff,
-    //                   exonStartOffset / txDiff,
-    //                 ],
-    //                 "idx" : blockIdx,
-    //                 "typeIdx" : intronTypeIdx,
-    //                 "subtypeIdx" : null,
-    //               });
-    //               blockIdx += 1;
-    //             }
-    //           }
-    //           else if ((exonStart < strandedStartCodonPos) && (exonEnd >= strandedStartCodonPos)) {
-    //             exonTypeIdx += 1;
-    //             fivePrimeUTRTypeIdx += 1;
-    //             const codonDiff = startCodonPos - exonStart;
-    //             blocks.push({
-    //               "type" : "Exon",
-    //               "subtype" : "5'UTR",
-    //               "range" : [
-    //                 (exonStartOffset + codonDiff) / txDiff,
-    //                 (exonStartOffset + exonDiff) / txDiff,
-    //               ],
-    //               "idx" : blockIdx,
-    //               "typeIdx" : exonTypeIdx,
-    //               "subtypeIdx" : fivePrimeUTRTypeIdx,
-    //             });
-    //             blockIdx += 1;
-    //             blocks.push({
-    //               "type" : "Exon",
-    //               "subtype" : "",
-    //               "range" : [
-    //                 exonStartOffset / txDiff,
-    //                 (exonStartOffset + codonDiff) / txDiff,
-    //               ],
-    //               "idx" : blockIdx,
-    //               "typeIdx" : exonTypeIdx,
-    //               "subtypeIdx" : exonTypeIdx,
-    //             });
-    //             blockIdx += 1;
-    //             if (exonIdx > 0) {
-    //               intronTypeIdx += 1;
-    //               const nextStrandedExonEndOffset = exonEnds[exonIdx - 1] - txStart - 1;
-    //               blocks.push({
-    //                 "type" : "Intron",
-    //                 "subtype" : "",
-    //                 "range" : [
-    //                   nextStrandedExonEndOffset / txDiff,
-    //                   exonStartOffset / txDiff,
-    //                 ],
-    //                 "idx" : blockIdx,
-    //                 "typeIdx" : intronTypeIdx,
-    //                 "subtypeIdx" : null,
-    //               });
-    //               blockIdx += 1;
-    //             }
-    //           }
-    //           else if ((exonStart > strandedStopCodonPos) && (exonEnd > strandedStopCodonPos) && (exonStart < strandedStartCodonPos) && (exonEnd < strandedStartCodonPos)) {
-    //             exonTypeIdx += 1;
-    //             blocks.push({
-    //               "type" : "Exon",
-    //               "subtype" : "",
-    //               "range" : [
-    //                 exonStartOffset / txDiff,
-    //                 (exonStartOffset + exonDiff) / txDiff,
-    //               ],
-    //               "idx" : blockIdx,
-    //               "typeIdx" : exonTypeIdx,
-    //               "subtypeIdx" : exonTypeIdx
-    //             });
-    //             blockIdx += 1;
-    //             if (exonIdx > 0) {
-    //               intronTypeIdx += 1;
-    //               const nextStrandedExonEndOffset = exonEnds[exonIdx - 1] - txStart - 1;
-    //               blocks.push({
-    //                 "type" : "Intron",
-    //                 "subtype" : "",
-    //                 "range" : [
-    //                   nextStrandedExonEndOffset / txDiff,
-    //                   exonStartOffset / txDiff,
-    //                 ],
-    //                 "idx" : blockIdx,
-    //                 "typeIdx" : intronTypeIdx,
-    //                 "subtypeIdx" : null,
-    //               });
-    //               blockIdx += 1;
-    //             }
-    //           }
-    //           else if ((exonStart < strandedStopCodonPos) && (exonEnd >= strandedStopCodonPos)) {
-    //             exonTypeIdx += 1;
-    //             const codonDiff = stopCodonPos - exonStart;
-    //             blocks.push({
-    //               "type" : "Exon",
-    //               "subtype" : "",
-    //               "range" : [
-    //                 (exonStartOffset + codonDiff) / txDiff,
-    //                 (exonStartOffset + exonDiff) / txDiff,
-    //               ],
-    //               "idx" : blockIdx,
-    //               "typeIdx" : exonTypeIdx,
-    //               "subtypeIdx" : exonTypeIdx,
-    //             });
-    //             blockIdx += 1;
-    //             threePrimeUTRTypeIdx += 1;
-    //             blocks.push({
-    //               "type" : "Exon",
-    //               "subtype" : "3'UTR",
-    //               "range" : [
-    //                 exonStartOffset / txDiff,
-    //                 (exonStartOffset + codonDiff) / txDiff,
-    //               ],
-    //               "idx" : blockIdx,
-    //               "typeIdx" : exonTypeIdx,
-    //               "subtypeIdx" : threePrimeUTRTypeIdx,
-    //             });
-    //             blockIdx += 1;
-    //             if (exonIdx > 0) {
-    //               intronTypeIdx += 1;
-    //               const nextStrandedExonEndOffset = exonEnds[exonIdx - 1] - txStart - 1;
-    //               blocks.push({
-    //                 "type" : "Intron",
-    //                 "subtype" : "",
-    //                 "range" : [
-    //                   nextStrandedExonEndOffset / txDiff,
-    //                   exonStartOffset / txDiff,
-    //                 ],
-    //                 "idx" : blockIdx,
-    //                 "typeIdx" : intronTypeIdx,
-    //                 "subtypeIdx" : null,
-    //               });
-    //               blockIdx += 1;
-    //             }
-    //           }
-    //           else if ((exonStart > strandedTxEnd) && (exonStart < strandedStopCodonPos) && (exonEnd < strandedStopCodonPos)) {
-    //             exonTypeIdx += 1;
-    //             threePrimeUTRTypeIdx += 1;
-    //             blocks.push({
-    //               "type" : "Exon",
-    //               "subtype" : "3'UTR",
-    //               "range" : [
-    //                 exonStartOffset / txDiff,
-    //                 (exonStartOffset + exonDiff) / txDiff,
-    //               ],
-    //               "idx" : blockIdx,
-    //               "typeIdx" : exonTypeIdx,
-    //               "subtypeIdx" : threePrimeUTRTypeIdx,
-    //             });
-    //             blockIdx += 1;
-    //             if (exonIdx > 0) {
-    //               intronTypeIdx += 1;
-    //               const nextStrandedExonEndOffset = exonEnds[exonIdx - 1] - txStart - 1;
-    //               blocks.push({
-    //                 "type" : "Intron",
-    //                 "subtype" : "",
-    //                 "range" : [
-    //                   nextStrandedExonEndOffset / txDiff,
-    //                   exonStartOffset / txDiff,
-    //                 ],
-    //                 "idx" : blockIdx,
-    //                 "typeIdx" : intronTypeIdx,
-    //                 "subtypeIdx" : null,
-    //               });
-    //               blockIdx += 1;
-    //             }
-    //           }
-    //           else if ((exonStart === strandedTxEnd) && (exonStart < strandedStopCodonPos) && (exonEnd < strandedStopCodonPos)) {
-    //             exonTypeIdx += 1;
-    //             threePrimeUTRTypeIdx += 1;
-    //             blocks.push({
-    //               "type" : "Exon",
-    //               "subtype" : "3'UTR",
-    //               "range" : [
-    //                 exonStartOffset / txDiff,
-    //                 (exonStartOffset + exonDiff) / txDiff,
-    //               ],
-    //               "idx" : blockIdx,
-    //               "typeIdx" : exonTypeIdx,
-    //               "subtypeIdx" : threePrimeUTRTypeIdx,
-    //             });
-    //             blockIdx += 1;
-    //           }
-    //           else if ((exonIdx === 0) && (exonStart > strandedTxEnd) && (exonStart < strandedStopCodonPos) && (exonEnd < strandedStopCodonPos)) {
-    //             exonTypeIdx += 1;
-    //             threePrimeUTRTypeIdx += 1;
-    //             blocks.push({
-    //               "type" : "Exon",
-    //               "subtype" : "3'UTR",
-    //               "range" : [
-    //                 exonStartOffset / txDiff,
-    //                 (exonStartOffset + exonDiff) / txDiff,
-    //               ],
-    //               "idx" : blockIdx,
-    //               "typeIdx" : exonTypeIdx,
-    //               "subtypeIdx" : threePrimeUTRTypeIdx,
-    //             });
-    //             blockIdx += 1;
-    //             intronTypeIdx += 1;
-    //             blocks.push({
-    //               "type" : "Intron",
-    //               "subtype" : "",
-    //               "range" : [
-    //                 (exonStartOffset + exonDiff) / txDiff,
-    //                 0.0,
-    //               ],
-    //               "idx" : blockIdx,
-    //               "typeIdx" : intronTypeIdx,
-    //               "subtypeIdx" : null,
-    //             });
-    //             blockIdx += 1;
-    //           }
-    //         }
-    //         else {
-    //           // default block type
-    //           exonTypeIdx += 1;
-    //           blocks.push({ 
-    //             "type" : "Exon",
-    //             "subtype" : "",
-    //             "range" : [ 
-    //               exonStartOffset / txDiff, 
-    //               (exonStartOffset + exonDiff) / txDiff 
-    //             ],
-    //             "idx" : blockIdx,
-    //             "typeIdx" : exonTypeIdx,
-    //           });
-    //           blockIdx += 1;
-    //           if (exonIdx > 0) {
-    //             intronTypeIdx += 1;
-    //             const nextStrandedExonEndOffset = exonEnds[exonIdx - 1] - txStart - 1;
-    //             blocks.push({
-    //               "type" : "Intron",
-    //               "subtype" : "",
-    //               "range" : [
-    //                 nextStrandedExonEndOffset / txDiff,
-    //                 exonStartOffset / txDiff,
-    //               ],
-    //               "idx" : blockIdx,
-    //               "typeIdx" : intronTypeIdx,
-    //               "subtypeIdx" : null,
-    //             });
-    //             blockIdx += 1;
-    //           }
-    //         }
-    //       }
-    //       break;
-    //     }
-    //     default: {
-    //       break;
-    //     }
-    //   }
-    //   return blocks;
-    // }
+    calculateTranscriptBlocks(txStart, txEnd, strand, startCodonPos, stopCodonPos, exonStarts, exonEnds, strandedStartCodonPos, strandedStopCodonPos, strandedTxStart, strandedTxEnd) {
+      let blocks = [];
+      const txDiff = parseFloat(txEnd - txStart);
+      let blockIdx = 0;
+      let exonTypeIdx = 0;
+      let intronTypeIdx = 0;
+      let fivePrimeUTRTypeIdx = 0;
+      let threePrimeUTRTypeIdx = 0;
+      switch (strand) {
+        case "+": {
+          for (let exonIdx = 0; exonIdx < exonStarts.length; exonIdx++) {
+            const exonStart = exonStarts[exonIdx];
+            const exonEnd = exonEnds[exonIdx] - 1;
+            const exonDiff = exonEnd - exonStart;
+            const exonStartOffset = parseFloat(exonStart - txStart);
+            if ((startCodonPos !== ".") && (stopCodonPos !== ".")) {
+              if ((exonIdx === 0) && (exonStart > strandedTxStart) && (exonStart < strandedStartCodonPos) && (exonEnd < strandedStartCodonPos)) {
+                intronTypeIdx += 1;
+                blocks.push({
+                  "type" : "Intron",
+                  "subtype" : "",
+                  "range" : [
+                    0.0,
+                    exonStartOffset / txDiff,
+                  ],
+                  "idx" : blockIdx,
+                  "typeIdx" : intronTypeIdx,
+                  "subtypeIdx" : null,
+                });
+                blockIdx += 1;
+                exonTypeIdx += 1;
+                fivePrimeUTRTypeIdx += 1;
+                blocks.push({
+                  "type" : "Exon",
+                  "subtype" : "5'UTR",
+                  "range" : [
+                    exonStartOffset / txDiff,
+                    (exonStartOffset + exonDiff) / txDiff,
+                  ],
+                  "idx" : blockIdx,
+                  "typeIdx" : exonTypeIdx,
+                  "subtypeIdx" : fivePrimeUTRTypeIdx,
+                });
+                blockIdx += 1;
+                if (exonIdx < exonStarts.length - 1) {
+                  const nextStrandedExonStartOffset = exonStarts[exonIdx + 1] - txStart;
+                  intronTypeIdx += 1;
+                  blocks.push({
+                    "type" : "Intron",
+                    "subtype" : "",
+                    "range" : [
+                      (exonStartOffset + exonDiff) / txDiff,
+                      nextStrandedExonEndOffset / txDiff,
+                    ],
+                    "idx" : blockIdx,
+                    "typeIdx" : intronTypeIdx,
+                    "subtypeIdx" : null,
+                  });
+                  blockIdx += 1;
+                }
+              }
+              else if ((exonStart === strandedTxStart) && (exonStart < strandedStartCodonPos) && (exonEnd < strandedStartCodonPos)) {
+                exonTypeIdx += 1;
+                fivePrimeUTRTypeIdx += 1;
+                blocks.push({
+                  "type" : "Exon",
+                  "subtype" : "5'UTR",
+                  "range" : [
+                    exonStartOffset / txDiff,
+                    (exonStartOffset + exonDiff) / txDiff,
+                  ],
+                  "idx" : blockIdx,
+                  "typeIdx" : exonTypeIdx,
+                  "subtypeIdx" : fivePrimeUTRTypeIdx,
+                });
+                blockIdx += 1;
+                if (exonIdx < exonStarts.length - 1) {
+                  const nextStrandedExonStartOffset = exonStarts[exonIdx + 1] - txStart;
+                  intronTypeIdx += 1;
+                  blocks.push({
+                    "type" : "Intron",
+                    "subtype" : "",
+                    "range" : [
+                      (exonStartOffset + exonDiff) / txDiff,
+                      nextStrandedExonStartOffset / txDiff,
+                    ],
+                    "idx" : blockIdx,
+                    "typeIdx" : intronTypeIdx,
+                    "subtypeIdx" : null,
+                  });
+                  blockIdx += 1;
+                }
+              }
+              else if ((exonStart < strandedStartCodonPos) && (exonEnd >= strandedStartCodonPos)) {
+                const codonDiff = strandedStartCodonPos - exonStart;
+                exonTypeIdx += 1;
+                fivePrimeUTRTypeIdx += 1;
+                blocks.push({
+                  "type" : "Exon",
+                  "subtype" : "5'UTR",
+                  "range" : [
+                    exonStartOffset / txDiff,
+                    (exonStartOffset + codonDiff) / txDiff,
+                  ],
+                  "idx" : blockIdx,
+                  "typeIdx" : exonTypeIdx,
+                  "subtypeIdx" : fivePrimeUTRTypeIdx,
+                });
+                blockIdx += 1;
+                blocks.push({
+                  "type" : "Exon",
+                  "subtype" : "",
+                  "range" : [
+                    (exonStartOffset + codonDiff) / txDiff,
+                    (exonStartOffset + exonDiff) / txDiff,
+                  ],
+                  "idx" : blockIdx,
+                  "typeIdx" : exonTypeIdx,
+                  "subtypeIdx" : null,
+                });
+                blockIdx += 1;
+                if (exonIdx < exonStarts.length - 1) {
+                  const nextStrandedExonStartOffset = exonStarts[exonIdx + 1] - txStart;
+                  intronTypeIdx += 1;
+                  blocks.push({
+                    "type" : "Intron",
+                    "subtype" : "",
+                    "range" : [
+                      (exonStartOffset + exonDiff) / txDiff,
+                      nextStrandedExonStartOffset / txDiff,
+                    ],
+                    "idx" : blockIdx,
+                    "typeIdx" : intronTypeIdx,
+                    "subtypeIdx" : null,
+                  });
+                  blockIdx += 1;
+                }
+              }
+              else if ((exonStart > strandedStartCodonPos) && (exonEnd > strandedStartCodonPos) && (exonStart < strandedStopCodonPos) && (exonEnd < strandedStopCodonPos)) {
+                exonTypeIdx += 1;
+                blocks.push({
+                  "type" : "Exon",
+                  "subtype": "",
+                  "range" : [
+                    exonStartOffset / txDiff,
+                    (exonStartOffset + exonDiff) / txDiff,
+                  ],
+                  "idx" : blockIdx,
+                  "typeIdx" : exonTypeIdx,
+                  "subtypeIdx" : null,
+                });
+                blockIdx += 1;
+                if (exonIdx < exonStarts.length - 1) {
+                  const nextStrandedExonStartOffset = exonStarts[exonIdx + 1] - txStart;
+                  intronTypeIdx += 1;
+                  blocks.push({
+                    "type" : "Intron",
+                    "subtype" : "",
+                    "range" : [
+                      (exonStartOffset + exonDiff) / txDiff,
+                      nextStrandedExonStartOffset / txDiff,
+                    ],
+                    "idx" : blockIdx,
+                    "typeIdx" : intronTypeIdx,
+                    "subtypeIdx" : null,
+                  });
+                  blockIdx += 1;
+                }
+              }
+              else if ((exonStart < strandedStopCodonPos) && (exonEnd >= strandedStopCodonPos)) {
+                const codonDiff = strandedStopCodonPos - exonStart;
+                exonTypeIdx += 1;
+                blocks.push({
+                  "type" : "Exon",
+                  "subtype" : "",
+                  "range" : [
+                    exonStartOffset / txDiff,
+                    (exonStartOffset + codonDiff) / txDiff,
+                  ],
+                  "idx" : blockIdx,
+                  "typeIdx" : exonTypeIdx,
+                  "subtypeIdx" : null,
+                });
+                blockIdx += 1;
+                threePrimeUTRTypeIdx += 1;
+                blocks.push({
+                  "type" : "Exon",
+                  "subtype" : "3'UTR",
+                  "range" : [
+                    (exonStartOffset + codonDiff) / txDiff,
+                    (exonStartOffset + exonDiff) / txDiff,
+                  ],
+                  "idx" : blockIdx,
+                  "typeIdx" : exonTypeIdx,
+                  "subtypeIdx" : threePrimeUTRTypeIdx,
+                });
+                blockIdx += 1;
+                if (exonIdx < exonStarts.length - 1) {
+                  const nextStrandedExonStartOffset = exonStarts[exonIdx + 1] - txStart;
+                  intronTypeIdx += 1;
+                  blocks.push({
+                    "type" : "Intron",
+                    "subtype" : "",
+                    "range" : [
+                      (exonStartOffset + exonDiff) / txDiff,
+                      nextStrandedExonStartOffset / txDiff,
+                    ],
+                    "idx" : blockIdx,
+                    "typeIdx" : intronTypeIdx,
+                    "subtypeIdx" : null,
+                  });
+                  blockIdx += 1;
+                }
+              }
+              else if ((exonEnd < strandedTxEnd) && (exonStart > strandedStopCodonPos) && (exonEnd >= strandedStopCodonPos)) {
+                exonTypeIdx += 1;
+                threePrimeUTRTypeIdx += 1;
+                blocks.push({
+                  "type" : "Exon",
+                  "subtype" : "3'UTR",
+                  "range" : [
+                    exonStartOffset / txDiff,
+                    (exonStartOffset + exonDiff) / txDiff,
+                  ],
+                  "idx" : blockIdx,
+                  "typeIdx" : exonTypeIdx,
+                  "subtypeIdx" : threePrimeUTRTypeIdx,
+                });
+                blockIdx += 1;
+                if (exonIdx < exonStarts.length - 1) {
+                  const nextStrandedExonStartOffset = exonStarts[exonIdx + 1] - txStart;
+                  intronTypeIdx += 1;
+                  blocks.push({
+                    "type" : "Intron",
+                    "subtype" : "",
+                    "range" : [
+                      (exonStartOffset + exonDiff) / txDiff,
+                      nextStrandedExonStartOffset / txDiff,
+                    ],
+                    "idx" : blockIdx,
+                    "typeIdx" : intronTypeIdx,
+                    "subtypeIdx" : null,
+                  });
+                  blockIdx += 1;
+                }
+              }
+              else if ((exonEnd === strandedTxEnd) && (exonStart > strandedStopCodonPos) && (exonEnd >= strandedStopCodonPos)) {
+                exonTypeIdx += 1;
+                threePrimeUTRTypeIdx += 1;
+                blocks.push({
+                  "type" : "Exon",
+                  "subtype" : "3'UTR",
+                  "range" : [
+                    exonStartOffset / txDiff,
+                    (exonStartOffset + exonDiff) / txDiff,
+                  ],
+                  "idx" : blockIdx,
+                  "typeIdx" : exonTypeIdx,
+                  "subtypeIdx" : threePrimeUTRTypeIdx,
+                });
+                blockIdx += 1;
+              }
+            }
+            else {
+              // default block type
+              exonTypeIdx += 1;
+              blocks.push({ 
+                "type" : "Exon", 
+                "subtype" : "",
+                "range" : [ 
+                  exonStartOffset / txDiff, 
+                  (exonStartOffset + exonDiff) / txDiff 
+                ],
+                "idx" : blockIdx,
+                "typeIdx" : exonTypeIdx,
+                "subtypeIdx" : null,
+              });
+              blockIdx += 1;
+              if (exonIdx < exonStarts.length - 1) {
+                intronTypeIdx += 1;
+                // const nextStrandedExonEndOffset = exonEnds[exonIdx - 1] - txStart - 1;
+                // const nextStrandedExonEndOffset = exonEnds[exonIdx - 1] - strandedTxStart - 1;
+                const nextStrandedExonEndOffset = exonEnds[exonIdx] - strandedTxStart - 1;
+                blocks.push({
+                  "type" : "Intron",
+                  "subtype" : "",
+                  "range" : [
+                    nextStrandedExonEndOffset / txDiff,
+                    exonStartOffset / txDiff,
+                  ],
+                  "idx" : blockIdx,
+                  "typeIdx" : intronTypeIdx,
+                  "subtypeIdx" : null,
+                });
+                blockIdx += 1;
+              }
+            }
+          }
+          break;
+        }
+        case "-": {
+          for (let exonIdx = exonStarts.length - 1; exonIdx >= 0; exonIdx--) {
+            const exonStart = exonStarts[exonIdx];
+            const exonEnd = exonEnds[exonIdx] - 1;
+            const exonDiff = exonEnd - exonStart;
+            const exonStartOffset = parseFloat(exonStart - txStart);
+            if ((startCodonPos !== ".") && (stopCodonPos !== ".")) {
+              if ((exonEnd === strandedTxStart) && (exonStart > strandedStartCodonPos) && (exonEnd >= strandedStartCodonPos)) {
+                exonTypeIdx += 1;
+                fivePrimeUTRTypeIdx += 1;
+                blocks.push({
+                  "type" : "Exon",
+                  "subtype" : "5'UTR",
+                  "range" : [
+                    exonStartOffset / txDiff,
+                    (exonStartOffset + exonDiff) / txDiff,
+                  ],
+                  "idx" : blockIdx,
+                  "typeIdx" : exonTypeIdx,
+                  "subtypeIdx" : fivePrimeUTRTypeIdx,
+                });
+                blockIdx += 1;
+                if (exonIdx > 0) {
+                  intronTypeIdx += 1;
+                  const nextStrandedExonEndOffset = exonEnds[exonIdx - 1] - txStart - 1;
+                  blocks.push({
+                    "type" : "Intron",
+                    "subtype" : "",
+                    "range" : [
+                      nextStrandedExonEndOffset / txDiff,
+                      exonStartOffset / txDiff,
+                    ],
+                    "idx" : blockIdx,
+                    "typeIdx" : intronTypeIdx,
+                    "subtypeIdx" : null,
+                  });
+                  blockIdx += 1;
+                }
+              }
+              else if ((exonEnd < strandedTxStart) && (exonStart > strandedStartCodonPos) && (exonEnd >= strandedStartCodonPos)) {
+                if (exonIdx === exonStarts.length - 1) {
+                  intronTypeIdx += 1;
+                  blocks.push({
+                    "type" : "Intron",
+                    "subtype" : "",
+                    "range" : [
+                      (exonStartOffset + exonDiff) / txDiff,
+                      1.0,
+                    ],
+                    "idx" : blockIdx,
+                    "typeIdx" : intronTypeIdx,
+                    "subtypeIdx" : null,
+                  });
+                  blockIdx += 1;
+                }
+                exonTypeIdx += 1;
+                fivePrimeUTRTypeIdx += 1;
+                blocks.push({
+                  "type" : "Exon",
+                  "subtype" : "5'UTR",
+                  "range" : [
+                    exonStartOffset / txDiff,
+                    (exonStartOffset + exonDiff) / txDiff,
+                  ],
+                  "idx" : blockIdx,
+                  "typeIdx" : exonTypeIdx,
+                  "subtypeIdx" : fivePrimeUTRTypeIdx,
+                });
+                blockIdx += 1;
+                if (exonIdx > 0) {
+                  intronTypeIdx += 1;
+                  const nextStrandedExonEndOffset = exonEnds[exonIdx - 1] - txStart - 1;
+                  blocks.push({
+                    "type" : "Intron",
+                    "subtype" : "",
+                    "range" : [
+                      nextStrandedExonEndOffset / txDiff,
+                      exonStartOffset / txDiff,
+                    ],
+                    "idx" : blockIdx,
+                    "typeIdx" : intronTypeIdx,
+                    "subtypeIdx" : null,
+                  });
+                  blockIdx += 1;
+                }
+              }
+              else if ((exonStart < strandedStartCodonPos) && (exonEnd >= strandedStartCodonPos)) {
+                exonTypeIdx += 1;
+                fivePrimeUTRTypeIdx += 1;
+                const codonDiff = startCodonPos - exonStart;
+                blocks.push({
+                  "type" : "Exon",
+                  "subtype" : "5'UTR",
+                  "range" : [
+                    (exonStartOffset + codonDiff) / txDiff,
+                    (exonStartOffset + exonDiff) / txDiff,
+                  ],
+                  "idx" : blockIdx,
+                  "typeIdx" : exonTypeIdx,
+                  "subtypeIdx" : fivePrimeUTRTypeIdx,
+                });
+                blockIdx += 1;
+                blocks.push({
+                  "type" : "Exon",
+                  "subtype" : "",
+                  "range" : [
+                    exonStartOffset / txDiff,
+                    (exonStartOffset + codonDiff) / txDiff,
+                  ],
+                  "idx" : blockIdx,
+                  "typeIdx" : exonTypeIdx,
+                  "subtypeIdx" : exonTypeIdx,
+                });
+                blockIdx += 1;
+                if (exonIdx > 0) {
+                  intronTypeIdx += 1;
+                  const nextStrandedExonEndOffset = exonEnds[exonIdx - 1] - txStart - 1;
+                  blocks.push({
+                    "type" : "Intron",
+                    "subtype" : "",
+                    "range" : [
+                      nextStrandedExonEndOffset / txDiff,
+                      exonStartOffset / txDiff,
+                    ],
+                    "idx" : blockIdx,
+                    "typeIdx" : intronTypeIdx,
+                    "subtypeIdx" : null,
+                  });
+                  blockIdx += 1;
+                }
+              }
+              else if ((exonStart > strandedStopCodonPos) && (exonEnd > strandedStopCodonPos) && (exonStart < strandedStartCodonPos) && (exonEnd < strandedStartCodonPos)) {
+                exonTypeIdx += 1;
+                blocks.push({
+                  "type" : "Exon",
+                  "subtype" : "",
+                  "range" : [
+                    exonStartOffset / txDiff,
+                    (exonStartOffset + exonDiff) / txDiff,
+                  ],
+                  "idx" : blockIdx,
+                  "typeIdx" : exonTypeIdx,
+                  "subtypeIdx" : exonTypeIdx
+                });
+                blockIdx += 1;
+                if (exonIdx > 0) {
+                  intronTypeIdx += 1;
+                  const nextStrandedExonEndOffset = exonEnds[exonIdx - 1] - txStart - 1;
+                  blocks.push({
+                    "type" : "Intron",
+                    "subtype" : "",
+                    "range" : [
+                      nextStrandedExonEndOffset / txDiff,
+                      exonStartOffset / txDiff,
+                    ],
+                    "idx" : blockIdx,
+                    "typeIdx" : intronTypeIdx,
+                    "subtypeIdx" : null,
+                  });
+                  blockIdx += 1;
+                }
+              }
+              else if ((exonStart < strandedStopCodonPos) && (exonEnd >= strandedStopCodonPos)) {
+                exonTypeIdx += 1;
+                const codonDiff = stopCodonPos - exonStart;
+                blocks.push({
+                  "type" : "Exon",
+                  "subtype" : "",
+                  "range" : [
+                    (exonStartOffset + codonDiff) / txDiff,
+                    (exonStartOffset + exonDiff) / txDiff,
+                  ],
+                  "idx" : blockIdx,
+                  "typeIdx" : exonTypeIdx,
+                  "subtypeIdx" : exonTypeIdx,
+                });
+                blockIdx += 1;
+                threePrimeUTRTypeIdx += 1;
+                blocks.push({
+                  "type" : "Exon",
+                  "subtype" : "3'UTR",
+                  "range" : [
+                    exonStartOffset / txDiff,
+                    (exonStartOffset + codonDiff) / txDiff,
+                  ],
+                  "idx" : blockIdx,
+                  "typeIdx" : exonTypeIdx,
+                  "subtypeIdx" : threePrimeUTRTypeIdx,
+                });
+                blockIdx += 1;
+                if (exonIdx > 0) {
+                  intronTypeIdx += 1;
+                  const nextStrandedExonEndOffset = exonEnds[exonIdx - 1] - txStart - 1;
+                  blocks.push({
+                    "type" : "Intron",
+                    "subtype" : "",
+                    "range" : [
+                      nextStrandedExonEndOffset / txDiff,
+                      exonStartOffset / txDiff,
+                    ],
+                    "idx" : blockIdx,
+                    "typeIdx" : intronTypeIdx,
+                    "subtypeIdx" : null,
+                  });
+                  blockIdx += 1;
+                }
+              }
+              else if ((exonStart > strandedTxEnd) && (exonStart < strandedStopCodonPos) && (exonEnd < strandedStopCodonPos)) {
+                exonTypeIdx += 1;
+                threePrimeUTRTypeIdx += 1;
+                blocks.push({
+                  "type" : "Exon",
+                  "subtype" : "3'UTR",
+                  "range" : [
+                    exonStartOffset / txDiff,
+                    (exonStartOffset + exonDiff) / txDiff,
+                  ],
+                  "idx" : blockIdx,
+                  "typeIdx" : exonTypeIdx,
+                  "subtypeIdx" : threePrimeUTRTypeIdx,
+                });
+                blockIdx += 1;
+                if (exonIdx > 0) {
+                  intronTypeIdx += 1;
+                  const nextStrandedExonEndOffset = exonEnds[exonIdx - 1] - txStart - 1;
+                  blocks.push({
+                    "type" : "Intron",
+                    "subtype" : "",
+                    "range" : [
+                      nextStrandedExonEndOffset / txDiff,
+                      exonStartOffset / txDiff,
+                    ],
+                    "idx" : blockIdx,
+                    "typeIdx" : intronTypeIdx,
+                    "subtypeIdx" : null,
+                  });
+                  blockIdx += 1;
+                }
+              }
+              else if ((exonStart === strandedTxEnd) && (exonStart < strandedStopCodonPos) && (exonEnd < strandedStopCodonPos)) {
+                exonTypeIdx += 1;
+                threePrimeUTRTypeIdx += 1;
+                blocks.push({
+                  "type" : "Exon",
+                  "subtype" : "3'UTR",
+                  "range" : [
+                    exonStartOffset / txDiff,
+                    (exonStartOffset + exonDiff) / txDiff,
+                  ],
+                  "idx" : blockIdx,
+                  "typeIdx" : exonTypeIdx,
+                  "subtypeIdx" : threePrimeUTRTypeIdx,
+                });
+                blockIdx += 1;
+              }
+              else if ((exonIdx === 0) && (exonStart > strandedTxEnd) && (exonStart < strandedStopCodonPos) && (exonEnd < strandedStopCodonPos)) {
+                exonTypeIdx += 1;
+                threePrimeUTRTypeIdx += 1;
+                blocks.push({
+                  "type" : "Exon",
+                  "subtype" : "3'UTR",
+                  "range" : [
+                    exonStartOffset / txDiff,
+                    (exonStartOffset + exonDiff) / txDiff,
+                  ],
+                  "idx" : blockIdx,
+                  "typeIdx" : exonTypeIdx,
+                  "subtypeIdx" : threePrimeUTRTypeIdx,
+                });
+                blockIdx += 1;
+                intronTypeIdx += 1;
+                blocks.push({
+                  "type" : "Intron",
+                  "subtype" : "",
+                  "range" : [
+                    (exonStartOffset + exonDiff) / txDiff,
+                    0.0,
+                  ],
+                  "idx" : blockIdx,
+                  "typeIdx" : intronTypeIdx,
+                  "subtypeIdx" : null,
+                });
+                blockIdx += 1;
+              }
+            }
+            else {
+              // default block type
+              exonTypeIdx += 1;
+              blocks.push({ 
+                "type" : "Exon",
+                "subtype" : "",
+                "range" : [ 
+                  exonStartOffset / txDiff, 
+                  (exonStartOffset + exonDiff) / txDiff 
+                ],
+                "idx" : blockIdx,
+                "typeIdx" : exonTypeIdx,
+              });
+              blockIdx += 1;
+              if (exonIdx > 0) {
+                intronTypeIdx += 1;
+                const nextStrandedExonEndOffset = exonEnds[exonIdx - 1] - txStart - 1;
+                blocks.push({
+                  "type" : "Intron",
+                  "subtype" : "",
+                  "range" : [
+                    nextStrandedExonEndOffset / txDiff,
+                    exonStartOffset / txDiff,
+                  ],
+                  "idx" : blockIdx,
+                  "typeIdx" : intronTypeIdx,
+                  "subtypeIdx" : null,
+                });
+                blockIdx += 1;
+              }
+            }
+          }
+          break;
+        }
+        default: {
+          break;
+        }
+      }
+      return blocks;
+    }
 
     formatTranscriptData(ts) {
       const strand = ts[5];
@@ -1904,634 +1904,7 @@ const TranscriptsTrack = (HGC, ...args) => {
         boxBlockStarts = ts[11].split(",").map((x) => +x);
       }
 
-      function calculateTranscriptBlocks(txStart, txEnd, strand, startCodonPos, stopCodonPos, exonStarts, exonEnds, strandedStartCodonPos, strandedStopCodonPos, strandedTxStart, strandedTxEnd) {
-        let blocks = [];
-        const txDiff = parseFloat(txEnd - txStart);
-        let blockIdx = 0;
-        let exonTypeIdx = 0;
-        let intronTypeIdx = 0;
-        let fivePrimeUTRTypeIdx = 0;
-        let threePrimeUTRTypeIdx = 0;
-        switch (strand) {
-          case "+": {
-            for (let exonIdx = 0; exonIdx < exonStarts.length; exonIdx++) {
-              const exonStart = exonStarts[exonIdx];
-              const exonEnd = exonEnds[exonIdx] - 1;
-              const exonDiff = exonEnd - exonStart;
-              const exonStartOffset = parseFloat(exonStart - txStart);
-              if ((startCodonPos !== ".") && (stopCodonPos !== ".")) {
-                if ((exonIdx === 0) && (exonStart > strandedTxStart) && (exonStart < strandedStartCodonPos) && (exonEnd < strandedStartCodonPos)) {
-                  intronTypeIdx += 1;
-                  blocks.push({
-                    "type" : "Intron",
-                    "subtype" : "",
-                    "range" : [
-                      0.0,
-                      exonStartOffset / txDiff,
-                    ],
-                    "idx" : blockIdx,
-                    "typeIdx" : intronTypeIdx,
-                    "subtypeIdx" : null,
-                  });
-                  blockIdx += 1;
-                  exonTypeIdx += 1;
-                  fivePrimeUTRTypeIdx += 1;
-                  blocks.push({
-                    "type" : "Exon",
-                    "subtype" : "5'UTR",
-                    "range" : [
-                      exonStartOffset / txDiff,
-                      (exonStartOffset + exonDiff) / txDiff,
-                    ],
-                    "idx" : blockIdx,
-                    "typeIdx" : exonTypeIdx,
-                    "subtypeIdx" : fivePrimeUTRTypeIdx,
-                  });
-                  blockIdx += 1;
-                  if (exonIdx < exonStarts.length - 1) {
-                    const nextStrandedExonStartOffset = exonStarts[exonIdx + 1] - txStart;
-                    intronTypeIdx += 1;
-                    blocks.push({
-                      "type" : "Intron",
-                      "subtype" : "",
-                      "range" : [
-                        (exonStartOffset + exonDiff) / txDiff,
-                        nextStrandedExonEndOffset / txDiff,
-                      ],
-                      "idx" : blockIdx,
-                      "typeIdx" : intronTypeIdx,
-                      "subtypeIdx" : null,
-                    });
-                    blockIdx += 1;
-                  }
-                }
-                else if ((exonStart === strandedTxStart) && (exonStart < strandedStartCodonPos) && (exonEnd < strandedStartCodonPos)) {
-                  exonTypeIdx += 1;
-                  fivePrimeUTRTypeIdx += 1;
-                  blocks.push({
-                    "type" : "Exon",
-                    "subtype" : "5'UTR",
-                    "range" : [
-                      exonStartOffset / txDiff,
-                      (exonStartOffset + exonDiff) / txDiff,
-                    ],
-                    "idx" : blockIdx,
-                    "typeIdx" : exonTypeIdx,
-                    "subtypeIdx" : fivePrimeUTRTypeIdx,
-                  });
-                  blockIdx += 1;
-                  if (exonIdx < exonStarts.length - 1) {
-                    const nextStrandedExonStartOffset = exonStarts[exonIdx + 1] - txStart;
-                    intronTypeIdx += 1;
-                    blocks.push({
-                      "type" : "Intron",
-                      "subtype" : "",
-                      "range" : [
-                        (exonStartOffset + exonDiff) / txDiff,
-                        nextStrandedExonStartOffset / txDiff,
-                      ],
-                      "idx" : blockIdx,
-                      "typeIdx" : intronTypeIdx,
-                      "subtypeIdx" : null,
-                    });
-                    blockIdx += 1;
-                  }
-                }
-                else if ((exonStart < strandedStartCodonPos) && (exonEnd >= strandedStartCodonPos)) {
-                  const codonDiff = strandedStartCodonPos - exonStart;
-                  exonTypeIdx += 1;
-                  fivePrimeUTRTypeIdx += 1;
-                  blocks.push({
-                    "type" : "Exon",
-                    "subtype" : "5'UTR",
-                    "range" : [
-                      exonStartOffset / txDiff,
-                      (exonStartOffset + codonDiff) / txDiff,
-                    ],
-                    "idx" : blockIdx,
-                    "typeIdx" : exonTypeIdx,
-                    "subtypeIdx" : fivePrimeUTRTypeIdx,
-                  });
-                  blockIdx += 1;
-                  blocks.push({
-                    "type" : "Exon",
-                    "subtype" : "",
-                    "range" : [
-                      (exonStartOffset + codonDiff) / txDiff,
-                      (exonStartOffset + exonDiff) / txDiff,
-                    ],
-                    "idx" : blockIdx,
-                    "typeIdx" : exonTypeIdx,
-                    "subtypeIdx" : null,
-                  });
-                  blockIdx += 1;
-                  if (exonIdx < exonStarts.length - 1) {
-                    const nextStrandedExonStartOffset = exonStarts[exonIdx + 1] - txStart;
-                    intronTypeIdx += 1;
-                    blocks.push({
-                      "type" : "Intron",
-                      "subtype" : "",
-                      "range" : [
-                        (exonStartOffset + exonDiff) / txDiff,
-                        nextStrandedExonStartOffset / txDiff,
-                      ],
-                      "idx" : blockIdx,
-                      "typeIdx" : intronTypeIdx,
-                      "subtypeIdx" : null,
-                    });
-                    blockIdx += 1;
-                  }
-                }
-                else if ((exonStart > strandedStartCodonPos) && (exonEnd > strandedStartCodonPos) && (exonStart < strandedStopCodonPos) && (exonEnd < strandedStopCodonPos)) {
-                  exonTypeIdx += 1;
-                  blocks.push({
-                    "type" : "Exon",
-                    "subtype": "",
-                    "range" : [
-                      exonStartOffset / txDiff,
-                      (exonStartOffset + exonDiff) / txDiff,
-                    ],
-                    "idx" : blockIdx,
-                    "typeIdx" : exonTypeIdx,
-                    "subtypeIdx" : null,
-                  });
-                  blockIdx += 1;
-                  if (exonIdx < exonStarts.length - 1) {
-                    const nextStrandedExonStartOffset = exonStarts[exonIdx + 1] - txStart;
-                    intronTypeIdx += 1;
-                    blocks.push({
-                      "type" : "Intron",
-                      "subtype" : "",
-                      "range" : [
-                        (exonStartOffset + exonDiff) / txDiff,
-                        nextStrandedExonStartOffset / txDiff,
-                      ],
-                      "idx" : blockIdx,
-                      "typeIdx" : intronTypeIdx,
-                      "subtypeIdx" : null,
-                    });
-                    blockIdx += 1;
-                  }
-                }
-                else if ((exonStart < strandedStopCodonPos) && (exonEnd >= strandedStopCodonPos)) {
-                  const codonDiff = strandedStopCodonPos - exonStart;
-                  exonTypeIdx += 1;
-                  blocks.push({
-                    "type" : "Exon",
-                    "subtype" : "",
-                    "range" : [
-                      exonStartOffset / txDiff,
-                      (exonStartOffset + codonDiff) / txDiff,
-                    ],
-                    "idx" : blockIdx,
-                    "typeIdx" : exonTypeIdx,
-                    "subtypeIdx" : null,
-                  });
-                  blockIdx += 1;
-                  threePrimeUTRTypeIdx += 1;
-                  blocks.push({
-                    "type" : "Exon",
-                    "subtype" : "3'UTR",
-                    "range" : [
-                      (exonStartOffset + codonDiff) / txDiff,
-                      (exonStartOffset + exonDiff) / txDiff,
-                    ],
-                    "idx" : blockIdx,
-                    "typeIdx" : exonTypeIdx,
-                    "subtypeIdx" : threePrimeUTRTypeIdx,
-                  });
-                  blockIdx += 1;
-                  if (exonIdx < exonStarts.length - 1) {
-                    const nextStrandedExonStartOffset = exonStarts[exonIdx + 1] - txStart;
-                    intronTypeIdx += 1;
-                    blocks.push({
-                      "type" : "Intron",
-                      "subtype" : "",
-                      "range" : [
-                        (exonStartOffset + exonDiff) / txDiff,
-                        nextStrandedExonStartOffset / txDiff,
-                      ],
-                      "idx" : blockIdx,
-                      "typeIdx" : intronTypeIdx,
-                      "subtypeIdx" : null,
-                    });
-                    blockIdx += 1;
-                  }
-                }
-                else if ((exonEnd < strandedTxEnd) && (exonStart > strandedStopCodonPos) && (exonEnd >= strandedStopCodonPos)) {
-                  exonTypeIdx += 1;
-                  threePrimeUTRTypeIdx += 1;
-                  blocks.push({
-                    "type" : "Exon",
-                    "subtype" : "3'UTR",
-                    "range" : [
-                      exonStartOffset / txDiff,
-                      (exonStartOffset + exonDiff) / txDiff,
-                    ],
-                    "idx" : blockIdx,
-                    "typeIdx" : exonTypeIdx,
-                    "subtypeIdx" : threePrimeUTRTypeIdx,
-                  });
-                  blockIdx += 1;
-                  if (exonIdx < exonStarts.length - 1) {
-                    const nextStrandedExonStartOffset = exonStarts[exonIdx + 1] - txStart;
-                    intronTypeIdx += 1;
-                    blocks.push({
-                      "type" : "Intron",
-                      "subtype" : "",
-                      "range" : [
-                        (exonStartOffset + exonDiff) / txDiff,
-                        nextStrandedExonStartOffset / txDiff,
-                      ],
-                      "idx" : blockIdx,
-                      "typeIdx" : intronTypeIdx,
-                      "subtypeIdx" : null,
-                    });
-                    blockIdx += 1;
-                  }
-                }
-                else if ((exonEnd === strandedTxEnd) && (exonStart > strandedStopCodonPos) && (exonEnd >= strandedStopCodonPos)) {
-                  exonTypeIdx += 1;
-                  threePrimeUTRTypeIdx += 1;
-                  blocks.push({
-                    "type" : "Exon",
-                    "subtype" : "3'UTR",
-                    "range" : [
-                      exonStartOffset / txDiff,
-                      (exonStartOffset + exonDiff) / txDiff,
-                    ],
-                    "idx" : blockIdx,
-                    "typeIdx" : exonTypeIdx,
-                    "subtypeIdx" : threePrimeUTRTypeIdx,
-                  });
-                  blockIdx += 1;
-                }
-              }
-              else {
-                // default block type
-                exonTypeIdx += 1;
-                blocks.push({ 
-                  "type" : "Exon", 
-                  "subtype" : "",
-                  "range" : [ 
-                    exonStartOffset / txDiff, 
-                    (exonStartOffset + exonDiff) / txDiff 
-                  ],
-                  "idx" : blockIdx,
-                  "typeIdx" : exonTypeIdx,
-                  "subtypeIdx" : null,
-                });
-                blockIdx += 1;
-                if (exonIdx < exonStarts.length - 1) {
-                  intronTypeIdx += 1;
-                  // const nextStrandedExonEndOffset = exonEnds[exonIdx - 1] - txStart - 1;
-                  // const nextStrandedExonEndOffset = exonEnds[exonIdx - 1] - strandedTxStart - 1;
-                  const nextStrandedExonEndOffset = exonEnds[exonIdx] - strandedTxStart - 1;
-                  blocks.push({
-                    "type" : "Intron",
-                    "subtype" : "",
-                    "range" : [
-                      nextStrandedExonEndOffset / txDiff,
-                      exonStartOffset / txDiff,
-                    ],
-                    "idx" : blockIdx,
-                    "typeIdx" : intronTypeIdx,
-                    "subtypeIdx" : null,
-                  });
-                  blockIdx += 1;
-                }
-              }
-            }
-            break;
-          }
-          case "-": {
-            for (let exonIdx = exonStarts.length - 1; exonIdx >= 0; exonIdx--) {
-              const exonStart = exonStarts[exonIdx];
-              const exonEnd = exonEnds[exonIdx] - 1;
-              const exonDiff = exonEnd - exonStart;
-              const exonStartOffset = parseFloat(exonStart - txStart);
-              if ((startCodonPos !== ".") && (stopCodonPos !== ".")) {
-                if ((exonEnd === strandedTxStart) && (exonStart > strandedStartCodonPos) && (exonEnd >= strandedStartCodonPos)) {
-                  exonTypeIdx += 1;
-                  fivePrimeUTRTypeIdx += 1;
-                  blocks.push({
-                    "type" : "Exon",
-                    "subtype" : "5'UTR",
-                    "range" : [
-                      exonStartOffset / txDiff,
-                      (exonStartOffset + exonDiff) / txDiff,
-                    ],
-                    "idx" : blockIdx,
-                    "typeIdx" : exonTypeIdx,
-                    "subtypeIdx" : fivePrimeUTRTypeIdx,
-                  });
-                  blockIdx += 1;
-                  if (exonIdx > 0) {
-                    intronTypeIdx += 1;
-                    const nextStrandedExonEndOffset = exonEnds[exonIdx - 1] - txStart - 1;
-                    blocks.push({
-                      "type" : "Intron",
-                      "subtype" : "",
-                      "range" : [
-                        nextStrandedExonEndOffset / txDiff,
-                        exonStartOffset / txDiff,
-                      ],
-                      "idx" : blockIdx,
-                      "typeIdx" : intronTypeIdx,
-                      "subtypeIdx" : null,
-                    });
-                    blockIdx += 1;
-                  }
-                }
-                else if ((exonEnd < strandedTxStart) && (exonStart > strandedStartCodonPos) && (exonEnd >= strandedStartCodonPos)) {
-                  if (exonIdx === exonStarts.length - 1) {
-                    intronTypeIdx += 1;
-                    blocks.push({
-                      "type" : "Intron",
-                      "subtype" : "",
-                      "range" : [
-                        (exonStartOffset + exonDiff) / txDiff,
-                        1.0,
-                      ],
-                      "idx" : blockIdx,
-                      "typeIdx" : intronTypeIdx,
-                      "subtypeIdx" : null,
-                    });
-                    blockIdx += 1;
-                  }
-                  exonTypeIdx += 1;
-                  fivePrimeUTRTypeIdx += 1;
-                  blocks.push({
-                    "type" : "Exon",
-                    "subtype" : "5'UTR",
-                    "range" : [
-                      exonStartOffset / txDiff,
-                      (exonStartOffset + exonDiff) / txDiff,
-                    ],
-                    "idx" : blockIdx,
-                    "typeIdx" : exonTypeIdx,
-                    "subtypeIdx" : fivePrimeUTRTypeIdx,
-                  });
-                  blockIdx += 1;
-                  if (exonIdx > 0) {
-                    intronTypeIdx += 1;
-                    const nextStrandedExonEndOffset = exonEnds[exonIdx - 1] - txStart - 1;
-                    blocks.push({
-                      "type" : "Intron",
-                      "subtype" : "",
-                      "range" : [
-                        nextStrandedExonEndOffset / txDiff,
-                        exonStartOffset / txDiff,
-                      ],
-                      "idx" : blockIdx,
-                      "typeIdx" : intronTypeIdx,
-                      "subtypeIdx" : null,
-                    });
-                    blockIdx += 1;
-                  }
-                }
-                else if ((exonStart < strandedStartCodonPos) && (exonEnd >= strandedStartCodonPos)) {
-                  exonTypeIdx += 1;
-                  fivePrimeUTRTypeIdx += 1;
-                  const codonDiff = startCodonPos - exonStart;
-                  blocks.push({
-                    "type" : "Exon",
-                    "subtype" : "5'UTR",
-                    "range" : [
-                      (exonStartOffset + codonDiff) / txDiff,
-                      (exonStartOffset + exonDiff) / txDiff,
-                    ],
-                    "idx" : blockIdx,
-                    "typeIdx" : exonTypeIdx,
-                    "subtypeIdx" : fivePrimeUTRTypeIdx,
-                  });
-                  blockIdx += 1;
-                  blocks.push({
-                    "type" : "Exon",
-                    "subtype" : "",
-                    "range" : [
-                      exonStartOffset / txDiff,
-                      (exonStartOffset + codonDiff) / txDiff,
-                    ],
-                    "idx" : blockIdx,
-                    "typeIdx" : exonTypeIdx,
-                    "subtypeIdx" : exonTypeIdx,
-                  });
-                  blockIdx += 1;
-                  if (exonIdx > 0) {
-                    intronTypeIdx += 1;
-                    const nextStrandedExonEndOffset = exonEnds[exonIdx - 1] - txStart - 1;
-                    blocks.push({
-                      "type" : "Intron",
-                      "subtype" : "",
-                      "range" : [
-                        nextStrandedExonEndOffset / txDiff,
-                        exonStartOffset / txDiff,
-                      ],
-                      "idx" : blockIdx,
-                      "typeIdx" : intronTypeIdx,
-                      "subtypeIdx" : null,
-                    });
-                    blockIdx += 1;
-                  }
-                }
-                else if ((exonStart > strandedStopCodonPos) && (exonEnd > strandedStopCodonPos) && (exonStart < strandedStartCodonPos) && (exonEnd < strandedStartCodonPos)) {
-                  exonTypeIdx += 1;
-                  blocks.push({
-                    "type" : "Exon",
-                    "subtype" : "",
-                    "range" : [
-                      exonStartOffset / txDiff,
-                      (exonStartOffset + exonDiff) / txDiff,
-                    ],
-                    "idx" : blockIdx,
-                    "typeIdx" : exonTypeIdx,
-                    "subtypeIdx" : exonTypeIdx
-                  });
-                  blockIdx += 1;
-                  if (exonIdx > 0) {
-                    intronTypeIdx += 1;
-                    const nextStrandedExonEndOffset = exonEnds[exonIdx - 1] - txStart - 1;
-                    blocks.push({
-                      "type" : "Intron",
-                      "subtype" : "",
-                      "range" : [
-                        nextStrandedExonEndOffset / txDiff,
-                        exonStartOffset / txDiff,
-                      ],
-                      "idx" : blockIdx,
-                      "typeIdx" : intronTypeIdx,
-                      "subtypeIdx" : null,
-                    });
-                    blockIdx += 1;
-                  }
-                }
-                else if ((exonStart < strandedStopCodonPos) && (exonEnd >= strandedStopCodonPos)) {
-                  exonTypeIdx += 1;
-                  const codonDiff = stopCodonPos - exonStart;
-                  blocks.push({
-                    "type" : "Exon",
-                    "subtype" : "",
-                    "range" : [
-                      (exonStartOffset + codonDiff) / txDiff,
-                      (exonStartOffset + exonDiff) / txDiff,
-                    ],
-                    "idx" : blockIdx,
-                    "typeIdx" : exonTypeIdx,
-                    "subtypeIdx" : exonTypeIdx,
-                  });
-                  blockIdx += 1;
-                  threePrimeUTRTypeIdx += 1;
-                  blocks.push({
-                    "type" : "Exon",
-                    "subtype" : "3'UTR",
-                    "range" : [
-                      exonStartOffset / txDiff,
-                      (exonStartOffset + codonDiff) / txDiff,
-                    ],
-                    "idx" : blockIdx,
-                    "typeIdx" : exonTypeIdx,
-                    "subtypeIdx" : threePrimeUTRTypeIdx,
-                  });
-                  blockIdx += 1;
-                  if (exonIdx > 0) {
-                    intronTypeIdx += 1;
-                    const nextStrandedExonEndOffset = exonEnds[exonIdx - 1] - txStart - 1;
-                    blocks.push({
-                      "type" : "Intron",
-                      "subtype" : "",
-                      "range" : [
-                        nextStrandedExonEndOffset / txDiff,
-                        exonStartOffset / txDiff,
-                      ],
-                      "idx" : blockIdx,
-                      "typeIdx" : intronTypeIdx,
-                      "subtypeIdx" : null,
-                    });
-                    blockIdx += 1;
-                  }
-                }
-                else if ((exonStart > strandedTxEnd) && (exonStart < strandedStopCodonPos) && (exonEnd < strandedStopCodonPos)) {
-                  exonTypeIdx += 1;
-                  threePrimeUTRTypeIdx += 1;
-                  blocks.push({
-                    "type" : "Exon",
-                    "subtype" : "3'UTR",
-                    "range" : [
-                      exonStartOffset / txDiff,
-                      (exonStartOffset + exonDiff) / txDiff,
-                    ],
-                    "idx" : blockIdx,
-                    "typeIdx" : exonTypeIdx,
-                    "subtypeIdx" : threePrimeUTRTypeIdx,
-                  });
-                  blockIdx += 1;
-                  if (exonIdx > 0) {
-                    intronTypeIdx += 1;
-                    const nextStrandedExonEndOffset = exonEnds[exonIdx - 1] - txStart - 1;
-                    blocks.push({
-                      "type" : "Intron",
-                      "subtype" : "",
-                      "range" : [
-                        nextStrandedExonEndOffset / txDiff,
-                        exonStartOffset / txDiff,
-                      ],
-                      "idx" : blockIdx,
-                      "typeIdx" : intronTypeIdx,
-                      "subtypeIdx" : null,
-                    });
-                    blockIdx += 1;
-                  }
-                }
-                else if ((exonStart === strandedTxEnd) && (exonStart < strandedStopCodonPos) && (exonEnd < strandedStopCodonPos)) {
-                  exonTypeIdx += 1;
-                  threePrimeUTRTypeIdx += 1;
-                  blocks.push({
-                    "type" : "Exon",
-                    "subtype" : "3'UTR",
-                    "range" : [
-                      exonStartOffset / txDiff,
-                      (exonStartOffset + exonDiff) / txDiff,
-                    ],
-                    "idx" : blockIdx,
-                    "typeIdx" : exonTypeIdx,
-                    "subtypeIdx" : threePrimeUTRTypeIdx,
-                  });
-                  blockIdx += 1;
-                }
-                else if ((exonIdx === 0) && (exonStart > strandedTxEnd) && (exonStart < strandedStopCodonPos) && (exonEnd < strandedStopCodonPos)) {
-                  exonTypeIdx += 1;
-                  threePrimeUTRTypeIdx += 1;
-                  blocks.push({
-                    "type" : "Exon",
-                    "subtype" : "3'UTR",
-                    "range" : [
-                      exonStartOffset / txDiff,
-                      (exonStartOffset + exonDiff) / txDiff,
-                    ],
-                    "idx" : blockIdx,
-                    "typeIdx" : exonTypeIdx,
-                    "subtypeIdx" : threePrimeUTRTypeIdx,
-                  });
-                  blockIdx += 1;
-                  intronTypeIdx += 1;
-                  blocks.push({
-                    "type" : "Intron",
-                    "subtype" : "",
-                    "range" : [
-                      (exonStartOffset + exonDiff) / txDiff,
-                      0.0,
-                    ],
-                    "idx" : blockIdx,
-                    "typeIdx" : intronTypeIdx,
-                    "subtypeIdx" : null,
-                  });
-                  blockIdx += 1;
-                }
-              }
-              else {
-                // default block type
-                exonTypeIdx += 1;
-                blocks.push({ 
-                  "type" : "Exon",
-                  "subtype" : "",
-                  "range" : [ 
-                    exonStartOffset / txDiff, 
-                    (exonStartOffset + exonDiff) / txDiff 
-                  ],
-                  "idx" : blockIdx,
-                  "typeIdx" : exonTypeIdx,
-                });
-                blockIdx += 1;
-                if (exonIdx > 0) {
-                  intronTypeIdx += 1;
-                  const nextStrandedExonEndOffset = exonEnds[exonIdx - 1] - txStart - 1;
-                  blocks.push({
-                    "type" : "Intron",
-                    "subtype" : "",
-                    "range" : [
-                      nextStrandedExonEndOffset / txDiff,
-                      exonStartOffset / txDiff,
-                    ],
-                    "idx" : blockIdx,
-                    "typeIdx" : intronTypeIdx,
-                    "subtypeIdx" : null,
-                  });
-                  blockIdx += 1;
-                }
-              }
-            }
-            break;
-          }
-          default: {
-            break;
-          }
-        }
-        return blocks;
-      }
-
-      //const blocks = this.calculateTranscriptBlocks(txStart, txEnd, strand, startCodonPos, stopCodonPos, exonStarts, exonEnds, strandedStartCodonPos, strandedStopCodonPos, strandedTxStart, strandedTxEnd);
-      const blocks = calculateTranscriptBlocks(txStart, txEnd, strand, startCodonPos, stopCodonPos, exonStarts, exonEnds, strandedStartCodonPos, strandedStopCodonPos, strandedTxStart, strandedTxEnd);
+      const blocks = this.calculateTranscriptBlocks(txStart, txEnd, strand, startCodonPos, stopCodonPos, exonStarts, exonEnds, strandedStartCodonPos, strandedStopCodonPos, strandedTxStart, strandedTxEnd);
       const exonCandidates = blocks.filter((d) => ((d.type === "Exon") && (!d.subtype || d.subtype.length === 0))).slice(-1)[0];
       const intronCandidates = blocks.filter((d) => ((d.type === "Intron") && (!d.subtype || d.subtype.length === 0))).slice(-1)[0];
       const fivePrimeUTRCandidates = blocks.filter((d) => (d.subtype === "5'UTR")).slice(-1)[0];
