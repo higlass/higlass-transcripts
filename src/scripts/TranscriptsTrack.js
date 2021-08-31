@@ -2089,7 +2089,12 @@ const TranscriptsTrack = (HGC, ...args) => {
 
       this.prevOptions = strOptions;
 
-      if (this.isVisible) renderToggleBtn(this);
+      if (this.isVisible) {
+        const renderToggleBtnT0 = performance.now();
+        renderToggleBtn(this);
+        const renderToggleBtnT1 = performance.now();
+        console.log(`TranscriptsTrack -> renderToggleBtn(${tileId}): ${Math.round((renderToggleBtnT1 - renderToggleBtnT0)*100)/100} ms`);
+      }
 
       const updateTranscriptInfoT0 = performance.now(); 
       this.updateTranscriptInfo();
