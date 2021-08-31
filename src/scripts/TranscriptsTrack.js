@@ -2079,7 +2079,10 @@ const TranscriptsTrack = (HGC, ...args) => {
     rerender(options, force, tileId) {
       if (!tileId) return;
 
+      const strOptionsT0 = performance.now();
       const strOptions = JSON.stringify(options);
+      const strOptionsT1 = performance.now();
+      console.log(`TranscriptsTrack -> strOptions(${tileId}): ${Math.round((strOptionsT1 - strOptionsT0)*100)/100} ms`);
       if (!force && strOptions === this.prevOptions) return;
 
       this.options = options;
