@@ -1156,7 +1156,7 @@ const TranscriptsTrack = (HGC, ...args) => {
       // We have to rerender everything since the vertical position
       // of the tracks might have changed accross tiles
       const rerenderT0 = performance.now();
-      (this.options) && this.rerender(this.options, true);
+      (this.options) && this.rerender(this.options, true, tile.tileId);
       const rerenderT1 = performance.now();
       console.log(`TranscriptsTrack -> rerender(${tile.tileId}): ${Math.round((rerenderT1 - rerenderT0)*100)/100} ms`);
     }
@@ -1223,7 +1223,7 @@ const TranscriptsTrack = (HGC, ...args) => {
         viewId: this.viewId
       });
 
-      if (this.trackHeightOld === 0) this.rerender(this.options, true);
+      if (this.trackHeightOld === 0) this.rerender(this.options, true, null);
 
       return true;
     }
@@ -2075,7 +2075,7 @@ const TranscriptsTrack = (HGC, ...args) => {
      * Redraw the track because the options
      * changed
      */
-    rerender(options, force) {
+    rerender(options, force, tileId) {
       const strOptions = JSON.stringify(options);
       if (!force && strOptions === this.prevOptions) return;
 
@@ -2087,7 +2087,10 @@ const TranscriptsTrack = (HGC, ...args) => {
 
       if (this.isVisible) renderToggleBtn(this);
 
+      const updateTranscriptInfoT0 = performance.now(); 
       this.updateTranscriptInfo();
+      const updateTranscriptInfoT1 = performance.now();
+console.log(`TranscriptsTrack -> updateTranscriptInfo(${tileId}): ${Math.round((updateTranscriptInfoT1 - updateTranscriptInfoT0)*100)/100} ms`);
 
       // Adjusting the track height leads to a full rerender.
       // No need to rerender again
