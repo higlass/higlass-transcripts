@@ -1140,6 +1140,7 @@ const TranscriptsTrack = (HGC, ...args) => {
     }
 
     initTile(tile) {
+      const t0 = performance.now();
       externalInitTile(this, tile, {
         flipText: this.flipText,
         labelFontFamily: this.options.labelFontFamily,
@@ -1150,10 +1151,11 @@ const TranscriptsTrack = (HGC, ...args) => {
         maxTexts: this.options.maxTexts,
         blockStyle: this.options.blockStyle,
       });
-
       // We have to rerender everything since the vertical position
       // of the tracks might have changed accross tiles
       (this.options) && this.rerender(this.options, true);
+      const t1 = performance.now();
+      console.log(`TranscriptsTrack -> initTile(${tile.tileId}): ${t1 - t0} ms`);
     }
 
     /** cleanup */
