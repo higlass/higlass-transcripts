@@ -2108,8 +2108,10 @@ const TranscriptsTrack = (HGC, ...args) => {
 
       // Adjusting the track height leads to a full rerender.
       // No need to rerender again
-
+      const adjustTrackHeightT0 = performance.now();
       if (this.trackHeightAdjustment && this.adjustTrackHeight()) return;
+      const adjustTrackHeightT1 = performance.now();
+      console.log(`TranscriptsTrack -> adjustTrackHeight(${tileId}): ${Math.round((adjustTrackHeightT1 - adjustTrackHeightT0)*100)/100} ms`);
 
       this.visibleAndFetchedTiles().forEach((tile) => {
         const renderVisibleTileT0 = performance.now();
