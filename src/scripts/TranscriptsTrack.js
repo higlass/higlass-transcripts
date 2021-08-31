@@ -1243,7 +1243,7 @@ const TranscriptsTrack = (HGC, ...args) => {
           trackId: this.trackId,
           viewId: this.viewId
         });
-      }, 100);
+      }, 250);
 
       if (this.trackHeightOld === 0) {
         const trackHeightOldZeroRerenderT0 = performance.now();
