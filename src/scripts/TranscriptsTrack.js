@@ -555,30 +555,32 @@ const TranscriptsTrack = (HGC, ...args) => {
           rectStartX + utrXOffset, topY + utrYOffset, 
         ];
         
-        if (j < exonOffsetStarts.length - 1) {
-          const forIntronStart = exonEnd + 1;
-          const forIntronEnd = exonOffsetStarts[j + 1] - 1;
-          const forIntronXStart = track._xScale(forIntronStart + 1);
-          const forIntronLocalWidth = Math.max(
-            0,
-            track._xScale(forIntronEnd + 1) - track._xScale(forIntronStart + 1)
-          );
-          if (forIntronLocalWidth > chevronThreshold) {
-            const forChevronXStart = forIntronXStart + (forIntronLocalWidth / 2) - chevronWidthOffset;
-            chevronPoly = [
-              forChevronXStart,                yMiddle - chevronYPad,
-              forChevronXStart + chevronWidth, yMiddle,
-              forChevronXStart,                yMiddle + chevronYPad,
-            ];
-            graphics.beginFill((itemRgbIndex !== -1) ? itemRgbFill : track.colors.intron);
-            graphics.drawPolygon(chevronPoly);
-            graphics.endFill();
-            polysSVG.push({
-              rect: chevronPoly,
-              color: (itemRgbIndex !== -1) ? colorUsedSVG : track.colors.intronHEX,
-              colorMode: itemRgbColorMode,
-              paintOrder: 0
-            });
+        if (track.options.blockStyle === "UCSC-like") {
+          if (j < exonOffsetStarts.length - 1) {
+            const forIntronStart = exonEnd + 1;
+            const forIntronEnd = exonOffsetStarts[j + 1] - 1;
+            const forIntronXStart = track._xScale(forIntronStart + 1);
+            const forIntronLocalWidth = Math.max(
+              0,
+              track._xScale(forIntronEnd + 1) - track._xScale(forIntronStart + 1)
+            );
+            if (forIntronLocalWidth > chevronThreshold) {
+              const forChevronXStart = forIntronXStart + (forIntronLocalWidth / 2) - chevronWidthOffset;
+              chevronPoly = [
+                forChevronXStart,                yMiddle - chevronYPad,
+                forChevronXStart + chevronWidth, yMiddle,
+                forChevronXStart,                yMiddle + chevronYPad,
+              ];
+              graphics.beginFill((itemRgbIndex !== -1) ? itemRgbFill : track.colors.intron);
+              graphics.drawPolygon(chevronPoly);
+              graphics.endFill();
+              polysSVG.push({
+                rect: chevronPoly,
+                color: (itemRgbIndex !== -1) ? colorUsedSVG : track.colors.intronHEX,
+                colorMode: itemRgbColorMode,
+                paintOrder: 0
+              });
+            }
           }
         }
       } 
