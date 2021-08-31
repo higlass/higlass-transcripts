@@ -2615,19 +2615,21 @@ const TranscriptsTrack = (HGC, ...args) => {
                   }
                   break;
                 case "boxplot":
-                  const boxplotFillColorTriplet = transcript.itemRgb.split(',');
-                  const normalizedBoxplotFillColorTriplet = boxplotFillColorTriplet.map((d) => d/255.0);
-                  const boxplotFillColor = PIXI.utils.rgb2hex([
-                    normalizedBoxplotFillColorTriplet[0], 
-                    normalizedBoxplotFillColorTriplet[1],
-                    normalizedBoxplotFillColorTriplet[2]]);
-                  boxFillColor = boxplotFillColor;
-                  // measure luminance to decide label color, ref. https://www.w3.org/TR/WCAG20/ (contrast ratio)
-                  const luminanceThreshold = 0.1; // should be 0.179, but adjusted for component palette
-                  const luminance = function(r, g, b) { return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
-                  textFill = (luminance(...normalizedBoxplotFillColorTriplet) > luminanceThreshold) ? WHITE_HEX : BLACK_HEX;
-                  if (transcript.itemRgb === "255,229,0") { textFill = LIGHT_GREY_HEX; }
-                  // textFill = LIGHT_GREY_HEX;
+                  textFill = LIGHT_GREY_HEX;
+                  if (this.options.colorBoxplotLabel) {
+                    const boxplotFillColorTriplet = transcript.itemRgb.split(',');
+                    const normalizedBoxplotFillColorTriplet = boxplotFillColorTriplet.map((d) => d/255.0);
+                    const boxplotFillColor = PIXI.utils.rgb2hex([
+                      normalizedBoxplotFillColorTriplet[0], 
+                      normalizedBoxplotFillColorTriplet[1],
+                      normalizedBoxplotFillColorTriplet[2]]);
+                    boxFillColor = boxplotFillColor;
+                    // measure luminance to decide label color, ref. https://www.w3.org/TR/WCAG20/ (contrast ratio)
+                    const luminanceThreshold = 0.1; // should be 0.179, but adjusted for component palette
+                    const luminance = function(r, g, b) { return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
+                    textFill = (luminance(...normalizedBoxplotFillColorTriplet) > luminanceThreshold) ? WHITE_HEX : BLACK_HEX;
+                    if (transcript.itemRgb === "255,229,0") { textFill = LIGHT_GREY_HEX; }
+                  }
                   break;
                 default:
                   throw new Error(
@@ -2666,11 +2668,11 @@ const TranscriptsTrack = (HGC, ...args) => {
         case "UCSC-like":
           this.renderTextBg(this.allBoxes, this.allTexts, allTiles);
           break;
-        case "boxplot": {
-          // if (this.options.isBoxplotLabelDirectionless)
-          this.renderDirectionlessTextBg(this.allBoxes, this.allTexts, allTiles);
+        case "boxplot":
+          if (this.options.colorBoxplotLabel) {
+            this.renderDirectionlessTextBg(this.allBoxes, this.allTexts, allTiles);
+          }
           break;
-        }
         default:
           throw new Error(
             'Uncaught TypeError: Unknown blockStyle option (drawLabels, within tile data, B)'
@@ -3369,6 +3371,7 @@ TranscriptsTrack.config = {
     "sequenceData",
     "backgroundColor",
     "blockStyle",
+    "colorBoxplotLabel",
     "highlightTranscriptType",
     "highlightTranscriptTrackBackgroundColor",
     "highlightTranscriptLabelBackgroundColor",
@@ -3401,6 +3404,7 @@ TranscriptsTrack.config = {
     showToggleTranscriptsButton: true,
     backgroundColor: "#ffffff",
     blockStyle: "directional", // "directional" | "UCSC-like" | "boxplot"
+    colorBoxplotLabel: false,
     highlightTranscriptType: "none", // "none" | "longestIsoform" | "apprisPrincipalIsoform"
     highlightTranscriptTrackBackgroundColor: "#f0f0f0",
     highlightTranscriptLabelBackgroundColor: "#f0f0f0",

@@ -91,6 +91,7 @@ The following options are available:
     "trackHeightAdjustment": "automatic", // if "automatic", the height of the track is adjusted to the number of visible transcripts.
     "startCollapsed": false, // if true, only one transcript is shown
     "blockStyle": "directional", // "UCSC-like" for UCSC block style, or "boxplot" to use BED12 attributes to mimic Tukey box-and-whisker plot style 
+    "colorBoxplotLabel": false, // if true, the boxplot element label and label background are colored per element coloring
     "highlightTranscriptType": "none", // If "longestIsoform" or "apprisPrincipalIsoform", a principal or canonical annotation is highlighted.
     "highlightTranscriptTrackBackgroundColor": "#f0f0f0",
     "highlightTranscriptLabelBackgroundColor": "#f0f0f0",
@@ -102,14 +103,13 @@ The following options are available:
       "faiUrl": "https://aveit.s3.amazonaws.com/higlass/data/sequence/hg38.fa.fai",
       "chromSizesUrl": "https://aveit.s3.amazonaws.com/higlass/data/sequence/hg38.mod.chrom.sizes"
     },
-    isVisible: true, // if true, track has non-zero height and is rendered
-    trackMargin: { // sets default margins drawn around track content
+    "isVisible": true, // if true, track has non-zero height and is rendered
+    "trackMargin": { // sets default margins drawn around track content
       top: 0,
       left: 0,
       bottom: 10,
       right: 0,
     },
-    isBoxplotLabelDirectionless: false, // if true, 
   },
   "width": 768,
   "height": 40
