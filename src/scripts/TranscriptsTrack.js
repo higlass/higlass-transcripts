@@ -2082,7 +2082,10 @@ const TranscriptsTrack = (HGC, ...args) => {
 
       this.options = options;
 
+      const initOptionsT0 = performance.now();
       this.initOptions();
+      const initOptionsT1 = performance.now();
+      console.log(`TranscriptsTrack -> initOptions(${tileId}): ${Math.round((initOptionsT1 - initOptionsT0)*100)/100} ms`);
 
       this.prevOptions = strOptions;
 
