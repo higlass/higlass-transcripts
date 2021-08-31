@@ -1140,7 +1140,7 @@ const TranscriptsTrack = (HGC, ...args) => {
     }
 
     initTile(tile) {
-      const externalInitTileT0 = performance.now();
+      const externalInitTileT0 = Math.round(performance.now()*100)/100;
       externalInitTile(this, tile, {
         flipText: this.flipText,
         labelFontFamily: this.options.labelFontFamily,
@@ -1151,13 +1151,13 @@ const TranscriptsTrack = (HGC, ...args) => {
         maxTexts: this.options.maxTexts,
         blockStyle: this.options.blockStyle,
       });
-      const externalInitTileT1 = performance.now();
+      const externalInitTileT1 = Math.round(performance.now()*100)/100;
       console.log(`TranscriptsTrack -> externalInitTile(${tile.tileId}): ${externalInitTileT1 - externalInitTileT0} ms`);
       // We have to rerender everything since the vertical position
       // of the tracks might have changed accross tiles
-      const rerenderT0 = performance.now();
+      const rerenderT0 = Math.round(performance.now()*100)/100;
       (this.options) && this.rerender(this.options, true);
-      const rerenderT1 = performance.now();
+      const rerenderT1 = Math.round(performance.now()*100)/100;
       console.log(`TranscriptsTrack -> rerender(${tile.tileId}): ${rerenderT1 - rerenderT0} ms`);
     }
 
