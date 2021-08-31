@@ -2615,19 +2615,19 @@ const TranscriptsTrack = (HGC, ...args) => {
                   }
                   break;
                 case "boxplot":
-                  // const boxplotFillColorTriplet = transcript.itemRgb.split(',');
-                  // const normalizedBoxplotFillColorTriplet = boxplotFillColorTriplet.map((d) => d/255.0);
-                  // const boxplotFillColor = PIXI.utils.rgb2hex([
-                  //   normalizedBoxplotFillColorTriplet[0], 
-                  //   normalizedBoxplotFillColorTriplet[1],
-                  //   normalizedBoxplotFillColorTriplet[2]]);
-                  // boxFillColor = boxplotFillColor;
-                  // // measure luminance to decide label color, ref. https://www.w3.org/TR/WCAG20/ (contrast ratio)
-                  // const luminanceThreshold = 0.1; // should be 0.179, but adjusted for component palette
-                  // const luminance = function(r, g, b) { return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
-                  // textFill = (luminance(...normalizedBoxplotFillColorTriplet) > luminanceThreshold) ? WHITE_HEX : BLACK_HEX;
-                  // if (transcript.itemRgb === "255,229,0") { textFill = BLACK_HEX; }
-                  textFill = LIGHT_GREY_HEX;
+                  const boxplotFillColorTriplet = transcript.itemRgb.split(',');
+                  const normalizedBoxplotFillColorTriplet = boxplotFillColorTriplet.map((d) => d/255.0);
+                  const boxplotFillColor = PIXI.utils.rgb2hex([
+                    normalizedBoxplotFillColorTriplet[0], 
+                    normalizedBoxplotFillColorTriplet[1],
+                    normalizedBoxplotFillColorTriplet[2]]);
+                  boxFillColor = boxplotFillColor;
+                  // measure luminance to decide label color, ref. https://www.w3.org/TR/WCAG20/ (contrast ratio)
+                  const luminanceThreshold = 0.1; // should be 0.179, but adjusted for component palette
+                  const luminance = function(r, g, b) { return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
+                  textFill = (luminance(...normalizedBoxplotFillColorTriplet) > luminanceThreshold) ? WHITE_HEX : BLACK_HEX;
+                  if (transcript.itemRgb === "255,229,0") { textFill = BLACK_HEX; }
+                  // textFill = LIGHT_GREY_HEX;
                   break;
                 default:
                   throw new Error(

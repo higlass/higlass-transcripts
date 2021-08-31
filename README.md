@@ -109,6 +109,7 @@ The following options are available:
       bottom: 10,
       right: 0,
     },
+    isBoxplotLabelDirectionless: false, // if true, 
   },
   "width": 768,
   "height": 40
