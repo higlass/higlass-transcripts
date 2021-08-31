@@ -68,8 +68,9 @@ The following options are available:
   "uid": "awesome_transcripts_uid",
   "type": "horizontal-transcripts",
   "options": {
-    "fontSize": 9, // font size for labels and amino acids (if available)
-    "fontFamily": "Helvetica",
+    "codonFontSize": 9, // font size for amino acids (if available)
+    "codonFontFamily": "Helvetica", 
+    "codonFontWeight": "bold",
     "labelFontColor": "#333333",
     "labelBackgroundPlusStrandColor": "#ffffff",
     "labelBackgroundMinusStrandColor": "#ffffff",

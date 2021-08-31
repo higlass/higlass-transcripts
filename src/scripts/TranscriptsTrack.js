@@ -47,7 +47,7 @@ const TranscriptsTrack = (HGC, ...args) => {
   function externalInitTile(track, tile, options) {
     const { 
       flipText, 
-      fontFamily, 
+      labelFontFamily, 
       labelFontSize, 
       labelFontWeight, 
       highlightTranscriptType,
@@ -101,7 +101,7 @@ const TranscriptsTrack = (HGC, ...args) => {
       const text = new HGC.libraries.PIXI.Text(transcriptName, {
         fontSize: `${labelFontSize}px`,
         fontWeight: `${labelFontWeight}`,
-        fontFamily,
+        fontFamily: `${labelFontFamily}`,
         fill: track.colors["labelFont"],
       });
 
@@ -1017,9 +1017,9 @@ const TranscriptsTrack = (HGC, ...args) => {
     pToggleButton.removeChildren();
 
     const text = new HGC.libraries.PIXI.Text("SHOW FEWER TRANSCRIPTS...", {
-      fontSize: `10px`,
-      fontFamily: track.options.fontFamily,
-      fontWeight: "500",
+      fontSize: `${parseInt(track.options.labelFontSize)}px`,
+      fontFamily: track.options.labelFontFamily,
+      fontWeight: track.options.labelFontWeight,
       fill: track.colors["black"],
     });
     text.interactive = true;
@@ -1074,7 +1074,7 @@ const TranscriptsTrack = (HGC, ...args) => {
     }
 
     initOptions() {
-      this.fontSize = +this.options.fontSize;
+      this.codonFontSize = +this.options.codonFontSize;
       this.transcriptHeight = +this.options.transcriptHeight;
 
       this.transcriptSpacing = +this.options.transcriptSpacing;
@@ -1088,10 +1088,10 @@ const TranscriptsTrack = (HGC, ...args) => {
       this.minCodonDistance = 15;
 
       this.codonTextOptions = {
-        fontSize: `${this.fontSize * 2}px`,
-        fontFamily: this.options.fontFamily,
+        fontSize: `${this.codonFontSize * 2}px`,
+        fontFamily: this.options.codonFontFamily,
         fill: WHITE_HEX,
-        fontWeight: "bold",
+        fontWeight: this.options.codonFontWeight,
       };
 
       if (typeof this.options.sequenceData !== "undefined") {
@@ -1138,7 +1138,7 @@ const TranscriptsTrack = (HGC, ...args) => {
     initTile(tile) {
       externalInitTile(this, tile, {
         flipText: this.flipText,
-        fontFamily: this.options.fontFamily,
+        labelFontFamily: this.options.labelFontFamily,
         labelFontSize: this.options.labelFontSize,
         labelFontWeight: this.options.labelFontWeight,
         highlightTranscriptType: this.options.highlightTranscriptType,
@@ -2247,7 +2247,7 @@ const TranscriptsTrack = (HGC, ...args) => {
                 (this.transcriptHeight + this.transcriptSpacing) +
               this.transcriptHeight / 2 +
               this.transcriptSpacing / 2 -
-              this.fontSize / 2 -
+              this.labelFontSize / 2 -
               1;
 
             if (this.options.showToggleTranscriptsButton) {
@@ -3288,8 +3288,8 @@ const TranscriptsTrack = (HGC, ...args) => {
 
           const t = document.createElement('text');
           t.setAttribute('text-anchor', 'start');
-          t.setAttribute('font-family', this.options.fontFamily);
-          t.setAttribute('font-weight', text.text.style.fontWeight); // pull weight from entity
+          t.setAttribute('font-family', this.options.labelFontFamily);
+          t.setAttribute('font-weight', text.text.style.labelFontWeight); // pull weight from entity
           t.setAttribute('font-size', `${this.options.labelFontSize}px`);
           t.setAttribute('fill', this.options.labelFontColor);
           t.innerHTML = text.text.text;
@@ -3339,8 +3339,9 @@ TranscriptsTrack.config = {
   orientation: "1d-horizontal",
   thumbnail: new DOMParser().parseFromString(icon, "text/xml").documentElement,
   availableOptions: [
-    "fontSize",
-    "fontFamily",
+    "codonFontSize",
+    "codonFontFamily",
+    "codonFontWeight",
     "transcriptSpacing",
     "transcriptHeight",
     "maxTexts",
@@ -3348,6 +3349,7 @@ TranscriptsTrack.config = {
     "plusStrandColor",
     "minusStrandColor",
     "utrColor",
+    "labelFontFamily",
     "labelBackgroundPlusStrandColor",
     "labelBackgroundMinusStrandColor",
     "labelFontColor",
@@ -3370,8 +3372,9 @@ TranscriptsTrack.config = {
     "trackMargin",
   ],
   defaultOptions: {
-    fontSize: 9,
-    fontFamily: "Helvetica",
+    codonFontSize: 9,
+    codonFontFamily: "Helvetica",
+    codonFontWeight: "bold",
     transcriptSpacing: 2,
     transcriptHeight: 11,
     maxTexts: 100,
@@ -3379,6 +3382,7 @@ TranscriptsTrack.config = {
     plusStrandColor: "#bdbfff",
     minusStrandColor: "#fabec2",
     utrColor: "#C0EAAF",
+    labelFontFamily: "Helvetica",
     labelBackgroundPlusStrandColor: "#ffffff",
     labelBackgroundMinusStrandColor: "#ffffff",
     labelFontColor: "#333333",
