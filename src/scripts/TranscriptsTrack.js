@@ -2626,7 +2626,7 @@ const TranscriptsTrack = (HGC, ...args) => {
                   const luminanceThreshold = 0.1; // should be 0.179, but adjusted for component palette
                   const luminance = function(r, g, b) { return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
                   textFill = (luminance(...normalizedBoxplotFillColorTriplet) > luminanceThreshold) ? WHITE_HEX : BLACK_HEX;
-                  if (transcript.itemRgb === "255,229,0") { textFill = BLACK_HEX; }
+                  if (transcript.itemRgb === "255,229,0") { textFill = LIGHT_GREY_HEX; }
                   // textFill = LIGHT_GREY_HEX;
                   break;
                 default:
