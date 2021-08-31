@@ -71,6 +71,8 @@ The following options are available:
     "codonFontSize": 9, // font size for amino acids (if available)
     "codonFontFamily": "Helvetica", 
     "codonFontWeight": "bold",
+    "labelFontFamily": "Helvetica",
+    "labelFontWeight": "300",
     "labelFontColor": "#333333",
     "labelBackgroundPlusStrandColor": "#ffffff",
     "labelBackgroundMinusStrandColor": "#ffffff",
