@@ -1208,9 +1208,12 @@ const TranscriptsTrack = (HGC, ...args) => {
       return height;
     }
 
-    adjustTrackHeight() {
+    adjustTrackHeight(tileId) {
 
+      const computeTrackHeightT0 = performance.now(); 
       this.computeTrackHeight();
+      const computeTrackHeightT1 = performance.now();
+      console.log(`TranscriptsTrack -> computeTrackHeight(${tileId}): ${Math.round((computeTrackHeightT1 - computeTrackHeightT0)*100)/100} ms`);
 
       if (!this.options.isVisible) this.trackHeight = 0;
 
@@ -1224,7 +1227,9 @@ const TranscriptsTrack = (HGC, ...args) => {
         viewId: this.viewId
       });
 
-      if (this.trackHeightOld === 0) this.rerender(this.options, true, null);
+      if (this.trackHeightOld === 0) {
+        this.rerender(this.options, true, tileId);
+      }
 
       return true;
     }
@@ -2109,7 +2114,7 @@ const TranscriptsTrack = (HGC, ...args) => {
       // Adjusting the track height leads to a full rerender.
       // No need to rerender again
       const adjustTrackHeightT0 = performance.now();
-      if (this.trackHeightAdjustment && this.adjustTrackHeight()) return;
+      if (this.trackHeightAdjustment && this.adjustTrackHeight(tileId)) return;
       const adjustTrackHeightT1 = performance.now();
       console.log(`TranscriptsTrack -> adjustTrackHeight(${tileId}): ${Math.round((adjustTrackHeightT1 - adjustTrackHeightT0)*100)/100} ms`);
 
