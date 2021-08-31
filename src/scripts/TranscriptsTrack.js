@@ -1208,7 +1208,7 @@ const TranscriptsTrack = (HGC, ...args) => {
       return height;
     }
 
-    debounce = (callback, wait, immediate = false) => {
+    debounce(callback, wait, immediate = false) {
       let timeout = null;
       return function() {
         const callNow = immediate && !timeout;
