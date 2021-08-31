@@ -2666,9 +2666,11 @@ const TranscriptsTrack = (HGC, ...args) => {
         case "UCSC-like":
           this.renderTextBg(this.allBoxes, this.allTexts, allTiles);
           break;
-        case "boxplot":
-          //this.renderDirectionlessTextBg(this.allBoxes, this.allTexts, allTiles);
+        case "boxplot": {
+          // if (this.options.isBoxplotLabelDirectionless)
+          this.renderDirectionlessTextBg(this.allBoxes, this.allTexts, allTiles);
           break;
+        }
         default:
           throw new Error(
             'Uncaught TypeError: Unknown blockStyle option (drawLabels, within tile data, B)'
