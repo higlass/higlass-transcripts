@@ -1140,7 +1140,7 @@ const TranscriptsTrack = (HGC, ...args) => {
     }
 
     initTile(tile) {
-      const externalInitTileT0 = Math.round(performance.now()*100)/100;
+      const externalInitTileT0 = performance.now();
       externalInitTile(this, tile, {
         flipText: this.flipText,
         labelFontFamily: this.options.labelFontFamily,
@@ -1151,14 +1151,14 @@ const TranscriptsTrack = (HGC, ...args) => {
         maxTexts: this.options.maxTexts,
         blockStyle: this.options.blockStyle,
       });
-      const externalInitTileT1 = Math.round(performance.now()*100)/100;
-      console.log(`TranscriptsTrack -> externalInitTile(${tile.tileId}): ${externalInitTileT1 - externalInitTileT0} ms`);
+      const externalInitTileT1 = performance.now();
+      console.log(`TranscriptsTrack -> externalInitTile(${tile.tileId}): ${Math.round((externalInitTileT1 - externalInitTileT0)*100)/100} ms`);
       // We have to rerender everything since the vertical position
       // of the tracks might have changed accross tiles
-      const rerenderT0 = Math.round(performance.now()*100)/100;
+      const rerenderT0 = performance.now();
       (this.options) && this.rerender(this.options, true);
-      const rerenderT1 = Math.round(performance.now()*100)/100;
-      console.log(`TranscriptsTrack -> rerender(${tile.tileId}): ${rerenderT1 - rerenderT0} ms`);
+      const rerenderT1 = performance.now();
+      console.log(`TranscriptsTrack -> rerender(${tile.tileId}): ${Math.round((rerenderT1 - rerenderT0)*100)/100} ms`);
     }
 
     /** cleanup */
