@@ -1973,6 +1973,7 @@ const TranscriptsTrack = (HGC, ...args) => {
       for (const tsId in visibleTranscriptsObj) {
         if (visibleTranscriptsObj[tsId]) {
           visibleTranscripts.push(visibleTranscriptsObj[tsId]);
+          console.log(`tsId ${tsId}`);
         }
       }
 
