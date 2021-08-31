@@ -2077,6 +2077,8 @@ const TranscriptsTrack = (HGC, ...args) => {
      * Redraw the track because the options changed
      */
     rerender(options, force, tileId) {
+      if (!tileId) return;
+
       const strOptions = JSON.stringify(options);
       if (!force && strOptions === this.prevOptions) return;
 
