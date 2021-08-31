@@ -1221,11 +1221,14 @@ const TranscriptsTrack = (HGC, ...args) => {
         return false;
       }
 
+      const pubSubPublishT0 = performance.now();
       this.pubSub.publish("trackDimensionsModified", {
         height: this.trackHeight,
         trackId: this.trackId,
         viewId: this.viewId
       });
+      const pubSubPublishT1 = performance.now();
+      console.log(`TranscriptsTrack -> pubSubPublish(${tileId}): ${Math.round((pubSubPublishT1 - pubSubPublishT0)*100)/100} ms`);
 
       if (this.trackHeightOld === 0) {
         const trackHeightOldZeroRerenderT0 = performance.now();
