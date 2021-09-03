@@ -3016,7 +3016,7 @@ const TranscriptsTrack = (HGC, ...args) => {
 
       for (const tile of this.visibleAndFetchedTiles()) {
         
-        if (!tile || !tile.allExonsForMouseOver) return "";
+        if (!tile.allExonsForMouseOver) return "";
 
         for (let i = 0; i < tile.allExonsForMouseOver.length; i++) {
           const rect = tile.allExonsForMouseOver[i][0];
