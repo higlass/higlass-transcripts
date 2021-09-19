@@ -8,3 +8,4 @@ register({
   config: TranscriptsTrack.config,
 });
 
+export default TranscriptsTrack;
