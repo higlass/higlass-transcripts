@@ -1,4 +1,6 @@
 
+- export Track object
+
 **v0.3.0**
 
 - Improved SVG export
