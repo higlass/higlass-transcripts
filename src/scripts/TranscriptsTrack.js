@@ -2111,42 +2111,42 @@ const TranscriptsTrack = (HGC, ...args) => {
       const strOptionsT0 = performance.now();
       const strOptions = JSON.stringify(options);
       const strOptionsT1 = performance.now();
-      // console.log(`TranscriptsTrack -> strOptions(${tileId}): ${Math.round((strOptionsT1 - strOptionsT0)*100)/100} ms`);
+      console.log(`TranscriptsTrack -> strOptions(${tileId}): ${Math.round((strOptionsT1 - strOptionsT0)*100)/100} ms`);
       if (!force && strOptions === this.prevOptions) return;
 
       this.options = options;
 
-      // const initOptionsT0 = performance.now();
+      const initOptionsT0 = performance.now();
       this.initOptions();
-      // const initOptionsT1 = performance.now();
-      // console.log(`TranscriptsTrack -> initOptions(${tileId}): ${Math.round((initOptionsT1 - initOptionsT0)*100)/100} ms`);
+      const initOptionsT1 = performance.now();
+      console.log(`TranscriptsTrack -> initOptions(${tileId}): ${Math.round((initOptionsT1 - initOptionsT0)*100)/100} ms`);
 
       this.prevOptions = strOptions;
 
       if (this.isVisible) {
-        // const renderToggleBtnT0 = performance.now();
+        const renderToggleBtnT0 = performance.now();
         renderToggleBtn(this);
-        // const renderToggleBtnT1 = performance.now();
-        // console.log(`TranscriptsTrack -> renderToggleBtn(${tileId}): ${Math.round((renderToggleBtnT1 - renderToggleBtnT0)*100)/100} ms`);
+        const renderToggleBtnT1 = performance.now();
+        console.log(`TranscriptsTrack -> renderToggleBtn(${tileId}): ${Math.round((renderToggleBtnT1 - renderToggleBtnT0)*100)/100} ms`);
       }
 
-      // const updateTranscriptInfoT0 = performance.now(); 
+      const updateTranscriptInfoT0 = performance.now(); 
       this.updateTranscriptInfo();
-      // const updateTranscriptInfoT1 = performance.now();
-      // console.log(`TranscriptsTrack -> updateTranscriptInfo(${tileId}): ${Math.round((updateTranscriptInfoT1 - updateTranscriptInfoT0)*100)/100} ms`);
+      const updateTranscriptInfoT1 = performance.now();
+      console.log(`TranscriptsTrack -> updateTranscriptInfo(${tileId}): ${Math.round((updateTranscriptInfoT1 - updateTranscriptInfoT0)*100)/100} ms`);
 
       // Adjusting the track height leads to a full rerender.
       // No need to rerender again
-      // const adjustTrackHeightT0 = performance.now();
+      const adjustTrackHeightT0 = performance.now();
       if (this.trackHeightAdjustment && this.adjustTrackHeight(tileId)) return;
-      // const adjustTrackHeightT1 = performance.now();
-      // console.log(`TranscriptsTrack -> adjustTrackHeight(${tileId}): ${Math.round((adjustTrackHeightT1 - adjustTrackHeightT0)*100)/100} ms`);
+      const adjustTrackHeightT1 = performance.now();
+      console.log(`TranscriptsTrack -> adjustTrackHeight(${tileId}): ${Math.round((adjustTrackHeightT1 - adjustTrackHeightT0)*100)/100} ms`);
 
       this.visibleAndFetchedTiles().forEach((tile) => {
-        // const renderVisibleTileT0 = performance.now();
+        const renderVisibleTileT0 = performance.now();
         this.renderTile(tile);
-        // const renderVisibleTileT1 = performance.now();
-        // console.log(`TranscriptsTrack -> renderTile(${tile.tileId}): ${Math.round((renderVisibleTileT1 - renderVisibleTileT0)*100)/100} ms`);
+        const renderVisibleTileT1 = performance.now();
+        console.log(`TranscriptsTrack -> renderTile(${tile.tileId}): ${Math.round((renderVisibleTileT1 - renderVisibleTileT0)*100)/100} ms`);
       });
     }
 
