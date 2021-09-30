@@ -1140,7 +1140,7 @@ const TranscriptsTrack = (HGC, ...args) => {
     }
 
     initTile(tile) {
-      // const externalInitTileT0 = performance.now();
+      const externalInitTileT0 = performance.now();
       externalInitTile(this, tile, {
         flipText: this.flipText,
         labelFontFamily: this.options.labelFontFamily,
@@ -1151,15 +1151,15 @@ const TranscriptsTrack = (HGC, ...args) => {
         maxTexts: this.options.maxTexts,
         blockStyle: this.options.blockStyle,
       });
-      // const externalInitTileT1 = performance.now();
-      // console.log(`TranscriptsTrack -> externalInitTile(${tile.tileId}): ${Math.round((externalInitTileT1 - externalInitTileT0)*100)/100} ms`);
+      const externalInitTileT1 = performance.now();
+      console.log(`TranscriptsTrack -> externalInitTile(${tile.tileId}): ${Math.round((externalInitTileT1 - externalInitTileT0)*100)/100} ms`);
       // We have to rerender everything since the vertical position
       // of the tracks might have changed accross tiles
-      // const rerenderT0 = performance.now();
+      const rerenderT0 = performance.now();
       (this.options) && this.rerender(this.options, true, tile.tileId);
-      // const rerenderT1 = performance.now();
-      //console.log(`TranscriptsTrack -> rerender(${tile.tileId}): ${Math.round((rerenderT1 - rerenderT0)*100)/100} ms`);
-      // console.log(`----`);
+      const rerenderT1 = performance.now();
+      console.log(`TranscriptsTrack -> rerender(${tile.tileId}): ${Math.round((rerenderT1 - rerenderT0)*100)/100} ms`);
+      console.log(`----`);
     }
 
     /** cleanup */
@@ -1216,19 +1216,19 @@ const TranscriptsTrack = (HGC, ...args) => {
         clearTimeout(timeout)
         timeout = setTimeout(next, wait);
         if (callNow) {
-          // const pubSubPublishT0 = performance.now();
+          const pubSubPublishT0 = performance.now();
           next();
-          // const pubSubPublishT1 = performance.now();
-        // console.log(`TranscriptsTrack -> pubSubPublish(${tileId}): ${Math.round((pubSubPublishT1 - pubSubPublishT0)*100)/100} ms`);
+          const pubSubPublishT1 = performance.now();
+          console.log(`TranscriptsTrack -> pubSubPublish(${tileId}): ${Math.round((pubSubPublishT1 - pubSubPublishT0)*100)/100} ms`);
         }
       }
     }
 
     adjustTrackHeight(tileId) {
-      // const computeTrackHeightT0 = performance.now(); 
+      const computeTrackHeightT0 = performance.now(); 
       this.computeTrackHeight();
-      // const computeTrackHeightT1 = performance.now();
-      // console.log(`TranscriptsTrack -> computeTrackHeight(${tileId}): ${Math.round((computeTrackHeightT1 - computeTrackHeightT0)*100)/100} ms`);
+      const computeTrackHeightT1 = performance.now();
+      console.log(`TranscriptsTrack -> computeTrackHeight(${tileId}): ${Math.round((computeTrackHeightT1 - computeTrackHeightT0)*100)/100} ms`);
 
       if (!this.options.isVisible) this.trackHeight = 0;
 
@@ -1245,10 +1245,10 @@ const TranscriptsTrack = (HGC, ...args) => {
       }, 250);
 
       if (this.trackHeightOld === 0) {
-        // const trackHeightOldZeroRerenderT0 = performance.now();
+        const trackHeightOldZeroRerenderT0 = performance.now();
         this.rerender(this.options, true, tileId);
-        // const trackHeightOldZeroRerenderT1 = performance.now();
-        // console.log(`>>  TranscriptsTrack -> trackHeightOldZeroRerender(${tileId}): ${Math.round((trackHeightOldZeroRerenderT1 - trackHeightOldZeroRerenderT0)*100)/100} ms`);
+        const trackHeightOldZeroRerenderT1 = performance.now();
+        console.log(`>>  TranscriptsTrack -> trackHeightOldZeroRerender(${tileId}): ${Math.round((trackHeightOldZeroRerenderT1 - trackHeightOldZeroRerenderT0)*100)/100} ms`);
       }
 
       return true;
