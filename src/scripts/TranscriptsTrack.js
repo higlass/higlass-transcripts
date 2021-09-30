@@ -1904,17 +1904,21 @@ const TranscriptsTrack = (HGC, ...args) => {
         boxBlockStarts = ts[11].split(",").map((x) => +x);
       }
 
-      const blocks = this.calculateTranscriptBlocks(txStart, txEnd, strand, startCodonPos, stopCodonPos, exonStarts, exonEnds, strandedStartCodonPos, strandedStopCodonPos, strandedTxStart, strandedTxEnd);
-      const exonCandidates = blocks.filter((d) => ((d.type === "Exon") && (!d.subtype || d.subtype.length === 0))).slice(-1)[0];
-      const intronCandidates = blocks.filter((d) => ((d.type === "Intron") && (!d.subtype || d.subtype.length === 0))).slice(-1)[0];
-      const fivePrimeUTRCandidates = blocks.filter((d) => (d.subtype === "5'UTR")).slice(-1)[0];
-      const threePrimeUTRCandidates = blocks.filter((d) => (d.subtype === "3'UTR")).slice(-1)[0];
-      const blockTypeCounts = {
-        "exons" : (exonCandidates ? exonCandidates["typeIdx"] : 0),
-        "introns" : (intronCandidates ? intronCandidates["typeIdx"] : 0),
-        "fivePrimeUTRs" : (fivePrimeUTRCandidates ? fivePrimeUTRCandidates["subtypeIdx"] : 0),
-        "threePrimeUTRs" : (threePrimeUTRCandidates ? threePrimeUTRCandidates["subtypeIdx"] : 0),
-      };
+      blocks = null;
+      blockTypeCounts = null;
+      if (this.options.blockCalculateTranscriptCounts) {
+        blocks = this.calculateTranscriptBlocks(txStart, txEnd, strand, startCodonPos, stopCodonPos, exonStarts, exonEnds, strandedStartCodonPos, strandedStopCodonPos, strandedTxStart, strandedTxEnd);
+        const exonCandidates = blocks.filter((d) => ((d.type === "Exon") && (!d.subtype || d.subtype.length === 0))).slice(-1)[0];
+        const intronCandidates = blocks.filter((d) => ((d.type === "Intron") && (!d.subtype || d.subtype.length === 0))).slice(-1)[0];
+        const fivePrimeUTRCandidates = blocks.filter((d) => (d.subtype === "5'UTR")).slice(-1)[0];
+        const threePrimeUTRCandidates = blocks.filter((d) => (d.subtype === "3'UTR")).slice(-1)[0];
+        blockTypeCounts = {
+          "exons" : (exonCandidates ? exonCandidates["typeIdx"] : 0),
+          "introns" : (intronCandidates ? intronCandidates["typeIdx"] : 0),
+          "fivePrimeUTRs" : (fivePrimeUTRCandidates ? fivePrimeUTRCandidates["subtypeIdx"] : 0),
+          "threePrimeUTRs" : (threePrimeUTRCandidates ? threePrimeUTRCandidates["subtypeIdx"] : 0),
+        };
+      }
 
       let tags = [];
       let isLongestIsoform = false;
@@ -3007,6 +3011,21 @@ const TranscriptsTrack = (HGC, ...args) => {
       </div>`;
     }
 
+    formattedOverlapByType(type, subtype, typeIdx, typeCount) {
+      let result = "";
+      switch (type) {
+        case "Exon":
+        case "Intron":
+        case "5'UTR":
+        case "3'UTR":
+          result = (subtype) ? `${type} (${subtype}): ${typeIdx} / ${typeCount}` : `${type}: ${typeIdx} / ${typeCount}`;
+          break
+        default:
+          break
+      }
+      return result;
+    }
+
     getMouseOverHtml(trackX, trackY) {
       if (!this.tilesetInfo || !this.options.isVisible) {
         return "";
@@ -3034,48 +3053,37 @@ const TranscriptsTrack = (HGC, ...args) => {
                   let overlapIndex = -1;
                   let overlapCount = -1;
                   const normPointX = this.getNormPointXWithinLocalRect(point[0], rect[0], rect[1]);
+                  
+                  console.log(`this.options.blockCalculateTranscriptCounts ${this.options.blockCalculateTranscriptCounts}`);
 
-                  for (let testBlockIdx = 0; testBlockIdx < transcript.blocks.length; testBlockIdx++) {
-                    const testBlock = transcript.blocks[testBlockIdx];
-                    if ((normPointX >= testBlock.range[0]) && (normPointX <= testBlock.range[1])) {
-                      overlapType = testBlock.type;
-                      overlapIndex = testBlock.typeIdx;
-                      switch (overlapType) {
-                        case "Exon":
-                          overlapCount = transcript.blockTypeCounts.exons;
-                          overlapSubtype = (testBlock.subtype) ? testBlock.subtype : null;
-                          break;
-                        case "Intron":
-                          overlapCount = transcript.blockTypeCounts.introns;
-                          break;
-                        case "5'UTR":
-                        case "3'UTR":
-                          overlapCount = transcript.blockTypeCounts.exons;
-                          break;
-                        default:
-                          overlapCount = "";
-                          break;
+                  if (this.options.blockCalculateTranscriptCounts) {
+                    for (let testBlockIdx = 0; testBlockIdx < transcript.blocks.length; testBlockIdx++) {
+                      const testBlock = transcript.blocks[testBlockIdx];
+                      if ((normPointX >= testBlock.range[0]) && (normPointX <= testBlock.range[1])) {
+                        overlapType = testBlock.type;
+                        overlapIndex = testBlock.typeIdx;
+                        switch (overlapType) {
+                          case "Exon":
+                            overlapCount = transcript.blockTypeCounts.exons;
+                            overlapSubtype = (testBlock.subtype) ? testBlock.subtype : null;
+                            break;
+                          case "Intron":
+                            overlapCount = transcript.blockTypeCounts.introns;
+                            break;
+                          case "5'UTR":
+                          case "3'UTR":
+                            overlapCount = transcript.blockTypeCounts.exons;
+                            break;
+                          default:
+                            overlapCount = "";
+                            break;
+                        }
+                        break;
                       }
-                      break;
                     }
                   }
 
-                  function formattedOverlapByType(type, subtype, typeIdx, typeCount) {
-                    let result = "";
-                    switch (type) {
-                      case "Exon":
-                      case "Intron":
-                      case "5'UTR":
-                      case "3'UTR":
-                        result = (subtype) ? `${type} (${subtype}): ${typeIdx} / ${typeCount}` : `${type}: ${typeIdx} / ${typeCount}`;
-                        break
-                      default:
-                        break
-                    }
-                    return result;
-                  }
-
-                  const formattedOverlap = formattedOverlapByType(overlapType, overlapSubtype, overlapIndex, overlapCount);
+                  const formattedOverlap = (this.options.blockCalculateTranscriptCounts) ? this.formattedOverlapByType(overlapType, overlapSubtype, overlapIndex, overlapCount) : null;
 
                   if (this.areCodonsShown) {
                     for (let j = 0; j < tile.allCodonsForMouseOver.length; j++) {
@@ -3124,12 +3132,21 @@ const TranscriptsTrack = (HGC, ...args) => {
                     }
                   } 
                   else {
-                    return `
+                    return (formattedOverlap) ? 
+                    `
                       <div>
                         <div><b>Transcript: ${transcript.transcriptName}</b></div>
                         <div>Position: ${transcript.chromName}:${transcript.txStart}-${transcript.txEnd}</div>
                         <div>Strand: ${transcript.strand}</div>
                         <div>${formattedOverlap}</div>
+                      </div>
+                    ` 
+                    :
+                    `
+                      <div>
+                        <div><b>Transcript: ${transcript.transcriptName}</b></div>
+                        <div>Position: ${transcript.chromName}:${transcript.txStart}-${transcript.txEnd}</div>
+                        <div>Strand: ${transcript.strand}</div>
                       </div>
                     `;
                   }
@@ -3426,6 +3443,7 @@ TranscriptsTrack.config = {
     "sequenceData",
     "backgroundColor",
     "blockStyle",
+    "blockCalculateTranscriptCounts",
     "colorBoxplotLabel",
     "highlightTranscriptType",
     "highlightTranscriptTrackBackgroundColor",
@@ -3459,6 +3477,7 @@ TranscriptsTrack.config = {
     showToggleTranscriptsButton: true,
     backgroundColor: "#ffffff",
     blockStyle: "directional", // "directional" | "UCSC-like" | "boxplot"
+    blockCalculateTranscriptCounts: false,
     colorBoxplotLabel: false,
     highlightTranscriptType: "none", // "none" | "longestIsoform" | "apprisPrincipalIsoform"
     highlightTranscriptTrackBackgroundColor: "#f0f0f0",
