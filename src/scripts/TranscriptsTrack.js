@@ -1904,8 +1904,8 @@ const TranscriptsTrack = (HGC, ...args) => {
         boxBlockStarts = ts[11].split(",").map((x) => +x);
       }
 
-      blocks = null;
-      blockTypeCounts = null;
+      let blocks = null;
+      let blockTypeCounts = null;
       if (this.options.blockCalculateTranscriptCounts) {
         blocks = this.calculateTranscriptBlocks(txStart, txEnd, strand, startCodonPos, stopCodonPos, exonStarts, exonEnds, strandedStartCodonPos, strandedStopCodonPos, strandedTxStart, strandedTxEnd);
         const exonCandidates = blocks.filter((d) => ((d.type === "Exon") && (!d.subtype || d.subtype.length === 0))).slice(-1)[0];
