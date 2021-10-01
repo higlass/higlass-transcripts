@@ -91,6 +91,7 @@ The following options are available:
     "trackHeightAdjustment": "automatic", // if "automatic", the height of the track is adjusted to the number of visible transcripts.
     "startCollapsed": false, // if true, only one transcript is shown
     "blockStyle": "directional", // "UCSC-like" for UCSC block style, or "boxplot" to use BED12 attributes to mimic Tukey box-and-whisker plot style 
+    "blockCalculateTranscriptCounts": false // if true, transcript blocks are counted and labeled to add detail to tooltip
     "colorBoxplotLabel": false, // if true, the boxplot element label and label background are colored per element coloring
     "highlightTranscriptType": "none", // If "longestIsoform" or "apprisPrincipalIsoform", a principal or canonical annotation is highlighted.
     "highlightTranscriptTrackBackgroundColor": "#f0f0f0",

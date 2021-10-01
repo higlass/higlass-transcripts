@@ -1,7 +1,7 @@
 **Current**
 
 - UCSC genome browser-like annotation block style
-- UCSC genome browser-like intron, exon, 5'UTR, 3'UTR feature count labeling
+- UCSC genome browser-like intron, exon, 5'UTR, 3'UTR feature count labeling, when `blockCalculateTranscriptCounts` is enabled
 - Boxplot (Tukey box-and-whisker) annotation block style
 - Color applied from BED12 annotation field (unless overwritten by user, or unspecified)
 - Canonical or APPRIS isoform highlight flag and color options
