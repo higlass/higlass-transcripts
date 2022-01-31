@@ -9,11 +9,12 @@
     }
   </style>
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/higlass@1.11.8/dist/hglib.css">
   <link rel="stylesheet" href="hglib.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/5.2.3/pixi.min.js"></script>
   <script crossorigin src="https://unpkg.com/react@16/umd/react.development.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
-  
+  <script crossorigin src="https://unpkg.com/higlass@1.11.8/dist/hglib.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react-bootstrap/0.32.1/react-bootstrap.min.js"></script>
 </head>
 <body>
@@ -124,17 +125,14 @@ And some other text
             "height": 25
           },
           {
-            // "server": "http://localhost:8001/api/v1",
-            // "tilesetUid": "transcripts_20200723_3",
-            "server": "http://ec2-3-231-224-18.compute-1.amazonaws.com/api/v1",
+            "server": "https://cgap-higlass.com/api/v1",
             "tilesetUid": "transcripts_hg38",
             "uid": "transcript_annotation",
             "type": "horizontal-transcripts",
             "options": {
               "fontSize": 9,
               "labelFontColor": "#222222",
-              "labelBackgroundPlusStrandColor": "#e9e9e9",
-              "labelBackgroundMinusStrandColor": "#e9e9e9",
+              "labelBackgroundColor": "#e9e9e9",
               "minHeight": 24,
               "plusStrandColor": "#bdbfff",
               "minusStrandColor": "#fabec2",
@@ -146,17 +144,17 @@ And some other text
               "fontFamily": "Helvetica",
               "maxTexts": 100,
               "showToggleTranscriptsButton": true,
-              "trackHeightAdjustment": "automatic",
+              //"trackHeightAdjustment": "automatic",
               "startCollapsed": false,
               "sequenceData": {
                 "type": "fasta",
                 "fastaUrl": "https://aveit.s3.amazonaws.com/higlass/data/sequence/hg38.fa",
                 "faiUrl": "https://aveit.s3.amazonaws.com/higlass/data/sequence/hg38.fa.fai",
-                "chromSizesUrl": "https://aveit.s3.amazonaws.com/higlass/data/sequence/hg38.chrom.sizes"
-              },
+                "chromSizesUrl": "https://aveit.s3.amazonaws.com/higlass/data/sequence/hg38.mod.chrom.sizes"
+              }
             },
-            "width": 768,
-            "height": 40
+            "width": 894,
+            "height": 106
           },
           
           {
