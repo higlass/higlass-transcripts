@@ -77,7 +77,7 @@
   },
   "dependencies": {
     "d3-scale": "^1.0.7",
-    "d3-color": "^1.4.0",
+    "d3-color": "^3.1.0",
     "higlass-register": "^0.3.0",
     "@gmod/indexedfasta": "1.0.13",
     "generic-filehandle": "2.0.2"
