@@ -1,6 +1,6 @@
 {
   "name": "higlass-transcripts",
-  "version": "0.3.5",
+  "version": "0.3.6",
   "description": "Gene transcripts track for HiGlass",
   "private": false,
   "author": "Alexander Veit",
@@ -65,7 +65,7 @@
     "webpack": "^4.43.0",
     "react": "^16.4.2",
     "react-dom": "^16.4.2",
-    "higlass": "1.11.8"
+    "higlass": "^1.11.11"
   },
   "scripts": {
     "build-es": "rm -rf ./es/* && npx babel ./src/scripts/ --out-dir ./es/ --env-name esm",
@@ -76,10 +76,10 @@
     "prerelease": "rm -rf dist/*; npm run build; zip -r dist.zip dist"
   },
   "dependencies": {
-    "d3-scale": "^1.0.7",
-    "d3-color": "^1.4.0",
+    "d3-scale": "^4.0.2",
+    "d3-color": "^3.1.0",
     "higlass-register": "^0.3.0",
-    "@gmod/indexedfasta": "1.0.13",
-    "generic-filehandle": "2.0.2"
+    "@gmod/indexedfasta": "1.1.0",
+    "generic-filehandle": "2.2.3"
   }
 }
