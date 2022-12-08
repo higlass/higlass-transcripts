@@ -1215,11 +1215,6 @@ const TranscriptsTrack = (HGC, ...args) => {
         .filter((tile) => tile.drawnAtScale)
         .forEach((tile) => {
           tile.labelBgGraphics.clear();
-          tile.labelBgGraphics.beginFill(
-            typeof this.options.labelBackgroundColor !== "undefined"
-              ? this.colors["labelBackground"]
-              : WHITE_HEX
-          );
 
           if (!tile.initialized) return;
 
