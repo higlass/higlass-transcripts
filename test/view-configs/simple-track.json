@@ -27,8 +27,8 @@
             "height": 30
           },
           {
-            "server": "http://localhost:8001/api/v1",
-            "tilesetUid": "transcripts_20200723_3",
+            "server": "https://cgap-higlass.com/api/v1",
+            "tilesetUid": "transcripts_hg38",
             "uid": "transcript_annotation",
             "type": "horizontal-transcripts",
             "options": {

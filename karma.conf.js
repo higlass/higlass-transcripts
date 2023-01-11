@@ -4,7 +4,7 @@ require('babel-polyfill');
 module.exports = function(config) {
   config.set({
     basePath: '',
-    frameworks: ['jasmine', 'server-side'],
+    frameworks: ['jasmine'],
 
     files: [
       'node_modules/babel-polyfill/dist/polyfill.js',
@@ -38,7 +38,6 @@ module.exports = function(config) {
       'karma-sourcemap-loader',
       'karma-chrome-launcher',
       'karma-phantomjs-launcher',
-      'karma-server-side',
       'karma-verbose-reporter'
     ],
 
