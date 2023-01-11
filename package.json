@@ -1,6 +1,6 @@
 {
   "name": "higlass-transcripts",
-  "version": "0.3.7",
+  "version": "0.3.8",
   "description": "Gene transcripts track for HiGlass",
   "private": false,
   "author": "Alexander Veit",
@@ -20,11 +20,9 @@
   ],
   "repository": "github:higlass/higlass-transcripts",
   "devDependencies": {
-    "autoprefixer": "^8.6.5",
     "babel-core": "^6.26.3",
     "babel-loader": "^7.1.5",
     "babel-preset-env": "^1.7.0",
-    "box-intersect": "^1.0.1",
     "file-loader": "^1.1.11",
     "html-loader": "^0.5.5",
     "html-webpack-plugin": "^3.1.0",
@@ -36,10 +34,6 @@
     "unminified-webpack-plugin": "^2.0.0",
     "webpack-cli": "^3.3.11",
     "webpack-dev-server": "^3.10.3",
-    "fetch-mock": "^8.3.2",
-    "karma-server-side": "^1.8.0",
-    "fs-extra": "^8.1.0",
-    "fs": "0.0.2",
     "jasmine": "^2.99.0",
     "karma": "^4.4.1",
     "karma-chrome-launcher": "^3.1.0",
@@ -53,10 +47,10 @@
     "babel-preset-react": "^6.24.1",
     "enzyme": "^3.11.0",
     "enzyme-adapter-react-16": "^1.6.0",
-    "i": "^0.3.6",
     "sourcemap": "^0.1.0",
     "webpack": "^4.43.0",
-    "higlass": "^1.11.11"
+    "higlass": "^1.11.11",
+    "cheerio": "=1.0.0-rc.3"
   },
   "scripts": {
     "build-es": "rm -rf ./es/* && npx babel ./src/scripts/ --out-dir ./es/ --env-name esm",
@@ -70,7 +64,7 @@
     "d3-scale": "^4.0.2",
     "d3-color": "^3.1.0",
     "higlass-register": "^0.3.0",
-    "@gmod/indexedfasta": "1.1.0",
-    "generic-filehandle": "2.2.3"
+    "@gmod/indexedfasta": "^2.0.0",
+    "generic-filehandle": "^3.0.0"
   }
 }

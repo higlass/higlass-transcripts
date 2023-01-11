@@ -1,12 +1,11 @@
 import { expect } from "chai";
 import register from "higlass-register";
 
-import FetchMockHelper from "./utils/FetchMockHelper";
 
-import { HiGlassComponent, getTrackObjectFromHGC } from "higlass";
+
+import { getTrackObjectFromHGC } from "higlass";
 
 import {
-  waitForDataLoaded,
   mountHGComponent,
   removeHGComponent,
 } from "./utils/test-helpers";
@@ -21,55 +20,34 @@ register({
   config: TranscriptsTrack.config,
 });
 
-describe("Amino acid", () => {
-  const fetchMockHelper = new FetchMockHelper("", "AminoAcidTests");
+describe("Amino acid tests", () => {
+  let hgc = null;
+  let div = null;
 
-  beforeAll(async () => {
-    await fetchMockHelper.activateFetchMock();
+  beforeAll((done) => {
+    [div, hgc] = mountHGComponent(div, hgc, viewConf, done);
   });
 
-  describe("Amino acid tests", () => {
-    let hgc = null;
-    let div = null;
+  it("tests that the export works and contains the correct data", (done) => {
 
-    beforeAll((done) => {
-      [div, hgc] = mountHGComponent(div, hgc, viewConf, done);
-    });
+    const trackObj = getTrackObjectFromHGC(
+      hgc.instance(),
+      viewConf.views[0].uid,
+      viewConf.views[0].tracks.top[0].uid
+    );
+    const tile = trackObj.visibleAndFetchedTiles()[0];
 
-    it("tests that the export works and contains the correct data", (done) => {
-
-      const trackObj = getTrackObjectFromHGC(
-        hgc.instance(),
-        viewConf.views[0].uid,
-        viewConf.views[0].tracks.top[0].uid
-      );
-      const tile = trackObj.visibleAndFetchedTiles()[0];
-
-      setTimeout(() => {  
-        
-        
-        console.log(tile.aaInfo.exonOffsets["ENST00000378404.3_chr1_3021483_3022903"]);
-        console.log(tile.aaInfo.aminoAcids);
-
-        done();
-       }, 2000);
-
-
-
-
-
-     
-
-
+    setTimeout(() => {  
       
-    });
+      console.log(tile.aaInfo.exonOffsets["ENST00000378404.3_chr1_3021483_3022903"]);
+      console.log(tile.aaInfo.aminoAcids);
 
-    afterAll(() => {
-      removeHGComponent(div);
-    });
+      done();
+     }, 2000);
+
   });
 
-  afterAll(async () => {
-    await fetchMockHelper.storeDataAndResetFetchMock();
+  afterAll(() => {
+    removeHGComponent(div);
   });
 });
