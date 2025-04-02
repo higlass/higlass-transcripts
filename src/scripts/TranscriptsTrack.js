@@ -142,10 +142,6 @@ const TranscriptsTrack = (HGC, ...args) => {
     const minXlocOrig = +absToChr(minX, chromInfo)[1];
     const maxXlocOrig = +absToChr(maxX, chromInfo)[1];
 
-    // console.log("Tile bounds abs", minX, maxX);
-    // console.log("Tile bounds chr", minXlocOrig, maxXlocOrig);
-    // console.log(chromInfo)
-
     // Compute the offsets of each exon, so that we can get codons accross exons
     tile.tileData.forEach((td) => {
       const ts = td.fields;
@@ -473,6 +469,7 @@ const TranscriptsTrack = (HGC, ...args) => {
 
       const transcriptId = track.transcriptId(transcriptInfo);
 
+      // console.log(`transcriptId ${transcriptId}`);
 
       if (track.areTranscriptsHidden && track.transcriptInfo[transcriptId].displayOrder !== 0){
         return;
@@ -673,6 +670,11 @@ const TranscriptsTrack = (HGC, ...args) => {
     }
 
     initTile(tile) {
+
+      if (tile.initialized) {
+        return;
+      }
+
       externalInitTile(this, tile, {
         flipText: this.flipText,
         fontSize: this.fontSize,
@@ -690,12 +692,17 @@ const TranscriptsTrack = (HGC, ...args) => {
       tile.rectGraphics.destroy();
       tile.rectMaskGraphics.destroy();
       tile.labelGraphics.removeChildren();
+      for (let propertyName in tile.texts) {
+        tile.texts[propertyName].destroy();
+      }
+      tile.texts = [];
       tile.labelGraphics.destroy();
       tile.labelBgGraphics.destroy();
       tile.codonSeparatorGraphics.destroy();
       tile.codonTextGraphics.removeChildren();
       tile.codonTextGraphics.destroy();
       tile.graphics.destroy();
+      tile.tileData.length = 0;
       tile = null;
     }
 
@@ -771,6 +778,22 @@ const TranscriptsTrack = (HGC, ...args) => {
     updateTranscriptInfo() {
       // get all visible transcripts
       const visibleTranscriptsObj = {};
+
+      const getCircularReplacer = () => {
+        const seen = new WeakSet();
+        return (key, value) => {
+          if (typeof value === "object" && value !== null) {
+            if (seen.has(value)) {
+              return;
+            }
+            seen.add(value);
+          }
+          else if (typeof value === 'bigint') {
+            return value.toString();
+          }
+          return value;
+        };
+      };
 
       this.visibleAndFetchedTiles().forEach((tile) => {
         tile.tileData.forEach((ts) => {
@@ -1045,9 +1068,7 @@ const TranscriptsTrack = (HGC, ...args) => {
               if (endPosX < 0 || startPosX > this.dimensions[0]) {
                 continue;
               }
-
-              //const availableSpace = this._xScale((codon.posStart)) - this._xScale((codon.posEnd + 1));
-              //console.log(availableSpace);
+              
               if (codonWidth < this.minCodonDistance + 10) {
                 const xMiddle =
                   this._xScale(
@@ -1214,134 +1235,144 @@ const TranscriptsTrack = (HGC, ...args) => {
         // bogus data from the server
         .filter((tile) => tile.drawnAtScale)
         .forEach((tile) => {
-          tile.labelBgGraphics.clear();
+          try {
+            tile.labelBgGraphics.clear();
 
-          if (!tile.initialized) return;
+            if (!tile.initialized) return;
 
-          tile.tileData.forEach((td) => {
-            // tile probably hasn't been initialized yet
-            if (!tile.texts) return;
+            tile.tileData.forEach((td) => {
+              // tile probably hasn't been initialized yet
+              if (!tile.texts) return;
 
-            const transcriptId = td.transcriptId;
+              const transcriptId = td.transcriptId;
 
-            if (this.transcriptInfo[transcriptId] === undefined) return;
+              if (this.transcriptInfo[transcriptId] === undefined) return;
 
-            const transcript = this.transcriptInfo[transcriptId];
-            const text = tile.texts[transcriptId];
+              const transcript = this.transcriptInfo[transcriptId];
+              const text = tile.texts[transcriptId];
 
-            if (!text) return;
+              if (!text) return;
 
-            if (this.areTranscriptsHidden && transcript.displayOrder !== 0) {
-              text.visible = false;
-              return;
-            }
+              if (this.areTranscriptsHidden && transcript.displayOrder !== 0) {
+                text.visible = false;
+                return;
+              }
 
-            if (!tile.textWidths[transcriptId]) {
-              // if we haven't measured the text's width in renderTile, do it now
-              // this can occur if the same gene is in more than one tile, so its
-              // dimensions are measured for the first tile and not for the second
-              const textWidth = text.getBounds().width;
-              const textHeight = text.getBounds().height;
+              try {
+                if (!tile.textWidths[transcriptId]) {
+                  // if we haven't measured the text's width in renderTile, do it now
+                  // this can occur if the same gene is in more than one tile, so its
+                  // dimensions are measured for the first tile and not for the second
+                  const textWidth = text.getBounds().width;
+                  const textHeight = text.getBounds().height;
 
-              tile.textHeights[transcriptId] = textHeight;
-              tile.textWidths[transcriptId] = textWidth;
-            }
-
-            const TEXT_MARGIN = 3;
-            const CARET_MARGIN = 3;
-            const CARET_WIDTH = 5;
-            const chrOffset = +td.chrOffset;
-            const txStart = transcript["txStart"] + chrOffset;
-            const txEnd = transcript["txEnd"] + chrOffset;
-
-            let textYMiddleOffset =
-              transcript.displayOrder *
-              (this.transcriptHeight + this.transcriptSpacing);
-
-            if (this.options.showToggleTranscriptsButton) {
-              textYMiddleOffset += this.toggleButtonHeight;
-            }
-
-            let textYMiddle =
-              this.transcriptHeight / 2 +
-              this.transcriptSpacing / 2 +
-              textYMiddleOffset;
-
-            // take care of label positioning at start or end of transcripts
-            if (transcript.strand === "+") {
-              text.position.x = Math.max(
-                this._xScale(this.xScale().domain()[0]) + TEXT_MARGIN,
-                this._xScale(txStart + 1) -
-                  tile.textWidths[transcriptId] -
-                  2 * TEXT_MARGIN -
-                  CARET_MARGIN
-              );
-            } else {
-              text.position.x = Math.max(
-                this._xScale(this.xScale().domain()[0]) +
-                  TEXT_MARGIN +
-                  CARET_WIDTH,
-                this._xScale(txStart + 1) -
-                  tile.textWidths[transcriptId] -
-                  2 * TEXT_MARGIN
-              );
-            }
-
-            const marginRight =
-              transcript.strand === "+"
-                ? tile.textWidths[transcriptId] +
-                  this.transcriptHeight / 2 +
-                  2 * TEXT_MARGIN -
-                  CARET_MARGIN
-                : tile.textWidths[transcriptId] + TEXT_MARGIN;
-
-            text.position.x = Math.min(
-              text.position.x,
-              this._xScale(txEnd + 1) - marginRight
-            );
-
-            text.position.y = textYMiddle;
-
-            // Determine if the current text should be hidden
-            let showText = true;
-            const dpo = transcript.displayOrder;
-
-            this.transcriptPositionInfo[dpo]
-              .filter((ts) => {
-                // Check the ones that are left of the current transcript
-                return ts[1] < transcript.txStart;
-              })
-              .forEach((ts) => {
-                const endOfTranscript = this._xScale(ts[1] + chrOffset + 1);
-
-                if (endOfTranscript > text.position.x - 4 * TEXT_MARGIN) {
-                  showText = false;
+                  tile.textHeights[transcriptId] = textHeight;
+                  tile.textWidths[transcriptId] = textWidth;
                 }
-              });
+              }
+              catch (err) {
+                return;
+              }
 
-            if (showText) {
-              text.visible = true;
+              const TEXT_MARGIN = 3;
+              const CARET_MARGIN = 3;
+              const CARET_WIDTH = 5;
+              const chrOffset = +td.chrOffset;
+              const txStart = transcript["txStart"] + chrOffset;
+              const txEnd = transcript["txEnd"] + chrOffset;
 
-              this.allBoxes.push([
-                text.position.x - TEXT_MARGIN,
-                textYMiddle,
-                tile.textWidths[transcriptId] + 2 * TEXT_MARGIN,
-                this.transcriptHeight,
-                transcript.transcriptName,
-              ]);
+              let textYMiddleOffset =
+                transcript.displayOrder *
+                (this.transcriptHeight + this.transcriptSpacing);
 
-              this.allTexts.push({
-                importance: transcript.importance,
-                text,
-                caption: transcript.transcriptName,
-                strand: transcript.strand,
-              });
+              if (this.options.showToggleTranscriptsButton) {
+                textYMiddleOffset += this.toggleButtonHeight;
+              }
 
-              allTiles.push(tile.labelBgGraphics);
-            } else {
-              text.visible = false;
-            }
-          });
+              let textYMiddle =
+                this.transcriptHeight / 2 +
+                this.transcriptSpacing / 2 +
+                textYMiddleOffset;
+
+              // take care of label positioning at start or end of transcripts
+              if (transcript.strand === "+") {
+                text.position.x = Math.max(
+                  this._xScale(this.xScale().domain()[0]) + TEXT_MARGIN,
+                  this._xScale(txStart + 1) -
+                    tile.textWidths[transcriptId] -
+                    2 * TEXT_MARGIN -
+                    CARET_MARGIN
+                );
+              } else {
+                text.position.x = Math.max(
+                  this._xScale(this.xScale().domain()[0]) +
+                    TEXT_MARGIN +
+                    CARET_WIDTH,
+                  this._xScale(txStart + 1) -
+                    tile.textWidths[transcriptId] -
+                    2 * TEXT_MARGIN
+                );
+              }
+
+              const marginRight =
+                transcript.strand === "+"
+                  ? tile.textWidths[transcriptId] +
+                    this.transcriptHeight / 2 +
+                    2 * TEXT_MARGIN -
+                    CARET_MARGIN
+                  : tile.textWidths[transcriptId] + TEXT_MARGIN;
+
+              text.position.x = Math.min(
+                text.position.x,
+                this._xScale(txEnd + 1) - marginRight
+              );
+
+              text.position.y = textYMiddle;
+
+              // Determine if the current text should be hidden
+              let showText = true;
+              const dpo = transcript.displayOrder;
+
+              this.transcriptPositionInfo[dpo]
+                .filter((ts) => {
+                  // Check the ones that are left of the current transcript
+                  return ts[1] < transcript.txStart;
+                })
+                .forEach((ts) => {
+                  const endOfTranscript = this._xScale(ts[1] + chrOffset + 1);
+
+                  if (endOfTranscript > text.position.x - 4 * TEXT_MARGIN) {
+                    showText = false;
+                  }
+                });
+
+              if (showText) {
+                text.visible = true;
+
+                this.allBoxes.push([
+                  text.position.x - TEXT_MARGIN,
+                  textYMiddle,
+                  tile.textWidths[transcriptId] + 2 * TEXT_MARGIN,
+                  this.transcriptHeight,
+                  transcript.transcriptName,
+                ]);
+
+                this.allTexts.push({
+                  importance: transcript.importance,
+                  text,
+                  caption: transcript.transcriptName,
+                  strand: transcript.strand,
+                });
+
+                allTiles.push(tile.labelBgGraphics);
+              } else {
+                text.visible = false;
+              }
+            });
+          }
+          catch (err) {
+            return;
+          }
         });
 
       this.renderTextBg(this.allBoxes, this.allTexts, allTiles);
@@ -1446,15 +1477,15 @@ const TranscriptsTrack = (HGC, ...args) => {
       return false;
     }
 
-    getMouseOverHtml(trackX, trackY) {
-      if (!this.tilesetInfo) {
+    getMouseOverHtml(trackX, trackY, isShiftDown) {
+      if (!this.tilesetInfo || !this.options || (!this.options.showTooltip && !isShiftDown)) {
         return "";
       }
 
       const point = [trackX, trackY];
 
       for (const tile of this.visibleAndFetchedTiles()) {
-        if(!tile.allExonsForMouseOver){
+        if (!tile.allExonsForMouseOver){
           return;
         }
         for (let i = 0; i < tile.allExonsForMouseOver.length; i++) {
@@ -1509,14 +1540,27 @@ const TranscriptsTrack = (HGC, ...args) => {
                   `;
                 }
               }
-            } else {
-              return `
-                <div>
-                  <div><b>Transcript: ${transcript.transcriptName}</b></div>
-                  <div>Position: ${transcript.chromName}:${transcript.txStart}-${transcript.txEnd}</div>
-                  <div>Strand: ${transcript.strand}</div>
+            } 
+            else {
+              let output = `<div class="track-mouseover-menu-table">`;
+
+              output += `
+                <div class="track-mouseover-menu-table-item">
+                  <label for="name" class="track-mouseover-menu-table-item-label">Transcript</label>
+                  <div name="name" class="track-mouseover-menu-table-item-value">${transcript.transcriptName}</div>
                 </div>
-              `;
+                `;
+
+              output += `
+                <div class="track-mouseover-menu-table-item">
+                  <label for="position" class="track-mouseover-menu-table-item-label">Interval</label>
+                  <div name="position" class="track-mouseover-menu-table-item-value">${transcript.chromName}:${transcript.txStart}-${transcript.txEnd} (${transcript.strand})</div>
+                </div>
+                `;
+
+              output += `</div>`;
+
+              return output;
             }
           }
         }
@@ -1727,6 +1771,7 @@ TranscriptsTrack.config = {
     "trackHeightAdjustment",
     "sequenceData",
     "backgroundColor",
+    "showTooltip",
   ],
   defaultOptions: {
     fontSize: 9,
@@ -1746,6 +1791,7 @@ TranscriptsTrack.config = {
     trackHeightAdjustment: "automatic",
     showToggleTranscriptsButton: true,
     backgroundColor: "#ffffff",
+    showTooltip: true,
   },
 };
 

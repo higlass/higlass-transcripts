@@ -1,0 +1,199 @@
+<!doctype html> <head> <meta charset=utf-8> <meta name=viewport content="width=device-width,initial-scale=1"> <title>HiGlass Transcripts</title> <style type=text/css>.canvasjs-chart-credit{display:none}</style> <link rel=stylesheet href=https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css> <link rel=stylesheet href=https://cdn.jsdelivr.net/npm/higlass@1.11.11/dist/hglib.css> <link rel=stylesheet href=hglib.css> <script src=https://cdnjs.cloudflare.com/ajax/libs/pixi.js/5.2.3/pixi.min.js></script> <script crossorigin src=https://cdn.jsdelivr.net/npm/react@16/umd/react.development.js></script> <script crossorigin src=https://cdn.jsdelivr.net/npm/react-dom@16/umd/react-dom.development.js></script> <script crossorigin src=https://cdn.jsdelivr.net/npm/higlass@1.11.11/dist/hglib.min.js></script> <script src=https://cdnjs.cloudflare.com/ajax/libs/react-bootstrap/0.32.1/react-bootstrap.min.js></script> </head> <body> Higlass transcripts track <div style=""></div> <div style=margin:auto> <div style="width:800px;border:1px solid #000" id=development-demo> </div> </div> And some other text <div style=height:1500px></div> <script type="text/javascript" src="/higlass-transcripts.js"></script></body> <script src=hglib.js></script> <script crossorigin src=https://cdn.jsdelivr.net/npm/higlass-sequence/dist/higlass-sequence.js></script> <script> var viewConfig =
+  {
+  "editable": true,
+  "zoomFixed": false,
+  "trackSourceServers": [
+    "http://higlass.io/api/v1"
+  ],
+  "exportViewUrl": "/api/v1/viewconfs/",
+  "views": [
+    {
+      "tracks": {
+        "top": [
+          
+          {
+            "server": "http://higlass.io/api/v1",
+            "tilesetUid": "NyITQvZsS_mOFNlz5C2LJg",
+            "uid": "Lb1oLu6rSiaIFcdrouucQg",
+            "type": "horizontal-chromosome-labels",
+            "options": {
+              "color": "#808080",
+              "stroke": "#ffffff",
+              "fontSize": 12,
+              "fontIsLeftAligned": false,
+              "showMousePosition": false,
+              "mousePositionColor": "#000000"
+            },
+            "width": 768,
+            "height": 30
+          },
+          {
+            "server": "http://higlass.io/api/v1",
+            "tilesetUid": "P0PLbQMwTYGy-5uPIQid7A",
+            "uid": "TQAcqjtiSTyrm-p1Gfcvzg",
+            "type": "horizontal-gene-annotations",
+            "options": {
+              "fontSize": 10,
+              "labelColor": "black",
+              "labelBackgroundColor": "#ffffff",
+              "labelPosition": "hidden",
+              "labelLeftMargin": 0,
+              "labelRightMargin": 0,
+              "labelTopMargin": 0,
+              "labelBottomMargin": 0,
+              "minHeight": 24,
+              "plusStrandColor": "blue",
+              "minusStrandColor": "red",
+              "trackBorderWidth": 0,
+              "trackBorderColor": "black",
+              "showMousePosition": false,
+              "mousePositionColor": "#000000",
+              "geneAnnotationHeight": 16,
+              "geneLabelPosition": "outside",
+              "geneStrandSpacing": 4,
+              "name": "Gene Annotations (hg38)"
+            },
+            "width": 768,
+            "height": 90
+          },
+          {
+            "uid": "fastaex",
+            "type": "horizontal-sequence",
+            "data": {
+              "type": "fasta",
+              "fastaUrl": "https://aveit.s3.amazonaws.com/higlass/data/sequence/hg38.fa",
+              "faiUrl": "https://aveit.s3.amazonaws.com/higlass/data/sequence/hg38.fa.fai",
+              "chromSizesUrl": "https://aveit.s3.amazonaws.com/higlass/data/sequence/hg38.chrom.sizes"
+            },
+            "options": {
+              "colorAggregationMode": "none",
+              "labelPosition": "topLeft",
+              "labelColor": "black",
+              "labelTextOpacity": 0.4,
+              "valueScaling": "linear",
+              "trackBorderWidth": 0,
+              "trackBorderColor": "white",
+              "name": "hg38",
+              "backgroundColor": "white",
+              "barBorder": true,
+              "barBorderColor": "white",
+              "sortLargestOnTop": true,
+              "extendedPreloading": false,
+              "colorScale": [ // A T G C N other
+                "#007FFF",
+                "#e8e500",
+                "#008000",
+                "#FF0038",
+                "#800080",
+                "#DCDCDC"
+              ]
+            },
+            "width": 768,
+            "height": 25
+          },
+          {
+            "server": "https://cgap-higlass.com/api/v1",
+            "tilesetUid": "transcripts_hg38",
+            "uid": "transcript_annotation",
+            "type": "horizontal-transcripts",
+            "options": {
+              "fontSize": 9,
+              "labelFontColor": "#222222",
+              "labelBackgroundPlusStrandColor": "#ececec",
+              "minHeight": 24,
+              "plusStrandColor": "#bdbfff",
+              "minusStrandColor": "#fabec2",
+              "utrColor": "#C0EAAF",
+              "mousePositionColor": "#000000",
+              "transcriptHeight": 12,
+              "transcriptSpacing": 2,
+              "name": "Gene transcripts",
+              "fontFamily": "Helvetica",
+              "maxTexts": 100,
+              "showToggleTranscriptsButton": true,
+              //"trackHeightAdjustment": "automatic",
+              "startCollapsed": false,
+              "sequenceData": {
+                "type": "fasta",
+                "fastaUrl": "https://aveit.s3.amazonaws.com/higlass/data/sequence/hg38.fa",
+                "faiUrl": "https://aveit.s3.amazonaws.com/higlass/data/sequence/hg38.fa.fai",
+                "chromSizesUrl": "https://aveit.s3.amazonaws.com/higlass/data/sequence/hg38.mod.chrom.sizes"
+              }
+            },
+            "width": 894,
+            "height": 106
+          },
+          
+          {
+            "server": "http://higlass.io/api/v1",
+            "uid": "emptytrack",
+            "type": "empty",
+            "options": {
+              "color": "#808080",
+              "stroke": "#ffffff",
+              "fontSize": 14,
+              "fontIsLeftAligned": false,
+              "showMousePosition": false,
+              "mousePositionColor": "#000000"
+            },
+            "width": 768,
+            "height": 100
+          }
+        ],
+        "left": [],
+        "center": [],
+        "right": [],
+        "bottom": [],
+        "whole": [],
+        "gallery": []
+      },
+      "initialXDomain": [
+      // 2148820.8089092625,
+      //   2148904.489478085
+      // 114780590.55746861,
+      //   114780613.7433006
+      // 3020000,
+      //   3024000
+        3021674.52669861,
+        3021731.7217806783
+        // 3021672.8733434854,
+        // 3021717.752634499
+        // 451246665.4697236,
+        // 451268523.8166885
+        // 2343474001.661236,
+        // 2343474540.4300046
+      ],
+      "initialYDomain": [
+        -2681156982.8645544,
+        -2681155573.4848976
+      ],
+      "layout": {
+        "w": 12,
+        "h": 12,
+        "x": 0,
+        "y": 0
+      },
+      "uid": "AD_rIRKzRQKx3N8rbT9G4w"
+    }
+  ],
+  "zoomLocks": {
+    "locksByViewUid": {},
+    "locksDict": {}
+  },
+  "locationLocks": {
+    "locksByViewUid": {},
+    "locksDict": {}
+  },
+  "valueScaleLocks": {
+    "locksByViewUid": {},
+    "locksDict": {}
+  }
+}
+
+
+  // window.higlassApi;
+  const hgApi = window.hglib.viewer(
+    document.getElementById('development-demo'),
+    viewConfig,
+    {bounded: false}
+  ); </script> <script>!function(e,a,t,n,g,c,o){e.GoogleAnalyticsObject=g,e.ga=e.ga||function(){(e.ga.q=e.ga.q||[]).push(arguments)},e.ga.l=1*new Date,c=a.createElement(t),o=a.getElementsByTagName(t)[0],c.async=1,c.src="https://www.google-analytics.com/analytics.js",o.parentNode.insertBefore(c,o)}(window,document,"script",0,"ga"),ga("create","UA-77756807-1","auto"),ga("send","pageview")</script> 

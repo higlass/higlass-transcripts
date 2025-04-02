@@ -92,6 +92,7 @@ The following options are available:
       "faiUrl": "https://aveit.s3.amazonaws.com/higlass/data/sequence/hg38.fa.fai",
       "chromSizesUrl": "https://aveit.s3.amazonaws.com/higlass/data/sequence/hg38.mod.chrom.sizes"
     },
+    "showTooltip": true,
   },
   "width": 768,
   "height": 40

@@ -3,7 +3,6 @@
 *.swo
 *.swp
 node_modules
-dist
 es
 *.zip
 *.log
