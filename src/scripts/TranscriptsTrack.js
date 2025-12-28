@@ -674,13 +674,16 @@ const TranscriptsTrack = (HGC, ...args) => {
       this.colors["background"] = colorToHex(this.options.backgroundColor);
     }
 
-    convertTranscriptToFields(transcript) {
+    convertTranscriptToFields(transcript, genes) {
       const cds = transcript.cds && transcript.cds[0];
+      const gene = genes[transcript.parent_gene_id].gene
+      const geneName = gene.attributes.Name
+
       return [
         transcript.chrom,
         transcript.start,
         transcript.end,
-        transcript.attributes.Name,
+        geneName,
         transcript.score,
         transcript.strand,
         cds && cds.start,
@@ -709,12 +712,12 @@ const TranscriptsTrack = (HGC, ...args) => {
       if (tile.tileData.transcripts) {
         return Object.keys(tile.tileData.transcripts).map(tsId => {
           const transcript = tile.tileData.transcripts[tsId];
-          const fields = this.convertTranscriptToFields(transcript);
+          const fields = this.convertTranscriptToFields(transcript, tile.tileData.genes);
           const chrOffset = this.calculateChrOffset(transcript.chrom);
           
           return {
             fields,
-            transcriptId: tsId,
+            transcriptId: this.transcriptId(fields),
             chrOffset
           };
         });
@@ -834,8 +837,6 @@ const TranscriptsTrack = (HGC, ...args) => {
         visibleTranscripts.push(visibleTranscriptsObj[tsId]);
       }
 
-      console.log('visibleTranscripts', visibleTranscripts);
-
       this.transcriptInfo = {};
       this.transcriptPositionInfo = {};
 
@@ -873,8 +874,6 @@ const TranscriptsTrack = (HGC, ...args) => {
             displayOrder: dpo,
             importance: tsFormatted.importance,
           };
-
-          console.log('tInfo', tInfo);
 
           this.transcriptInfo[tInfo.transcriptId] = tInfo;
         });
@@ -1011,7 +1010,6 @@ const TranscriptsTrack = (HGC, ...args) => {
       let zoomLevel = Math.min(xZoomLevel, this.maxZoom);
       zoomLevel = Math.max(zoomLevel, 0);
 
-      //console.log(zoomLevel, this._xScale.domain())
       return zoomLevel;
     }
 
@@ -1104,7 +1102,6 @@ const TranscriptsTrack = (HGC, ...args) => {
               }
 
               //const availableSpace = this._xScale((codon.posStart)) - this._xScale((codon.posEnd + 1));
-              //console.log(availableSpace);
               if (codonWidth < this.minCodonDistance + 10) {
                 const xMiddle =
                   this._xScale(
@@ -1376,6 +1373,7 @@ const TranscriptsTrack = (HGC, ...args) => {
                 }
               });
 
+            
             if (showText) {
               text.visible = true;
 
