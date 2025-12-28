@@ -64,11 +64,13 @@ const TranscriptsTrack = (HGC, ...args) => {
 
     tile.rectGraphics.mask = tile.rectMaskGraphics;
 
-    if (!tile.tileData.sort) return;
+    const tileData = track.getTileData(tile);
+    // console.log('tileData:', tileData);
+    if (!tileData.sort) return;
 
-    tile.tileData.sort((a, b) => b.importance - a.importance);
+    tileData.sort((a, b) => b.importance - a.importance);
 
-    tile.tileData.forEach((td, i) => {
+    tileData.forEach((td, i) => {
       const ts = td.fields;
       const tsFormatted = track.formatTranscriptData(ts);
       const transcriptName = tsFormatted.transcriptName;
@@ -147,7 +149,7 @@ const TranscriptsTrack = (HGC, ...args) => {
     // console.log(chromInfo)
 
     // Compute the offsets of each exon, so that we can get codons accross exons
-    tile.tileData.forEach((td) => {
+    track.getTileData(tile).forEach((td) => {
       const ts = td.fields;
       const transcriptInfo = track.formatTranscriptData(ts);
       const transcriptId = transcriptInfo.transcriptId;
@@ -672,7 +674,56 @@ const TranscriptsTrack = (HGC, ...args) => {
       this.colors["background"] = colorToHex(this.options.backgroundColor);
     }
 
+    convertTranscriptToFields(transcript) {
+      const cds = transcript.cds && transcript.cds[0];
+      return [
+        transcript.chrom,
+        transcript.start,
+        transcript.end,
+        transcript.attributes.Name,
+        transcript.score,
+        transcript.strand,
+        cds && cds.start,
+        cds && cds.end,
+        transcript.exons.length,
+        transcript.exons.map(x => x.start).join(','),
+        transcript.exons.map(x => x.end).join(','),
+        cds && cds.start,
+        cds && cds.end,
+        0, // importance
+      ];
+    }
+
+    calculateChrOffset(chrom) {
+      let chrOffset = 0;
+      if (this.tilesetInfo.chromsizes) {
+        for (const [chrName, chrSize] of this.tilesetInfo.chromsizes) {
+          if (chrName === chrom) break;
+          chrOffset += chrSize;
+        }
+      }
+      return chrOffset;
+    }
+
+    getTileData(tile) {
+      if (tile.tileData.transcripts) {
+        return Object.keys(tile.tileData.transcripts).map(tsId => {
+          const transcript = tile.tileData.transcripts[tsId];
+          const fields = this.convertTranscriptToFields(transcript);
+          const chrOffset = this.calculateChrOffset(transcript.chrom);
+          
+          return {
+            fields,
+            transcriptId: tsId,
+            chrOffset
+          };
+        });
+      }
+      return tile.tileData;
+    }
+
     initTile(tile) {
+
       externalInitTile(this, tile, {
         flipText: this.flipText,
         fontSize: this.fontSize,
@@ -773,7 +824,7 @@ const TranscriptsTrack = (HGC, ...args) => {
       const visibleTranscriptsObj = {};
 
       this.visibleAndFetchedTiles().forEach((tile) => {
-        tile.tileData.forEach((ts) => {
+        this.getTileData(tile).forEach((ts) => {
           visibleTranscriptsObj[ts.transcriptId] = ts.fields;
         });
       });
@@ -782,6 +833,8 @@ const TranscriptsTrack = (HGC, ...args) => {
       for (const tsId in visibleTranscriptsObj) {
         visibleTranscripts.push(visibleTranscriptsObj[tsId]);
       }
+
+      console.log('visibleTranscripts', visibleTranscripts);
 
       this.transcriptInfo = {};
       this.transcriptPositionInfo = {};
@@ -820,6 +873,9 @@ const TranscriptsTrack = (HGC, ...args) => {
             displayOrder: dpo,
             importance: tsFormatted.importance,
           };
+
+          console.log('tInfo', tInfo);
+
           this.transcriptInfo[tInfo.transcriptId] = tInfo;
         });
 
@@ -909,11 +965,12 @@ const TranscriptsTrack = (HGC, ...args) => {
       tile.rectGraphics.clear();
       tile.labelBgGraphics.clear();
 
-      const plusTranscripts = tile.tileData.filter(
+      const tileData = this.getTileData(tile);
+      const plusTranscripts = tileData.filter(
         (td) =>
           td.type !== "filler" && (td.strand === "+" || td.fields[5] === "+")
       );
-      const minusTranscripts = tile.tileData.filter(
+      const minusTranscripts = tileData.filter(
         (td) =>
           td.type !== "filler" && (td.strand === "-" || td.fields[5] === "-")
       );
@@ -1005,7 +1062,7 @@ const TranscriptsTrack = (HGC, ...args) => {
           graphics.beginFill(WHITE_HEX);
           graphics.alpha = alpha;
 
-          tile.tileData.forEach((td) => {
+          this.getTileData(tile).forEach((td) => {
             const transcriptId = td.transcriptId;
             if (
               !this.transcriptInfo[transcriptId] ||
@@ -1106,7 +1163,7 @@ const TranscriptsTrack = (HGC, ...args) => {
           graphics.beginFill(WHITE_HEX);
           graphics.alpha = alpha;
 
-          tile.tileData.forEach((td) => {
+          this.getTileData(tile).forEach((td) => {
             const transcriptId = td.transcriptId;
             if (
               !this.transcriptInfo[transcriptId] ||
@@ -1218,7 +1275,7 @@ const TranscriptsTrack = (HGC, ...args) => {
 
           if (!tile.initialized) return;
 
-          tile.tileData.forEach((td) => {
+          this.getTileData(tile).forEach((td) => {
             // tile probably hasn't been initialized yet
             if (!tile.texts) return;
 
