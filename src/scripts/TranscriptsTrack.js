@@ -677,6 +677,11 @@ const TranscriptsTrack = (HGC, ...args) => {
     convertTranscriptToFields(transcript, genes) {
       const cds = transcript.cds && transcript.cds[0];
       const gene = genes[transcript.parent_gene_id].gene
+
+      if (!gene) {
+        console.warn(`No gene for ${transcript.parent_gene_id}. Genes ${genes}`)
+        return null;
+      }
       const geneName = gene.attributes.Name
 
       return [
@@ -715,12 +720,12 @@ const TranscriptsTrack = (HGC, ...args) => {
           const fields = this.convertTranscriptToFields(transcript, tile.tileData.genes);
           const chrOffset = this.calculateChrOffset(transcript.chrom);
           
-          return {
+          return fields && {
             fields,
             transcriptId: this.transcriptId(fields),
             chrOffset
           };
-        });
+        }).filter(x => x);
       }
       return tile.tileData;
     }
@@ -1759,7 +1764,7 @@ const icon =
 // default
 TranscriptsTrack.config = {
   type: "horizontal-transcripts",
-  datatype: ["gene-annotation"],
+  datatype: ["gene-annotation", "gene-transcripts"],
   local: false,
   orientation: "1d-horizontal",
   thumbnail: new DOMParser().parseFromString(icon, "text/xml").documentElement,
