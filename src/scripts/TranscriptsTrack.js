@@ -682,7 +682,13 @@ const TranscriptsTrack = (HGC, ...args) => {
         console.warn(`No gene for ${transcript.parent_gene_id}. Genes ${genes}`)
         return null;
       }
-      const geneName = gene.attributes.Name
+
+      let geneName;
+      if (this.options.labelField) {
+        geneName = gene.attributes[this.options.labelField];
+      } else {
+        geneName = gene.attributes.Name;
+      }
 
       return [
         transcript.chrom,
@@ -1779,6 +1785,7 @@ TranscriptsTrack.config = {
     "utrColor",
     "labelBackgroundPlusStrandColor",
     "labelBackgroundMinusStrandColor",
+    "labelField",
     "labelFontColor",
     "labelStrokePlusStrandColor",
     "labelStrokeMinusStrandColor",
@@ -1799,6 +1806,7 @@ TranscriptsTrack.config = {
     utrColor: "#C0EAAF",
     labelBackgroundPlusStrandColor: "#ffffff",
     labelBackgroundMinusStrandColor: "#ffffff",
+    labelField: "Name",
     labelFontColor: "#333333",
     labelStrokePlusStrandColor: "#999999",
     labelStrokeMinusStrandColor: "#999999",
